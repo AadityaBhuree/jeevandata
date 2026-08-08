@@ -49,15 +49,6 @@ export function VoiceInput({
     toggleRecording,
   } = useVoiceRecorder({
     sessionId,
-    onTranscriptionComplete: (text) => {
-      if (text.trim()) {
-        onSend(text.trim());
-      }
-      setInterimOverride('');
-    },
-    onInterimTranscription: (text) => {
-      setInterimOverride(text);
-    },
   });
 
   // ─── Transcription Listener ──────────────────────────────────────

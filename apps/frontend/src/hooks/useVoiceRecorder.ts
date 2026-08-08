@@ -2,6 +2,7 @@
 
 import { useCallback, useRef, useState, useEffect } from 'react';
 import { socketService } from '@/services/socket';
+import { useLanguage } from './useLanguage';
 
 const RECORD_TIMESLICE_MS = 200;
 const INTERIM_INTERVAL_MS = 2000;
@@ -9,10 +10,6 @@ const MAX_RECORDING_DURATION_MS = 30_000;
 
 interface UseVoiceRecorderOptions {
   sessionId: string;
-  /** Callback when a final transcription is received */
-  onTranscriptionComplete?: (text: string) => void;
-  /** Called with interim transcription text while recording */
-  onInterimTranscription?: (text: string) => void;
   /** Max recording duration in ms (default 30s) */
   maxDuration?: number;
 }
@@ -40,10 +37,12 @@ interface UseVoiceRecorderReturn {
 
 export function useVoiceRecorder({
   sessionId,
-  onTranscriptionComplete,
-  onInterimTranscription,
   maxDuration = MAX_RECORDING_DURATION_MS,
 }: UseVoiceRecorderOptions): UseVoiceRecorderReturn {
+  // Patient-selected UI locale (en/hi/mr/es) — forwarded to whisper.cpp per
+  // transcription request so audio is decoded in the spoken language.
+  const { locale } = useLanguage();
+
   const [isRecording, setIsRecording] = useState(false);
   const [isSupported, setIsSupported] = useState(false);
   const [isRequestingPermission, setIsRequestingPermission] = useState(false);
@@ -115,30 +114,18 @@ export function useVoiceRecorder({
   }
 
   // Send an audio chunk via WebSocket
-  function sendAudioChunk(
-    blob: Blob,
-    isFinal: boolean,
-    chunkIndex: number,
-  ) {
+  function sendAudioChunk(blob: Blob, isFinal: boolean, chunkIndex: number) {
     const reader = new FileReader();
     reader.onloadend = () => {
       const arrayBuffer = reader.result as ArrayBuffer;
-      socketService.sendAudioChunk(
-        sessionId,
-        arrayBuffer,
-        chunkIndex,
-        isFinal,
-      );
+      socketService.sendAudioChunk(sessionId, arrayBuffer, chunkIndex, isFinal, locale);
     };
     reader.readAsArrayBuffer(blob);
   }
 
   // Send interim audio for partial transcription
   function sendInterimAudio() {
-    if (
-      !mediaRecorderRef.current ||
-      mediaRecorderRef.current.state !== 'recording'
-    ) {
+    if (!mediaRecorderRef.current || mediaRecorderRef.current.state !== 'recording') {
       return;
     }
     // Request current data for interim transcription
@@ -157,7 +144,7 @@ export function useVoiceRecorder({
 
       const dataArray = new Uint8Array(analyser.frequencyBinCount);
 
-      function updateLevel() {
+      const updateLevel = () => {
         if (!analyserRef.current) return;
         analyserRef.current.getByteTimeDomainData(dataArray);
         let sum = 0;
@@ -168,7 +155,7 @@ export function useVoiceRecorder({
         const rms = Math.sqrt(sum / dataArray.length);
         setAudioLevel(Math.min(rms * 3, 1));
         animationFrameRef.current = requestAnimationFrame(updateLevel);
-      }
+      };
       updateLevel();
     } catch {
       // Audio level tracking is non-critical
@@ -207,11 +194,7 @@ export function useVoiceRecorder({
       recorder.ondataavailable = (event) => {
         if (event.data.size > 0) {
           const isFinal = recorder.state === 'inactive';
-          sendAudioChunk(
-            event.data,
-            isFinal,
-            chunkIndexRef.current++,
-          );
+          sendAudioChunk(event.data, isFinal, chunkIndexRef.current++);
         }
       };
 
@@ -240,9 +223,7 @@ export function useVoiceRecorder({
 
       // Track duration
       durationIntervalRef.current = setInterval(() => {
-        setRecordingDurationSec(
-          Math.floor((Date.now() - startTimeRef.current) / 1000),
-        );
+        setRecordingDurationSec(Math.floor((Date.now() - startTimeRef.current) / 1000));
         // Auto-stop if max duration reached
         if (Date.now() - startTimeRef.current >= maxDuration) {
           stopRecording();
@@ -274,10 +255,7 @@ export function useVoiceRecorder({
   }, [isRecording, isSupported, maxDuration, sessionId]);
 
   const stopRecording = useCallback(() => {
-    if (
-      mediaRecorderRef.current &&
-      mediaRecorderRef.current.state === 'recording'
-    ) {
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
       mediaRecorderRef.current.stop();
     }
   }, []);
