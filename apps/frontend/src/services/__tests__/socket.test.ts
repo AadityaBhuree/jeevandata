@@ -114,20 +114,14 @@ describe('SocketService', () => {
       socketService.connect();
       socketService.joinSession('session-123');
 
-      expect(mockSocket.emit).toHaveBeenCalledWith(
-        'join:session',
-        'session-123',
-      );
+      expect(mockSocket.emit).toHaveBeenCalledWith('join:session', 'session-123');
     });
 
     it('should emit leave:session event', () => {
       socketService.connect();
       socketService.leaveSession('session-456');
 
-      expect(mockSocket.emit).toHaveBeenCalledWith(
-        'leave:session',
-        'session-456',
-      );
+      expect(mockSocket.emit).toHaveBeenCalledWith('leave:session', 'session-456');
     });
 
     it('should not throw when called without connection', () => {
@@ -250,17 +244,13 @@ describe('SocketService', () => {
       socketService.sendConversationTurn('s1', 'ai', 'How long?');
 
       const payload = mockSocket.emit.mock.calls[0]![1] as Record<string, unknown>;
-      expect(payload.timestamp).toMatch(
-        /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/,
-      );
+      expect(payload.timestamp).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/);
     });
 
     it('should not throw when called without connection', () => {
       socketService.disconnect();
 
-      expect(() =>
-        socketService.sendConversationTurn('s1', 'patient', 'Hello'),
-      ).not.toThrow();
+      expect(() => socketService.sendConversationTurn('s1', 'patient', 'Hello')).not.toThrow();
     });
   });
 
@@ -285,6 +275,30 @@ describe('SocketService', () => {
       });
     });
 
+    it('should include the patient language when provided', () => {
+      const buffer = new ArrayBuffer(16);
+
+      socketService.sendAudioChunk('s1', buffer, 1, false, 'hi');
+
+      expect(mockSocket.emit).toHaveBeenCalledWith('audio:chunk', {
+        sessionId: 's1',
+        data: buffer,
+        chunkIndex: 1,
+        isFinal: false,
+        timestamp: expect.any(Number),
+        language: 'hi',
+      });
+    });
+
+    it('should omit language from the payload when not selected', () => {
+      const buffer = new ArrayBuffer(16);
+
+      socketService.sendAudioChunk('s1', buffer, 2, true);
+
+      const payload = mockSocket.emit.mock.calls[0]![1] as Record<string, unknown>;
+      expect(payload).not.toHaveProperty('language');
+    });
+
     it('should mark the last chunk with isFinal=true', () => {
       const buffer = new ArrayBuffer(8);
 
@@ -298,9 +312,7 @@ describe('SocketService', () => {
     it('should not throw when called without connection', () => {
       socketService.disconnect();
 
-      expect(() =>
-        socketService.sendAudioChunk('s1', new ArrayBuffer(4), 0, true),
-      ).not.toThrow();
+      expect(() => socketService.sendAudioChunk('s1', new ArrayBuffer(4), 0, true)).not.toThrow();
     });
   });
 });
