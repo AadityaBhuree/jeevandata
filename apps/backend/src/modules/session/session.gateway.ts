@@ -127,9 +127,11 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
       chunkIndex: number;
       isFinal: boolean;
       timestamp: number;
+      /** ISO 639-1 language code (en/hi/mr/es) selected by the patient */
+      language?: string;
     },
   ): Promise<void> {
-    const { sessionId, data: chunkData, isFinal } = data;
+    const { sessionId, data: chunkData, isFinal, language } = data;
 
     // Ensure a buffer exists for this session
     if (!this.audioBuffers.has(sessionId)) {
@@ -156,7 +158,11 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
 
         this.logger.debug(`Transcribing ${completeAudio.length} bytes for session ${sessionId}`);
 
-        const result = await this.transcriptionService.transcribeBuffer(completeAudio, sessionId);
+        const result = await this.transcriptionService.transcribeBuffer(
+          completeAudio,
+          sessionId,
+          language,
+        );
 
         // Emit the transcription back to the session room
         this.emitTranscriptChunk(sessionId, {
