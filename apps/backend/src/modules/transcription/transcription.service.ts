@@ -18,16 +18,11 @@ export class TranscriptionService {
       'openai.whisperApiUrl',
       'http://localhost:9001/inference',
     );
-    this.openaiApiKey = this.configService.get<string>(
-      'openai.apiKey',
-      '',
-    );
+    this.openaiApiKey = this.configService.get<string>('openai.apiKey', '');
   }
 
   async transcribe(data: { audioUrl: string; sessionId: string }) {
-    this.logger.debug(
-      `Transcribing audio for session ${data.sessionId}: ${data.audioUrl}`,
-    );
+    this.logger.debug(`Transcribing audio for session ${data.sessionId}: ${data.audioUrl}`);
 
     // In production, this fetches audio from R2 and sends to Whisper
     // For development, returns a placeholder
@@ -62,9 +57,10 @@ export class TranscriptionService {
   async transcribeBuffer(
     audioBuffer: Buffer,
     sessionId: string,
+    language?: string,
   ): Promise<{ text: string; isFinal: boolean }> {
     try {
-      const text = await this.callWhisperApi(audioBuffer);
+      const text = await this.callWhisperApi(audioBuffer, this.normalizeLanguage(language));
 
       // Persist the transcribed text
       await this.prisma.sessionTranscript.create({
@@ -88,10 +84,7 @@ export class TranscriptionService {
 
       return { text, isFinal: true };
     } catch (error) {
-      this.logger.error(
-        `Whisper transcription failed for session ${sessionId}`,
-        error,
-      );
+      this.logger.error(`Whisper transcription failed for session ${sessionId}`, error);
 
       await this.auditService.log({
         action: 'TRANSCRIPTION_FAILED',
@@ -99,7 +92,10 @@ export class TranscriptionService {
         actorRole: 'SYSTEM',
         resourceType: 'session_transcript',
         resourceId: sessionId,
-        details: { error: error instanceof Error ? error.message : 'Unknown error', audioSizeBytes: audioBuffer.length },
+        details: {
+          error: error instanceof Error ? error.message : 'Unknown error',
+          audioSizeBytes: audioBuffer.length,
+        },
         ipAddress: 'internal',
       });
 
@@ -107,57 +103,71 @@ export class TranscriptionService {
     }
   }
 
-  private async callWhisperApi(audioBuffer: Buffer): Promise<string> {
+  /**
+   * Normalize a UI locale into a whisper language code (ISO 639-1).
+   * Returns undefined for absent or unrecognized values so the STT server
+   * falls back to auto-detection.
+   */
+  private normalizeLanguage(language?: string): string | undefined {
+    if (!language) return undefined;
+    const code = language.trim().toLowerCase();
+    return /^[a-z]{2}$/.test(code) ? code : undefined;
+  }
+
+  private async callWhisperApi(audioBuffer: Buffer, language?: string): Promise<string> {
     // If OpenAI API key is configured, use OpenAI Whisper API
     if (this.openaiApiKey) {
-      return this.callOpenAiWhisper(audioBuffer);
+      return this.callOpenAiWhisper(audioBuffer, language);
     }
 
     // Otherwise, try whisper.cpp local server
-    return this.callWhisperCpp(audioBuffer);
+    return this.callWhisperCpp(audioBuffer, language);
   }
 
-  private async callOpenAiWhisper(audioBuffer: Buffer): Promise<string> {
+  private async callOpenAiWhisper(audioBuffer: Buffer, language?: string): Promise<string> {
     const formData = new FormData();
     const blob = new Blob([new Uint8Array(audioBuffer)], { type: 'audio/webm' });
     formData.append('file', blob, 'recording.webm');
     formData.append('model', 'whisper-1');
-    formData.append('language', 'en');
+    // Send the patient's selected language when known; otherwise let the API
+    // auto-detect (previously hardcoded to English).
+    if (language) {
+      formData.append('language', language);
+    }
     formData.append('response_format', 'text');
 
-    const response = await fetch(
-      'https://api.openai.com/v1/audio/transcriptions',
-      {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${this.openaiApiKey}`,
-        },
-        body: formData as any,
+    const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${this.openaiApiKey}`,
       },
-    );
+      body: formData as unknown as BodyInit,
+    });
 
     if (!response.ok) {
-      throw new Error(
-        `OpenAI Whisper API error: ${response.status} ${response.statusText}`,
-      );
+      throw new Error(`OpenAI Whisper API error: ${response.status} ${response.statusText}`);
     }
 
     return response.text();
   }
 
-  private async callWhisperCpp(audioBuffer: Buffer): Promise<string> {
+  private async callWhisperCpp(audioBuffer: Buffer, language?: string): Promise<string> {
+    // Multipart form so whisper.cpp receives the patient's selected language
+    // per request (the server otherwise falls back to its --language flag).
+    const formData = new FormData();
+    const blob = new Blob([new Uint8Array(audioBuffer)], { type: 'audio/webm' });
+    formData.append('file', blob, 'recording.webm');
+    if (language) {
+      formData.append('language', language);
+    }
+
     const response = await fetch(this.whisperApiUrl, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'audio/webm',
-      },
-      body: new Uint8Array(audioBuffer) as any,
+      body: formData as unknown as BodyInit,
     });
 
     if (!response.ok) {
-      throw new Error(
-        `whisper.cpp API error: ${response.status} ${response.statusText}`,
-      );
+      throw new Error(`whisper.cpp API error: ${response.status} ${response.statusText}`);
     }
 
     const result = (await response.json()) as { text?: string };
