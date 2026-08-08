@@ -81,14 +81,25 @@ class SocketService {
     });
   }
 
-  /** Send an audio chunk for Whisper transcription */
-  sendAudioChunk(sessionId: string, data: ArrayBuffer, chunkIndex: number, isFinal: boolean): void {
+  /**
+   * Send an audio chunk for Whisper transcription.
+   * @param language ISO 639-1 code (en/hi/mr/es) selected by the patient —
+   * forwarded to whisper.cpp per request when present.
+   */
+  sendAudioChunk(
+    sessionId: string,
+    data: ArrayBuffer,
+    chunkIndex: number,
+    isFinal: boolean,
+    language?: string,
+  ): void {
     this.socket?.emit('audio:chunk', {
       sessionId,
       data,
       chunkIndex,
       isFinal,
       timestamp: Date.now(),
+      ...(language ? { language } : {}),
     });
   }
 
