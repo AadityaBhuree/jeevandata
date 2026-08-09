@@ -11,12 +11,11 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  # Non-secret defaults so turbo config validation and Next.js build pass.
-  # Add real secrets (DATABASE_URL, QDRANT_URL, WHISPER_API_URL, Gemini/OpenAI
-  # keys) via GitHub Settings -> Secrets if a job needs to run integration paths.
+  # Non-secret defaults so turbo config validation and infra-free test runs pass.
+  # NEXT_PUBLIC_* are intentionally NOT set here: frontend unit tests assert the
+  # unset-env defaults (http://localhost:4000), so they must not leak into the
+  # test job. They are set only on the build job (Next.js inlines them).
   NODE_ENV: test
-  NEXT_PUBLIC_API_URL: http://localhost:4000
-  NEXT_PUBLIC_WS_URL: ws://localhost:4000
   DATABASE_URL: postgresql://postgres:postgres@localhost:5432/jeevandata_ci
   REDIS_URL: redis://localhost:6379
   QDRANT_URL: http://localhost:6333
@@ -108,6 +107,9 @@ jobs:
     name: Build (turbo, cached)
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    env:
+      NEXT_PUBLIC_API_URL: http://localhost:4000
+      NEXT_PUBLIC_WS_URL: ws://localhost:4000
     steps:
       - uses: actions/checkout@v4
 
