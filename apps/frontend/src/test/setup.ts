@@ -52,8 +52,6 @@ class IntersectionObserverStub {
   readonly rootMargin: string = '';
   readonly thresholds: ReadonlyArray<number> = [];
 
-  constructor() {}
-
   observe() {}
   unobserve() {}
   disconnect() {}
