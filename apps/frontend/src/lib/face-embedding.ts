@@ -9,11 +9,7 @@
  * In production, this would be replaced by InsightFace ArcFace inference via ONNX Runtime.
  */
 
-import {
-  selectIdentityLandmarks,
-  normalizeLandmarks,
-  validateLandmarks,
-} from './face-geometry';
+import { selectIdentityLandmarks, normalizeLandmarks, validateLandmarks } from './face-geometry';
 
 interface Landmark3D {
   x: number;
@@ -22,7 +18,6 @@ interface Landmark3D {
 }
 
 const TARGET_DIMENSION = 512;
-const EXPECTED_LANDMARK_COUNT = 478;
 
 /**
  * Generate a 512-d embedding vector from MediaPipe face landmarks.
@@ -80,8 +75,7 @@ function computeStats(values: number[]): number[] {
   const min = Math.min(...values);
   const max = Math.max(...values);
   const mean = values.reduce((a, b) => a + b, 0) / values.length;
-  const variance =
-    values.reduce((a, b) => a + (b - mean) ** 2, 0) / values.length;
+  const variance = values.reduce((a, b) => a + (b - mean) ** 2, 0) / values.length;
   const std = Math.sqrt(variance);
 
   return [min, max, mean, std];
@@ -189,7 +183,7 @@ export function cosineSimilarity(a: number[], b: number[]): number {
 export function patientIdToColor(patientId: string): string {
   let hash = 0;
   for (let i = 0; i < patientId.length; i++) {
-    hash = ((hash << 5) - hash) + patientId.charCodeAt(i);
+    hash = (hash << 5) - hash + patientId.charCodeAt(i);
     hash |= 0; // Convert to 32bit integer
   }
   const hue = Math.abs(hash) % 360;
