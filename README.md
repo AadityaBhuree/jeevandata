@@ -148,7 +148,7 @@ This boots PostgreSQL 16, Redis 7, Qdrant, MinIO, the Whisper.cpp server, and Re
 
 > **Port changes from the original layout:** the MinIO console moved from host `9001` → `9002` (Whisper now owns `9001`), and Redis publishes on host `6380` to match the backend's `REDIS_URL` default and avoid colliding with other projects on `6379`.
 
-**Whisper STT container** — built from source via `docker/whisper.Dockerfile` (`GGML_NATIVE=OFF` → portable x86-64 binary with ggml runtime CPU dispatch). The upstream `ghcr.io/ggml-org/whisper.cpp:main` image is compiled with AVX-512 (`-march=native` on GitHub Actions runners) and crashes with SIGILL on CPUs without AVX-512. The multilingual `ggml-base.bin` model (auto language detection for English, Hindi, Marathi, Spanish, ...) is baked into the image at `/models`.
+**Whisper STT container** — built from source via `docker/whisper.Dockerfile` (`GGML_NATIVE=OFF` → portable x86-64 binary with ggml runtime CPU dispatch). The upstream `ghcr.io/ggml-org/whisper.cpp:main` image is compiled with AVX-512 (`-march=native` on GitHub Actions runners) and crashes with SIGILL on CPUs without AVX-512. The multilingual `ggml-small.bin` model (auto language detection for English, Hindi, Marathi, Spanish, ...) is baked into the image at `/models`.
 
 ### 3. Configure environment
 
