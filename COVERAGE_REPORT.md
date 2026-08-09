@@ -1,19 +1,19 @@
 # Coverage Report — Jeevandata
 
 **Generated:** August 9, 2026 (fresh coverage runs, no cache)
-**Test totals:** 289 unit (20 suites) + 193 E2E (13 suites) backend · 599 frontend (45 test files) = **1,081 tests, all passing**
+**Test totals:** 321 unit (23 suites) + 195 E2E (14 suites) backend · 601 frontend (45 test files) = **1,117 tests, all passing**
 
 ## Overall Coverage
 
 | Layer             |  % Stmts   |  % Branch  |  % Funcs   |  % Lines   | Files measured |
 | :---------------- | :--------: | :--------: | :--------: | :--------: | :------------: |
-| Backend (unit)    | **52.59%** | **42.59%** | **48.85%** | **52.65%** |       59       |
+| Backend (unit)    | **60.44%** | **45.46%** | **55.14%** | **60.84%** |       59       |
 | Backend (E2E)     |    0%¹     |     0%     |     0%     |     0%     |       —        |
-| Frontend (vitest) | **64.61%** | **79.89%** | **75.93%** | **64.61%** |       54       |
+| Frontend (vitest) | **64.86%** | **79.94%** | **76.36%** | **64.86%** |       54       |
 
 > ¹ E2E suites mock the entire service layer, so jest instruments nothing — see [E2E Test Coverage](#e2e-test-coverage) for why this is expected.
 >
-> **Progress vs August 8 baseline:** backend statements 52.30% → **52.59%** (this pass: +2 unit tests and +2 E2E tests from the Whisper/STT readiness check; all four security-critical infra files — `jwt-auth.guard`, `roles.guard`, `zod-validation.pipe`, `http-exception.filter` — now sit at **100%** and `auth.service.ts` at 94%). Backend files measured 45 → **59**. Backend unit tests 287 → **289**; E2E 191 → **193**. Frontend unchanged this pass.
+> **Progress vs August 9 baseline:** backend statements 52.59% → **60.44%**, branch 42.59% → **45.46%**, funcs 48.85% → **55.14%**, lines 52.65% → **60.84%**. This pass added the **kiosk completion regression E2E** (`intake-kiosk.e2e-spec.ts`, +4 tests → 195 E2E / 14 suites) and the **`useMobileDetection` frontend tests** (601 total). Backend unit tests 289 → **321**, suites 20 → **23**. Big coverage winners this cycle: `transcription.service.ts` 0% → **78.33%**, `session-timeout.worker.ts` 0% → **100%**, `session.gateway.ts` 0% → **93.84%**.
 
 ---
 
@@ -35,21 +35,23 @@
 | **Face**          | `face-registration.service.ts` |  100%   |   100%   |  100%   |  100%   |
 | **Monitoring**    | `monitoring.service.ts`        |  100%   |   100%   |  100%   |  100%   |
 | **Session**       | `session.service.ts`           |  100%   |   100%   |  100%   |  100%   |
+| **Session**       | `session-timeout.worker.ts`    |  100%   |  57.14%  |  100%   |  100%   |
+| **Session**       | `session.gateway.ts`           | 93.84%  |  83.33%  | 81.25%  | 93.65%  |
 | **Config**        | `validation.schema.ts`         | 98.11%  |  96.42%  |  100%   | 97.77%  |
-| **Intake**        | `intake.service.ts`            | 94.64%  |  83.33%  | 88.88%  | 96.22%  |
 | **PMS**           | `pms.service.ts`               | 94.28%  |  55.55%  |  100%   | 93.93%  |
-| **Auth**          | `auth.service.ts`              | 94.11%  |  66.66%  |  100%   | 95.12%  |
 | **Audit**         | `audit.service.ts`             | 92.78%  |  84.61%  | 94.44%  | 93.61%  |
 | **Health**        | `health.service.ts`            | 92.75%  |  63.15%  |   80%   | 95.23%  |
+| **Intake**        | `intake.service.ts`            | 91.30%  |  86.20%  |   80%   | 92.42%  |
 | **Filters**       | `http-exception.filter.ts`     | 88.88%  |  82.35%  |  100%   | 88.23%  |
 | **OpenTelemetry** | `metrics.service.ts`           | 81.91%  |  86.95%  | 83.33%  | 81.81%  |
 
-> 🎉 The four previously-0% security-critical infrastructure files (`jwt-auth.guard`, `roles.guard`, `zod-validation.pipe`, `http-exception.filter`) are now **100% covered** — auth/RBAC enforcement and request validation are fully regression-protected.
+> 🎉 All four security-critical infrastructure files (`jwt-auth.guard`, `roles.guard`, `zod-validation.pipe`, `http-exception.filter`) sit at **100%** — auth/RBAC enforcement and request validation are fully regression-protected. The BullMQ timeout worker and WebSocket gateway are now also covered (previously 0%).
 
 ### ⚠️ Partial Coverage (1–79% Statements)
 
 | Module            | File                         | % Stmts | % Branch | % Funcs | % Lines |
 | :---------------- | :--------------------------- | :-----: | :------: | :-----: | :-----: |
+| **Transcription** | `transcription.service.ts`   | 78.33%  |  61.53%  |   75%   | 77.19%  |
 | **Prisma**        | `prisma.service.ts`          | 35.71%  |    0%    |   0%    |   25%   |
 | **PMS/Adapters**  | `custom-api.adapter.ts`      | 26.08%  |    0%    |   0%    | 19.04%  |
 | **AI**            | `brief-generator.service.ts` | 21.05%  |    0%    |   0%    | 17.64%  |
@@ -59,24 +61,22 @@
 
 ### ❌ Zero Coverage Files
 
-| Module            | File                          | % Stmts |            Priority             |
-| :---------------- | :---------------------------- | :-----: | :-----------------------------: |
-| **AI**            | `intake-agent.service.ts`     | **0%**  |   🔴 High (LLM orchestration)   |
-| **AI**            | `ai.service.ts`               | **0%**  |     🔴 High (Gemini client)     |
-| **Transcription** | `transcription.service.ts`    | **0%**  | 🔴 High (audio/Whisper, 198 ln) |
-| **Session**       | `session-timeout.worker.ts`   | **0%**  |    🟡 Medium (BullMQ worker)    |
-| **Session**       | `session.gateway.ts`          | **0%**  |  🟡 Medium (WebSocket, 244 ln)  |
-| **Transcription** | `transcription.controller.ts` | **0%**  |          🟢 Low (thin)          |
-| **Config**        | `configuration.ts`            | **0%**  |          🟢 Low (thin)          |
-| **Tracing**       | `tracing.ts`                  | **0%**  |          🟢 Low (init)          |
+| Module            | File                          | % Stmts |          Priority           |
+| :---------------- | :---------------------------- | :-----: | :-------------------------: |
+| **AI**            | `intake-agent.service.ts`     | **0%**  | 🔴 High (LLM orchestration) |
+| **AI**            | `ai.service.ts`               | **0%**  |   🔴 High (Gemini client)   |
+| **AI**            | `ai.controller.ts`            | **0%**  |      🟡 Medium (thin)       |
+| **Transcription** | `transcription.controller.ts` | **0%**  |        🟢 Low (thin)        |
+| **Config**        | `configuration.ts`            | **0%**  |        🟢 Low (thin)        |
+| **Tracing**       | `tracing.ts`                  | **0%**  |        🟢 Low (init)        |
 
-> Controllers, decorators, middleware, `logger.service`, `swagger.config`, `jwt.strategy` (thin composition/declaration files) show 0% in unit runs — their behavior is exercised indirectly via E2E (193 tests, 13 suites) and the guard/pipe/filter unit suites.
+> Controllers, decorators, middleware, `logger.service`, `swagger.config`, `jwt.strategy` (thin composition/declaration files) show 0% in unit runs — their behavior is exercised indirectly via E2E (195 tests, 14 suites) and the guard/pipe/filter unit suites.
 
 ---
 
 ## E2E Test Coverage
 
-**All 193 E2E tests pass** across 13 suites (`face`, `intake`, `ai`, `dashboard`, `pms`, `health`, `rate-limit`, `health-rate-limit`, `auth`, `auth-rbac`, `analytics`, `audit`, `prometheus`), but contribute **0%** to statement/branch/function coverage because every E2E test mocks the service layer entirely. E2E validates:
+**All 195 E2E tests pass** across 14 suites (`face`, `intake`, `intake-kiosk`, `ai`, `dashboard`, `pms`, `health`, `rate-limit`, `health-rate-limit`, `auth`, `auth-rbac`, `analytics`, `audit`, `prometheus`), but contribute **0%** to statement/branch/function coverage because every E2E test mocks the service layer entirely. E2E validates:
 
 - ✅ HTTP routing and status codes
 - ✅ Zod validation (missing fields, invalid types, out-of-range values)
@@ -85,32 +85,33 @@
 - ✅ Auth guard / RBAC enforcement (`auth-rbac.e2e-spec.ts`)
 - ✅ Rate limiting behavior (`rate-limit`, `health-rate-limit`)
 - ✅ Metrics exposure (`prometheus.e2e-spec.ts`)
-- ✅ Health checks incl. the new **Whisper/STT** readiness cases (`health.e2e-spec.ts`)
+- ✅ Health checks incl. the Whisper/STT readiness cases (`health.e2e-spec.ts`)
+- ✅ **Kiosk completion regression** — real FSM walk + patientId resolution + idempotent replay (`intake-kiosk.e2e-spec.ts`, the only suite running the real service layer)
 
 **What E2E tests DON'T cover:**
 
-- ❌ Service business logic
+- ❌ Service business logic (except `intake-kiosk`)
 - ❌ Database interactions
 - ❌ External API calls (Redis, Qdrant, Gemini, Whisper)
 - ❌ Exception filter formatting
 
 ---
 
-## Frontend — Coverage by Area (Vitest, 45 files, 599 tests)
+## Frontend — Coverage by Area (Vitest, 45 files, 601 tests)
 
 | Area                  | % Stmts | % Branch | % Funcs | % Lines |
 | :-------------------- | :-----: | :------: | :-----: | :-----: |
 | **Stores**            |  100%   |   100%   | 97.29%  |  100%   |
 | **Components/Auth**   |  100%   |   100%   |  100%   |  100%   |
+| **Components/Camera** | 98.73%  |  95.65%  |  100%   | 98.73%  |
 | **Lib**               | 85.39%  |  90.26%  | 93.93%  | 85.39%  |
-| **Services**          | 89.37%  |  83.69%  |   78%   | 89.37%  |
-| **Components/Camera** | 98.73%  |  95.45%  |  100%   | 98.73%  |
-| **Components/Intake** |   91%   |  83.78%  |   50%   |   91%   |
+| **Services**          | 89.21%  |  83.87%  |   78%   | 89.21%  |
+| **Components/Intake** | 92.29%  |  83.78%  |  62.5%  | 92.29%  |
 | **Components/Face**   | 59.66%  |  86.48%  |  91.3%  | 59.66%  |
 | **Components/UI**     | 53.59%  |  78.75%  |   60%   | 53.59%  |
-| **Hooks**             | 27.49%  |  77.31%  | 66.66%  | 27.49%  |
+| **Hooks**             | 27.90%  |  77.31%  | 66.66%  | 27.90%  |
 
-> Weakest areas: **Hooks** (27.49%) and **Components/UI** (53.59%) — the next best frontend coverage wins are `useFaceDetection`/`useLivenessDetection` deep paths and remaining UI primitives.
+> Weakest areas: **Hooks** (27.90%) and **Components/UI** (53.59%) — the next best frontend coverage wins are `useIntakeConversation`, `useCamera`, `useVoiceRecorder`/`useTranscription` deep paths and the remaining UI primitives (`toast`, `tooltip`, `dialog`, `tabs`, `switch`, `skeleton`, `progress`, `avatar`, `alert`, `separator`, `textarea`, `label` — all 0%).
 
 ---
 
@@ -118,36 +119,38 @@
 
 ### 🔴 Backend priorities (by risk × coverage gap)
 
-| Priority | File                         | Coverage | Business Risk                               |
-| :------- | :--------------------------- | :------: | :------------------------------------------ |
-| P1       | `intake-agent.service.ts`    |    0%    | Gemini LLM conversation orchestration       |
-| P1       | `ai.service.ts`              |    0%    | Gemini client / retry wrapper               |
-| P1       | `transcription.service.ts`   |    0%    | Audio processing & Whisper API calls        |
-| P1       | `session.gateway.ts`         |    0%    | WebSocket session management (244 lines)    |
-| P1       | `session-timeout.worker.ts`  |    0%    | BullMQ background job (timeout enforcement) |
-| P2       | `hl7-fhir.adapter.ts`        |  14.28%  | PMS/EMR sync mapping (282 lines)            |
-| P2       | `custom-api.adapter.ts`      |  26.08%  | PMS/EMR sync mapping                        |
-| P2       | `retry.util.ts`              |  13.63%  | Sync resilience — failure behavior          |
-| P3       | `brief-generator.service.ts` |  21.05%  | Clinical brief generation                   |
-| P3       | `opentelemetry.service.ts`   |  11.90%  | Trace export (degraded path)                |
+| Priority | File                         | Coverage | Business Risk                              |
+| :------- | :--------------------------- | :------: | :----------------------------------------- |
+| P1       | `intake-agent.service.ts`    |    0%    | Gemini LLM conversation orchestration      |
+| P1       | `ai.service.ts`              |    0%    | Gemini client / retry wrapper              |
+| P1       | `hl7-fhir.adapter.ts`        |  14.28%  | PMS/EMR sync mapping (282 lines)           |
+| P1       | `custom-api.adapter.ts`      |  26.08%  | PMS/EMR sync mapping                       |
+| P2       | `retry.util.ts`              |  13.63%  | Sync resilience — failure behavior         |
+| P2       | `opentelemetry.service.ts`   |  11.90%  | Trace export (degraded path)               |
+| P2       | `transcription.service.ts`   |  78.33%  | Audio/Whisper error paths (25-50, 178-208) |
+| P3       | `brief-generator.service.ts` |  21.05%  | Clinical brief generation                  |
+| P3       | `prisma.service.ts`          |  35.71%  | DB bootstrap / error handling              |
 
 ### 🔴 Frontend priorities
 
-| Area              | Coverage | Notes                                |
-| :---------------- | :------: | :----------------------------------- |
-| `hooks`           |  27.49%  | Face detection / liveness deep paths |
-| `components/ui`   |  53.59%  | Remaining UI primitives              |
-| `components/face` |  59.66%  | FaceOverlay / detection visuals      |
+| Area              | Coverage | Notes                                                                        |
+| :---------------- | :------: | :--------------------------------------------------------------------------- |
+| `hooks`           |  27.90%  | `useIntakeConversation`, `useCamera`, `useVoiceRecorder`, `useTranscription` |
+| `components/ui`   |  53.59%  | Remaining UI primitives (toast, tooltip, dialog, tabs, switch, skeleton…)    |
+| `components/face` |  59.66%  | `face-overlay.tsx` (0%), `face-registration` canvas paths                    |
 
 ---
 
-## Combined Test Inventory
+## Summary
 
-| Layer        | Suites / Files |   Tests   | % Stmts | % Funcs |    Status    |
-| :----------- | :------------- | :-------: | :-----: | :-----: | :----------: |
-| Backend unit | 20 suites      |    289    | 52.59%  | 48.85%  | ✅ All green |
-| Backend E2E  | 13 suites      |    193    |   0%    |   0%    | ✅ All green |
-| Frontend     | 45 files       |    599    | 64.61%  | 75.93%  | ✅ All green |
-| **Total**    |                | **1,081** |         |         |              |
-
-> Next target: `intake-agent.service.ts` + `transcription.service.ts` unit suites would lift backend statements past ~58% and close the two highest-risk zero-coverage services. (Note: `health.service.ts` slipped 92.85% → 92.75% purely due to the new `checkWhisper()` branch — the two whisper failure paths are covered but the branch map added an extra untaken edge.)
+| Metric                         | Value                                            |
+| :----------------------------- | :----------------------------------------------- |
+| Backend unit tests             | **321** (23 suites) — all green                  |
+| Backend E2E tests              | **195** (14 suites) — all green                  |
+| Frontend tests                 | **601** (45 files) — all green                   |
+| **Total tests**                | **1,117** — all green                            |
+| Backend statement coverage     | **60.44%** (was 52.59%)                          |
+| Frontend statement coverage    | **64.86%** (was 64.61%)                          |
+| Security-critical infra        | **100%** (guards, pipe, filter)                  |
+| Biggest remaining backend gap  | `intake-agent.service.ts` / `ai.service.ts` (0%) |
+| Biggest remaining frontend gap | `hooks` (27.90%)                                 |
