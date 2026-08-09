@@ -45,6 +45,10 @@ export const symptomEntrySchema = z.object({
 // ─── Intake Schemas ─────────────────────────────────────────────
 
 export const intakeDataSchema = z.object({
+  // The kiosk UI creates sessions before face match, so the patient is only
+  // known once the face match succeeds. The complete payload therefore may
+  // carry the matched patientId, which the backend persists onto the session.
+  patientId: z.string().uuid().optional(),
   chiefComplaint: z.string().min(1).max(2000),
   symptoms: z.array(symptomEntrySchema).min(0).max(50),
   associated: z.array(z.string()).max(20),
