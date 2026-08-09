@@ -26,7 +26,7 @@ get() {
     local line
     line=$(grep -E "^${key}=" "$FILE" 2>/dev/null | tail -1 || true)
     [[ -z "$line" ]] && return 1
-    printf '%s' "${line#*=}"
+    printf '%s' "${line#*=}" | tr -d ''  # strip CR (Windows-edited .env)
   else
     [[ -z "${!key+x}" ]] && return 1
     printf '%s' "${!key}"
@@ -49,6 +49,30 @@ fi
 # Known-insecure defaults that must be replaced outside local dev.
 INSECURE_DEFAULTS=(change-me change-this-to-a-strong-random-secret password secret)
 
+# Exact values that are EXPECTED in local dev (docker-compose defaults). They
+# are whitelisted ONLY in --env local; staging/production still flag them.
+# Format: KEY=expected-value (value matched exactly, not as substring).
+LOCAL_DEV_WHITELIST=(
+  "DATABASE_URL=postgresql://jeevandata:jeevandata_secret@localhost:5432/jeevandata?schema=public"
+  "REDIS_URL=redis://default:redis_secret@localhost:6380"
+  "QDRANT_URL=http://localhost:6333"
+  "R2_ACCESS_KEY_ID=minioadmin"
+  "R2_SECRET_ACCESS_KEY=minioadmin"
+  "R2_ENDPOINT=http://localhost:9000"
+  "WHISPER_API_URL=http://localhost:9001/inference"
+)
+
+# Returns 0 if $key=$value matches an entry in the LOCAL_DEV_WHITELIST.
+is_local_dev_default() {
+  local entry
+  for entry in "${LOCAL_DEV_WHITELIST[@]}"; do
+    if [[ "$entry" == "$key=$value" ]]; then
+      return 0
+    fi
+  done
+  return 1
+}
+
 for key in "${ALWAYS[@]}"; do
   if ! value=$(get "$key") || [[ -z "$value" ]]; then
     warn "$key is not set"
@@ -60,6 +84,10 @@ for key in "${ALWAYS[@]}"; do
     if [[ $len -lt 32 ]]; then
       warn_len "$key" "$len"
     fi
+  fi
+  # In local mode, skip the insecure-default check for known dev values.
+  if [[ "$ENV" == "local" ]] && is_local_dev_default; then
+    continue
   fi
   for bad in "${INSECURE_DEFAULTS[@]}"; do
     if [[ "$value" == *"$bad"* ]]; then

@@ -63,7 +63,7 @@ openssl rand -hex 24       # DB / Redis passwords
 
 ## 7. Validation
 
-`scripts/validate-secrets.sh` checks a `.env` file (or the environment) for missing secrets and known-insecure defaults:
+`scripts/validate-secrets.sh` checks a `.env` file (or the environment) for missing secrets and known-insecure defaults. The known compose dev defaults (`jeevandata_secret`, `minioadmin`, localhost URLs) are **whitelisted only in `--env local`** — staging/production still flag them:
 
 ```bash
 ./scripts/validate-secrets.sh --env local --file .env
