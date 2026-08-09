@@ -18,6 +18,7 @@
     "typecheck": "turbo typecheck",
     "test": "turbo test",
     "test:e2e": "turbo test:e2e",
+    "verify:browser": "node scripts/browser-journey.mjs",
     "clean": "turbo clean && rm -rf node_modules",
     "db:generate": "pnpm --filter @jeevandata/backend prisma generate",
     "db:push": "pnpm --filter @jeevandata/backend prisma db push",
