@@ -1,7 +1,7 @@
 # Jeevandata — Engineering Roadmap
 
 > **Version:** 0.2.0 | **Status:** Active Development
-> **Phases 1–6 Complete** — Phase 7 (Infrastructure & Deployment) 3/6 steps done (7.1 CI/CD ✅, 7.2 orchestration ✅, 7.6 monitoring ✅)
+> **Phases 1–6 Complete** — Phase 7 (Infrastructure & Deployment) 4/6 steps done (7.1 CI/CD ✅, 7.2 orchestration ✅, 7.3 secrets ✅, 7.6 monitoring ✅)
 
 ---
 
@@ -23,8 +23,8 @@ Each phase contains numbered steps. Every step is sized for a **single atomic co
 | **4** | Authentication & Multi-Tenancy | ✅ **Done**        | 6/6         | Completed   |
 | **5** | UI/UX Excellence               | ✅ **Done**        | 8/8         | Completed   |
 | **6** | Feature Expansion              | ✅ **Done**        | 8/8         | Completed   |
-| **7** | Infrastructure & Deployment    | 🔶 **In progress** | 3/6         | 4–6h        |
-|       | **Total remaining**            |                    | **3 steps** | **3–5h**    |
+| **7** | Infrastructure & Deployment    | 🔶 **In progress** | 4/6         | 2–4h        |
+|       | **Total remaining**            |                    | **2 steps** | **2–3h**    |
 
 ---
 
@@ -373,12 +373,12 @@ Validate all critical env vars at startup (both backend and frontend):
 
 **Est. effort:** 3–4h (✅ complete)
 
-### Step 7.3 — Secrets management
+### Step 7.3 — Secrets management ✅ (commit `0a8ad81`)
 
-- Document required secrets per environment; `.env.example` annotations
-- Integration notes: Vault / Doppler / AWS Secrets Manager; `scripts/validate-secrets.sh`
+- `docs/secrets-management.md` — full secret inventory (DB, Redis, Qdrant, R2, Gemini/Anthropic/OpenAI, JWT pair, PMS, MinIO, Slack), per-environment storage/injection matrix (local `.env`, CI secrets, `deploy.yml` `APP_ENV_B64`, k8s Secret), Doppler/Vault integration, strong-secret generation, rotation runbook, leak response
+- `scripts/validate-secrets.sh` — checks a `.env` file or env for missing secrets, known-insecure defaults, and JWT length (<32); per-env requirements (production/staging adds AI keys + storage + PMS); exits 1 on problems, never prints values. Tested (7 findings / OK / weak-JWT cases)
 
-**Est. effort:** 1.5h
+**Est. effort:** 1.5h (✅ complete)
 
 ### Step 7.4 — Database backup & disaster recovery
 
@@ -459,8 +459,8 @@ Validate all critical env vars at startup (both backend and frontend):
 
 | Phase                               | Steps | Min (h) | Max (h) |
 | :---------------------------------- | :---- | :------ | :------ |
-| **7 — Infrastructure & Deployment** | 6     | 4       | 6       |
-| **Total remaining**                 | **3** | **3**   | **5**   |
+| **7 — Infrastructure & Deployment** | 6     | 2       | 3       |
+| **Total remaining**                 | **2** | **2**   | **3**   |
 
 ---
 
