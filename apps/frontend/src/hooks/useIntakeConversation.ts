@@ -41,11 +41,13 @@ export function useIntakeConversation(sessionId: string): UseIntakeConversationR
   const setBrief = useSessionStore((s) => s.setBrief);
   const languageRef = useRef('en');
   const patientNameRef = useRef('');
+  const patientIdRef = useRef<string | undefined>(undefined);
   const turnsRef = useRef<ConversationTurn[]>([]);
 
   const startConversation = useCallback(
     async (patientName: string, patientContext?: string, language?: string) => {
       patientNameRef.current = patientName;
+      if (patientContext) patientIdRef.current = patientContext;
       if (language) languageRef.current = language;
       setStatus('intake_in_progress');
       setIsAiThinking(true);
@@ -214,6 +216,7 @@ export function useIntakeConversation(sessionId: string): UseIntakeConversationR
     // For production, this would send to the /ai/brief endpoint
     // with the AI extracting structured data from the transcript
     const intakeData = {
+      patientId: patientIdRef.current,
       chiefComplaint: turnsRef.current.length > 0 ? (turnsRef.current[0]?.content ?? '') : '',
       symptoms: [],
       associated: [],
