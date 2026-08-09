@@ -1,0 +1,137 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Non-secret defaults so turbo config validation and Next.js build pass.
+  # Add real secrets (DATABASE_URL, QDRANT_URL, WHISPER_API_URL, Gemini/OpenAI
+  # keys) via GitHub Settings -> Secrets if a job needs to run integration paths.
+  NODE_ENV: test
+  NEXT_PUBLIC_API_URL: http://localhost:4000
+  NEXT_PUBLIC_WS_URL: ws://localhost:4000
+  DATABASE_URL: postgresql://postgres:postgres@localhost:5432/jeevandata_ci
+  REDIS_URL: redis://localhost:6379
+  QDRANT_URL: http://localhost:6333
+  WHISPER_API_URL: http://localhost:9001
+
+jobs:
+  quality:
+    name: Lint & Typecheck
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Prisma generate (required for typecheck)
+        run: pnpm --filter @jeevandata/backend prisma:generate
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Format check
+        run: pnpm format:check
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+  test:
+    name: Test (unit + E2E, coverage)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Prisma generate
+        run: pnpm --filter @jeevandata/backend prisma:generate
+
+      - name: Backend unit tests (coverage)
+        run: pnpm --filter @jeevandata/backend test:cov
+
+      - name: Backend E2E tests (service layer mocked — no DB required)
+        run: pnpm --filter @jeevandata/backend test:e2e
+
+      - name: Frontend tests (coverage)
+        run: pnpm --filter @jeevandata/frontend test:cov
+
+      - name: Upload backend coverage
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-backend
+          path: apps/backend/coverage/**/*
+          retention-days: 14
+
+      - name: Upload frontend coverage
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-frontend
+          path: apps/frontend/coverage/**/*
+          retention-days: 14
+
+  build:
+    name: Build (turbo, cached)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Prisma generate
+        run: pnpm --filter @jeevandata/backend prisma:generate
+
+      - name: Build all workspaces
+        run: pnpm build
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: build-output
+          path: |
+            apps/backend/dist
+            apps/frontend/.next
+          retention-days: 14
