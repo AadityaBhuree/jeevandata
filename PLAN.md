@@ -1,7 +1,7 @@
 # Jeevandata — Engineering Roadmap
 
 > **Version:** 0.2.0 | **Status:** Active Development
-> **Phases 1–6 Complete** — Phase 7 (Infrastructure & Deployment) 1/6 steps done (7.6 monitoring stack ✅)
+> **Phases 1–6 Complete** — Phase 7 (Infrastructure & Deployment) 2/6 steps done (7.1 CI/CD ✅, 7.6 monitoring stack ✅)
 
 ---
 
@@ -23,8 +23,8 @@ Each phase contains numbered steps. Every step is sized for a **single atomic co
 | **4** | Authentication & Multi-Tenancy | ✅ **Done**        | 6/6         | Completed   |
 | **5** | UI/UX Excellence               | ✅ **Done**        | 8/8         | Completed   |
 | **6** | Feature Expansion              | ✅ **Done**        | 8/8         | Completed   |
-| **7** | Infrastructure & Deployment    | 🔶 **In progress** | 1/6         | 8–12h       |
-|       | **Total remaining**            |                    | **5 steps** | **7–11h**   |
+| **7** | Infrastructure & Deployment    | 🔶 **In progress** | 2/6         | 6–9h        |
+|       | **Total remaining**            |                    | **4 steps** | **5–8h**    |
 
 ---
 
@@ -349,12 +349,17 @@ Validate all critical env vars at startup (both backend and frontend):
 
 > **Goal:** Production-ready deployment with CI/CD, container orchestration, secrets management, and disaster recovery.
 
-### Step 7.1 — CI/CD pipeline (GitHub Actions)
+### Step 7.1 — CI/CD pipeline (GitHub Actions) ✅
 
-- `ci.yml` on PR: lint, typecheck, test --coverage, build (cache pnpm + turbo)
-- `deploy.yml` on push to main: build images, push registry, staging deploy, smoke tests, promote
+**Delivered:** `.github/workflows/ci.yml` (commit `d7a4d63`), 3 parallel jobs on push to main / PR to main:
 
-**Est. effort:** 2h
+- **quality** — `pnpm lint` + `pnpm format:check` + `pnpm typecheck` (Prisma generated first)
+- **test** — backend unit `--coverage`, backend E2E (service-layer mocked — no DB required), frontend vitest `--coverage`; coverage/ artifacts uploaded (14-day retention)
+- **build** — `pnpm build` (turbo, cached) with dist/.next artifacts uploaded
+- pnpm/action-setup@v4 (9.15.4) + setup-node@v4 `cache: pnpm`, frozen lockfile, concurrency cancel-in-progress, non-secret env defaults (validation schema provides defaults for every key — verified)
+- Remaining: `deploy.yml` (images → registry → staging → smoke → promote) — tracked as a follow-up inside 7.1
+
+**Est. effort:** 2h (✅ CI portion complete)
 
 ### Step 7.2 — Container orchestration
 
