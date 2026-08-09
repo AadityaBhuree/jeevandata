@@ -1,6 +1,7 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 // eslint-disable-next-line @typescript-eslint/consistent-type-imports -- NestJS DI requires runtime value import
 import { ConfigService } from '@nestjs/config';
+import { randomUUID } from 'node:crypto';
 import { QdrantClient } from '@qdrant/js-client-rest';
 import type { FaceEmbeddingInput, FaceSearchQuery } from '@jeevandata/shared-schemas';
 // eslint-disable-next-line @typescript-eslint/consistent-type-imports -- NestJS DI requires runtime value import
@@ -56,7 +57,11 @@ export class FaceService {
   }
 
   async upsertEmbedding(data: FaceEmbeddingInput): Promise<void> {
-    const pointId = `${data.patientId}_${Date.now()}`;
+    // Qdrant point IDs must be an unsigned integer or a UUID. The patient id +
+    // timestamp hybrid string was rejected with a 400, failing every patient
+    // registration with a face embedding. A random UUID keeps the collision-free
+    // property; patient_id + captured_at remain in the payload for filtering.
+    const pointId = randomUUID();
 
     const start = Date.now();
     await this.qdrant.upsert(FACE_COLLECTION, {
