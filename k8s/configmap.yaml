@@ -1,0 +1,16 @@
+# Non-secret runtime configuration. Update values for your environment and
+# apply: kubectl apply -f k8s/configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: jeevandata-config
+  namespace: jeevandata
+data:
+  NODE_ENV: production
+  GEMINI_MODEL: gemini-2.0-flash
+  WHISPER_API_URL: http://whisper:9001
+  R2_ENDPOINT: http://minio:9000
+  R2_REGION: auto
+  R2_PUBLIC_BUCKET: jeevandata-media
+  R2_AUDIO_PREFIX: audio
+  R2_FACE_PREFIX: faces

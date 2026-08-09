@@ -29,6 +29,13 @@ services:
       timeout: 5s
       retries: 5
     logging: *default-logging
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 2g
+        reservations:
+          memory: 512m
 
   # ─── Redis (Session State + BullMQ Queue) ───────────────────
   redis:
@@ -52,6 +59,13 @@ services:
       timeout: 5s
       retries: 5
     logging: *default-logging
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512m
+        reservations:
+          memory: 64m
 
   # ─── Qdrant (Vector Database for Face Embeddings) ────────────
   qdrant:
@@ -76,6 +90,13 @@ services:
       timeout: 10s
       retries: 5
     logging: *default-logging
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 1g
+        reservations:
+          memory: 256m
 
   # ─── MinIO (Local S3-compatible / R2-equivalent Storage) ─────
   minio:
@@ -98,6 +119,13 @@ services:
       timeout: 5s
       retries: 5
     logging: *default-logging
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 1g
+        reservations:
+          memory: 256m
 
   # ─── MinIO Bucket Initializer ───────────────────────────────
   minio-init:
@@ -151,6 +179,13 @@ services:
       retries: 5
       start_period: 20s
     logging: *default-logging
+    deploy:
+      resources:
+        limits:
+          cpus: "4.0"
+          memory: 2g
+        reservations:
+          memory: 512m
 
   # ─── Redis Commander (Admin UI — dev only) ──────────────────
   redis-commander:
@@ -167,6 +202,11 @@ services:
     profiles:
       - devtools
     logging: *default-logging
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256m
 
   # ─── Prometheus (Metrics Scraper — Phase 7.6) ───────────────
   # Scrapes the backend's GET /metrics. The backend runs on the Docker
@@ -195,6 +235,13 @@ services:
       timeout: 5s
       retries: 5
     logging: *default-logging
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512m
+        reservations:
+          memory: 128m
 
   # ─── Alertmanager (Alert Routing — Phase 7.6) ───────────────
   # Receives fired alerts from Prometheus and notifies Slack via webhook.
@@ -225,6 +272,11 @@ services:
       timeout: 5s
       retries: 5
     logging: *default-logging
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256m
 
   # ─── Grafana (Dashboards — Phase 7.6) ───────────────────────
   # Datasource + dashboards are auto-provisioned from ./monitoring/grafana.
@@ -254,6 +306,13 @@ services:
       timeout: 5s
       retries: 5
     logging: *default-logging
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512m
+        reservations:
+          memory: 128m
 
 volumes:
   postgres-data:

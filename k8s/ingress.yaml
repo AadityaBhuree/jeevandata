@@ -1,0 +1,40 @@
+# Ingress with TLS. Replace the hostnames and set up cert-manager for
+# automatic Let's Encrypt certificates (ClusterIssuer required), or supply
+# your own TLS secret (name it jeevandata-tls below).
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: jeevandata-ingress
+  namespace: jeevandata
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: 50m
+    nginx.ingress.kubernetes.io/proxy-read-timeout: '120'
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - jeevandata.example.com
+        - api.jeevandata.example.com
+      secretName: jeevandata-tls
+  rules:
+    - host: jeevandata.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: jeevandata-frontend
+                port:
+                  name: http
+    - host: api.jeevandata.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: jeevandata-backend
+                port:
+                  name: http
