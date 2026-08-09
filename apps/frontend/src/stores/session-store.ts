@@ -84,8 +84,7 @@ export const useSessionStore = create<SessionState>()(
           transcripts: [...state.transcripts, entry],
         })),
 
-      setBrief: (brief) =>
-        set({ brief, status: 'ready' }),
+      setBrief: (brief) => set({ brief, status: 'ready' }),
 
       setError: (error) => set({ error, status: 'error' }),
 

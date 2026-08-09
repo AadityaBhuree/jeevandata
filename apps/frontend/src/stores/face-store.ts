@@ -1,9 +1,21 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 
-export type DetectionStatus = 'idle' | 'loading' | 'detecting' | 'matched' | 'no_match' | 'error' | 'liveness_check';
+export type DetectionStatus =
+  | 'idle'
+  | 'loading'
+  | 'detecting'
+  | 'matched'
+  | 'no_match'
+  | 'error'
+  | 'liveness_check';
 
-export type LivenessStatus = 'idle' | 'waiting_for_blink' | 'blink_detected' | 'verified' | 'failed';
+export type LivenessStatus =
+  | 'idle'
+  | 'waiting_for_blink'
+  | 'blink_detected'
+  | 'verified'
+  | 'failed';
 
 export interface DetectedFace {
   id: string;

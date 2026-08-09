@@ -40,9 +40,7 @@ describe('TranscriptView — accessibility', () => {
     const srOnlyLabels = Array.from(document.querySelectorAll('.sr-only')).map(
       (el) => el.textContent,
     );
-    expect(srOnlyLabels).toEqual(
-      expect.arrayContaining(['AI assistant: ', 'You: ', 'System: ']),
-    );
+    expect(srOnlyLabels).toEqual(expect.arrayContaining(['AI assistant: ', 'You: ', 'System: ']));
   });
 
   it('renders the message text for screen readers', () => {

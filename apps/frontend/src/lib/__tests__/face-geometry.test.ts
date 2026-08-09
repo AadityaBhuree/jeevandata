@@ -61,11 +61,11 @@ describe('validateLandmarks', () => {
   it('should return false when x range is below 0.05', () => {
     // i * 0.0001 gives range = 0.0199 which is < 0.05
     const tight = Array.from({ length: 200 }, (_, i) => ({
-      x: 0.5 + (i * 0.0001),
-      y: 0.5 + (i * 0.0001),
+      x: 0.5 + i * 0.0001,
+      y: 0.5 + i * 0.0001,
     }));
     // Ensure xRange < 0.05
-    const xs = tight.map(p => p.x);
+    const xs = tight.map((p) => p.x);
     expect(Math.max(...xs) - Math.min(...xs)).toBeLessThan(0.05);
     expect(validateLandmarks(tight)).toBe(false);
   });
@@ -89,9 +89,7 @@ describe('selectIdentityLandmarks', () => {
 describe('normalizeLandmarks', () => {
   it('should shift landmarks relative to nose tip (index 1)', () => {
     // Create landmarks where nose tip (index 1) is at (0.8, 0.8)
-    const landmarks = makeLandmarks().map((pt, i) =>
-      i === 1 ? { x: 0.8, y: 0.8 } : pt,
-    );
+    const landmarks = makeLandmarks().map((pt, i) => (i === 1 ? { x: 0.8, y: 0.8 } : pt));
 
     const normalized = normalizeLandmarks(landmarks);
     const noseTip = normalized[1];
@@ -113,12 +111,12 @@ describe('calculateEAR', () => {
     // Open eye: top points (y=0.32) are between bottom points (y=0.5)
     // with significant separation → EAR is clearly > 0
     const openEye = [
-      { x: 0.0, y: 0.5 },  // p6 (bottom outer)
-      { x: 0.2, y: 0.3 },  // p1 (outer corner)
+      { x: 0.0, y: 0.5 }, // p6 (bottom outer)
+      { x: 0.2, y: 0.3 }, // p1 (outer corner)
       { x: 0.4, y: 0.32 }, // p2 (top outer)
       { x: 0.6, y: 0.32 }, // p3 (top inner)
-      { x: 0.8, y: 0.5 },  // p4 (inner corner)
-      { x: 0.4, y: 0.5 },  // p5 (bottom inner)
+      { x: 0.8, y: 0.5 }, // p4 (inner corner)
+      { x: 0.4, y: 0.5 }, // p5 (bottom inner)
     ];
 
     const ear = calculateEAR(openEye);
@@ -130,12 +128,12 @@ describe('calculateEAR', () => {
     // Closed eye: p2 coincides with p6, p3 coincides with p5 →
     // verticalA = |p2-p6| = 0, verticalB = |p3-p5| = 0
     const closedEye = [
-      { x: 0.0, y: 0.5 },  // p6 (bottom outer)
-      { x: 0.2, y: 0.5 },  // p1 (outer corner)
-      { x: 0.0, y: 0.5 },  // p2 (top outer) = p6
-      { x: 0.6, y: 0.0 },  // p3 (top inner)
-      { x: 0.8, y: 0.5 },  // p4 (inner corner)
-      { x: 0.6, y: 0.0 },  // p5 (bottom inner) = p3
+      { x: 0.0, y: 0.5 }, // p6 (bottom outer)
+      { x: 0.2, y: 0.5 }, // p1 (outer corner)
+      { x: 0.0, y: 0.5 }, // p2 (top outer) = p6
+      { x: 0.6, y: 0.0 }, // p3 (top inner)
+      { x: 0.8, y: 0.5 }, // p4 (inner corner)
+      { x: 0.6, y: 0.0 }, // p5 (bottom inner) = p3
     ];
 
     const ear = calculateEAR(closedEye);

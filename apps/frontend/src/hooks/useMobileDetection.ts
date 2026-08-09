@@ -57,8 +57,7 @@ function detectMobile(): MobileDetectionResult {
     (isTouchDevice && screenWidth >= 768 && screenWidth <= 1024);
 
   // Mobile if: small screen, or touch device that's not a tablet
-  const isMobile =
-    screenWidth < 768 || (isTouchDevice && !isTablet) || isIOS || isAndroid;
+  const isMobile = screenWidth < 768 || (isTouchDevice && !isTablet) || isIOS || isAndroid;
 
   // Limited GPU: iOS devices, older Android, or low-end devices
   const hasLimitedGPU = isIOS || isAndroid;

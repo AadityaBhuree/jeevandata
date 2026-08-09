@@ -52,11 +52,7 @@ export async function withRetry<T>(
   throw lastError;
 }
 
-function calculateDelay(
-  attempt: number,
-  baseDelayMs: number,
-  maxDelayMs: number,
-): number {
+function calculateDelay(attempt: number, baseDelayMs: number, maxDelayMs: number): number {
   const exponential = baseDelayMs * Math.pow(2, attempt - 1);
   const capped = Math.min(exponential, maxDelayMs);
 

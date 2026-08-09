@@ -63,13 +63,8 @@ export class HttpExceptionFilter implements ExceptionFilter {
       status = HttpStatus.INTERNAL_SERVER_ERROR;
       code = 'INTERNAL_SERVER_ERROR';
       message =
-        process.env.NODE_ENV === 'production'
-          ? 'An unexpected error occurred'
-          : exception.message;
-      this.logger.error(
-        `Unhandled exception: ${exception.message}`,
-        exception.stack,
-      );
+        process.env.NODE_ENV === 'production' ? 'An unexpected error occurred' : exception.message;
+      this.logger.error(`Unhandled exception: ${exception.message}`, exception.stack);
     } else {
       status = HttpStatus.INTERNAL_SERVER_ERROR;
       code = 'UNKNOWN_ERROR';

@@ -114,7 +114,7 @@ describe('AiController (E2E)', () => {
           connection: {
             host: '127.0.0.1',
             port: 6379,
-            retryStrategy: () => null as any,
+            retryStrategy: () => null,
             maxRetriesPerRequest: null,
           },
         }),
@@ -122,17 +122,17 @@ describe('AiController (E2E)', () => {
       ],
     })
       .overrideProvider(PrismaService)
-      .useValue({} as any)
+      .useValue({} as unknown as PrismaService)
       .overrideProvider(AiService)
       .useValue(mockAiService)
       .overrideProvider(SessionService)
-      .useValue({} as any)
+      .useValue({} as unknown as SessionService)
       .overrideProvider(SessionGateway)
-      .useValue({} as any)
+      .useValue({} as unknown as SessionGateway)
       .overrideProvider(SessionTimeoutWorker)
-      .useValue({} as any)
+      .useValue({} as unknown as SessionTimeoutWorker)
       .overrideProvider(TranscriptionService)
-      .useValue({} as any)
+      .useValue({} as unknown as TranscriptionService)
       .compile();
 
     const app = moduleFixture.createNestApplication();
@@ -196,18 +196,12 @@ describe('AiController (E2E)', () => {
 
     it('should reject missing sessionId', async () => {
       const { sessionId: _, ...rest } = validPayload;
-      await request(app.getHttpServer())
-        .post('/ai/intake-agent')
-        .send(rest)
-        .expect(400);
+      await request(app.getHttpServer()).post('/ai/intake-agent').send(rest).expect(400);
     });
 
     it('should reject missing currentInput', async () => {
       const { currentInput: _, ...rest } = validPayload;
-      await request(app.getHttpServer())
-        .post('/ai/intake-agent')
-        .send(rest)
-        .expect(400);
+      await request(app.getHttpServer()).post('/ai/intake-agent').send(rest).expect(400);
     });
 
     it('should reject empty currentInput', async () => {
@@ -219,10 +213,7 @@ describe('AiController (E2E)', () => {
 
     it('should reject missing patientContext', async () => {
       const { patientContext: _, ...rest } = validPayload;
-      await request(app.getHttpServer())
-        .post('/ai/intake-agent')
-        .send(rest)
-        .expect(400);
+      await request(app.getHttpServer()).post('/ai/intake-agent').send(rest).expect(400);
     });
 
     it('should reject invalid UUID for sessionId', async () => {
@@ -237,9 +228,7 @@ describe('AiController (E2E)', () => {
         .post('/ai/intake-agent')
         .send({
           ...validPayload,
-          conversationHistory: [
-            { role: 'invalid-role', content: 'test' },
-          ],
+          conversationHistory: [{ role: 'invalid-role', content: 'test' }],
         })
         .expect(400);
     });
@@ -249,10 +238,7 @@ describe('AiController (E2E)', () => {
         new Error('Gemini API unavailable'),
       );
 
-      await request(app.getHttpServer())
-        .post('/ai/intake-agent')
-        .send(validPayload)
-        .expect(500);
+      await request(app.getHttpServer()).post('/ai/intake-agent').send(validPayload).expect(500);
     });
   });
 
@@ -312,34 +298,22 @@ describe('AiController (E2E)', () => {
 
     it('should reject missing sessionId', async () => {
       const { sessionId: _, ...rest } = validPayload;
-      await request(app.getHttpServer())
-        .post('/ai/brief')
-        .send(rest)
-        .expect(400);
+      await request(app.getHttpServer()).post('/ai/brief').send(rest).expect(400);
     });
 
     it('should reject missing patientId', async () => {
       const { patientId: _, ...rest } = validPayload;
-      await request(app.getHttpServer())
-        .post('/ai/brief')
-        .send(rest)
-        .expect(400);
+      await request(app.getHttpServer()).post('/ai/brief').send(rest).expect(400);
     });
 
     it('should reject missing intakeData', async () => {
       const { intakeData: _, ...rest } = validPayload;
-      await request(app.getHttpServer())
-        .post('/ai/brief')
-        .send(rest)
-        .expect(400);
+      await request(app.getHttpServer()).post('/ai/brief').send(rest).expect(400);
     });
 
     it('should reject missing transcript', async () => {
       const { transcript: _, ...rest } = validPayload;
-      await request(app.getHttpServer())
-        .post('/ai/brief')
-        .send(rest)
-        .expect(400);
+      await request(app.getHttpServer()).post('/ai/brief').send(rest).expect(400);
     });
 
     it('should reject invalid UUID for sessionId', async () => {
@@ -372,21 +346,13 @@ describe('AiController (E2E)', () => {
 
     it('should reject missing patientHistory', async () => {
       const { patientHistory: _, ...rest } = validPayload;
-      await request(app.getHttpServer())
-        .post('/ai/brief')
-        .send(rest)
-        .expect(400);
+      await request(app.getHttpServer()).post('/ai/brief').send(rest).expect(400);
     });
 
     it('should propagate service errors as 500', async () => {
-      mockAiService.generateClinicalBrief.mockRejectedValue(
-        new Error('Brief generation failed'),
-      );
+      mockAiService.generateClinicalBrief.mockRejectedValue(new Error('Brief generation failed'));
 
-      await request(app.getHttpServer())
-        .post('/ai/brief')
-        .send(validPayload)
-        .expect(500);
+      await request(app.getHttpServer()).post('/ai/brief').send(validPayload).expect(500);
     });
   });
 });

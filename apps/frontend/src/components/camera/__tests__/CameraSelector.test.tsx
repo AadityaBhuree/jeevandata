@@ -60,9 +60,7 @@ describe('CameraSelector', () => {
       <CameraSelector
         {...defaultProps}
         isActive={true}
-        devices={[
-          { deviceId: 'only-cam', label: 'Only Camera', facingMode: 'user' },
-        ]}
+        devices={[{ deviceId: 'only-cam', label: 'Only Camera', facingMode: 'user' }]}
         isMobile={true}
       />,
     );
@@ -74,9 +72,7 @@ describe('CameraSelector', () => {
       <CameraSelector
         {...defaultProps}
         isActive={true}
-        devices={[
-          { deviceId: 'only-cam', label: 'Only Camera', facingMode: 'user' },
-        ]}
+        devices={[{ deviceId: 'only-cam', label: 'Only Camera', facingMode: 'user' }]}
         isMobile={false}
       />,
     );
@@ -95,9 +91,7 @@ describe('CameraSelector', () => {
     );
     expect(screen.getByText(/rear/i)).toBeDefined();
 
-    rerender(
-      <CameraSelector {...defaultProps} isActive={true} currentFacingMode="environment" />,
-    );
+    rerender(<CameraSelector {...defaultProps} isActive={true} currentFacingMode="environment" />);
     expect(screen.getByText(/front/i)).toBeDefined();
   });
 

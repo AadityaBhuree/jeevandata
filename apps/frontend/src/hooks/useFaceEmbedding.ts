@@ -22,14 +22,9 @@ interface UseFaceEmbeddingReturn {
     threshold?: number,
   ) => Promise<MatchResult>;
   /** Generate embedding only (no search) */
-  generateFromLandmarks: (
-    landmarks: Array<{ x: number; y: number; z: number }>,
-  ) => number[];
+  generateFromLandmarks: (landmarks: Array<{ x: number; y: number; z: number }>) => number[];
   /** Register a new patient embedding */
-  registerEmbedding: (
-    patientId: string,
-    embedding: number[],
-  ) => Promise<void>;
+  registerEmbedding: (patientId: string, embedding: number[]) => Promise<void>;
   /** Reset match result */
   reset: () => void;
 }
@@ -96,8 +91,7 @@ export function useFaceEmbedding(): UseFaceEmbeddingReturn {
         setMatchResult(noMatch);
         return noMatch;
       } catch (err) {
-        const message =
-          err instanceof Error ? err.message : 'Face search failed';
+        const message = err instanceof Error ? err.message : 'Face search failed';
         setError(message);
         throw err;
       } finally {
@@ -107,27 +101,23 @@ export function useFaceEmbedding(): UseFaceEmbeddingReturn {
     [generateFromLandmarks, matchResult],
   );
 
-  const registerEmbedding = useCallback(
-    async (patientId: string, emb: number[]) => {
-      try {
-        await faceApi.upsertEmbedding({
-          patientId,
-          vector: emb,
-        });
-        setMatchResult({
-          patientId,
-          score: 1.0,
-          isNewPatient: false,
-        });
-      } catch (err) {
-        const message =
-          err instanceof Error ? err.message : 'Embedding registration failed';
-        setError(message);
-        throw err;
-      }
-    },
-    [],
-  );
+  const registerEmbedding = useCallback(async (patientId: string, emb: number[]) => {
+    try {
+      await faceApi.upsertEmbedding({
+        patientId,
+        vector: emb,
+      });
+      setMatchResult({
+        patientId,
+        score: 1.0,
+        isNewPatient: false,
+      });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Embedding registration failed';
+      setError(message);
+      throw err;
+    }
+  }, []);
 
   const reset = useCallback(() => {
     setEmbedding(null);

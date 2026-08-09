@@ -1,10 +1,5 @@
 import { Test, type TestingModule } from '@nestjs/testing';
-import {
-  type INestApplication,
-  Controller,
-  Get,
-  HttpStatus,
-} from '@nestjs/common';
+import { type INestApplication, Controller, Get, HttpStatus } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { ThrottlerModule, SkipThrottle } from '@nestjs/throttler';
 import request from 'supertest';
@@ -44,10 +39,7 @@ describe('Rate Limiting (e2e)', () => {
         // Very tight limit: 2 requests per 60s sliding window
         ThrottlerModule.forRoot([{ ttl: 60000, limit: 2 }]),
       ],
-      controllers: [
-        RateLimitedController,
-        RateSkippedController,
-      ],
+      controllers: [RateLimitedController, RateSkippedController],
       providers: [
         {
           provide: APP_GUARD,
@@ -69,9 +61,7 @@ describe('Rate Limiting (e2e)', () => {
   describe('@SkipThrottle() on controller', () => {
     it('should never return 429 even after 10 rapid requests', async () => {
       const promises = Array.from({ length: 10 }, () =>
-        request(app.getHttpServer())
-          .get('/rate-skipped')
-          .expect(HttpStatus.OK),
+        request(app.getHttpServer()).get('/rate-skipped').expect(HttpStatus.OK),
       );
       const results = await Promise.all(promises);
 
@@ -90,12 +80,8 @@ describe('Rate Limiting (e2e)', () => {
   describe('Rate limiting + @SkipThrottle()', () => {
     it('should block after 2, return JSON error, and not affect skip-throttle routes', async () => {
       // ── Phase 1: 2 OK requests ──
-      await request(app.getHttpServer())
-        .get('/rate-limited')
-        .expect(HttpStatus.OK);
-      await request(app.getHttpServer())
-        .get('/rate-limited')
-        .expect(HttpStatus.OK);
+      await request(app.getHttpServer()).get('/rate-limited').expect(HttpStatus.OK);
+      await request(app.getHttpServer()).get('/rate-limited').expect(HttpStatus.OK);
 
       // ── Phase 2: 3rd request = 429 ──
       const res = await request(app.getHttpServer())
@@ -112,9 +98,7 @@ describe('Rate Limiting (e2e)', () => {
       expect(res.body).not.toHaveProperty('retryAfterMs');
 
       // ── Phase 3: @SkipThrottle() still works even while regular is blocked ──
-      await request(app.getHttpServer())
-        .get('/rate-skipped')
-        .expect(HttpStatus.OK);
+      await request(app.getHttpServer()).get('/rate-skipped').expect(HttpStatus.OK);
     });
   });
 });

@@ -48,9 +48,7 @@ describe('FaceRegistrationDialog', () => {
   // ─── Rendering States ───────────────────────────────────────────
 
   it('should not render when isOpen is false', () => {
-    const { container } = render(
-      <FaceRegistrationDialog {...defaultProps} isOpen={false} />,
-    );
+    const { container } = render(<FaceRegistrationDialog {...defaultProps} isOpen={false} />);
     expect(container.firstChild).toBeNull();
   });
 
@@ -333,9 +331,7 @@ describe('FaceRegistrationDialog', () => {
   });
 
   it('should show error when embedding is null', async () => {
-    render(
-      <FaceRegistrationDialog {...defaultProps} embedding={null} />,
-    );
+    render(<FaceRegistrationDialog {...defaultProps} embedding={null} />);
     await fillNameStep();
     await waitFor(() => {
       expect(screen.getByText(/patient details/i)).toBeDefined();

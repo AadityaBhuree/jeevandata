@@ -57,7 +57,7 @@ export function omit<T extends Record<string, unknown>, K extends keyof T>(
 ): Omit<T, K> {
   const result = { ...obj };
   for (const key of keys) {
-    delete result[key];
+    Reflect.deleteProperty(result, key);
   }
   return result as Omit<T, K>;
 }
@@ -123,10 +123,7 @@ export async function withRetry<T>(
       lastError = error instanceof Error ? error : new Error(String(error));
       if (attempt === opts.maxAttempts) break;
 
-      const delay = Math.min(
-        opts.baseDelayMs * Math.pow(2, attempt - 1),
-        opts.maxDelayMs,
-      );
+      const delay = Math.min(opts.baseDelayMs * Math.pow(2, attempt - 1), opts.maxDelayMs);
       await new Promise((resolve) => setTimeout(resolve, delay));
     }
   }
@@ -213,10 +210,7 @@ export function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-export async function parallelAll<T>(
-  tasks: (() => Promise<T>)[],
-  concurrency = 5,
-): Promise<T[]> {
+export async function parallelAll<T>(tasks: (() => Promise<T>)[], concurrency = 5): Promise<T[]> {
   const results: T[] = [];
   const executing = new Set<Promise<void>>();
 

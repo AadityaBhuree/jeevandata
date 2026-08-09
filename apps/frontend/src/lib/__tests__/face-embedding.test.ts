@@ -11,7 +11,9 @@ import {
 // Produces valid 3D landmarks that pass validateLandmarks().
 // Each landmark has x, y, z in [0..1] range with sufficient spread.
 
-function makeLandmarks3D(options?: { spread?: number }): Array<{ x: number; y: number; z: number }> {
+function makeLandmarks3D(options?: {
+  spread?: number;
+}): Array<{ x: number; y: number; z: number }> {
   const spread = options?.spread ?? 0.3;
   return Array.from({ length: 478 }, (_, i) => ({
     x: 0.3 + Math.sin(i * 0.1) * spread,
@@ -39,9 +41,7 @@ describe('generateEmbedding', () => {
   });
 
   it('should throw for landmarks with fewer than 100 points', () => {
-    expect(() => generateEmbedding([{ x: 0, y: 0, z: 0 }])).toThrow(
-      'Invalid landmarks',
-    );
+    expect(() => generateEmbedding([{ x: 0, y: 0, z: 0 }])).toThrow('Invalid landmarks');
   });
 
   it('should throw for degenerate (all-zero) landmarks', () => {

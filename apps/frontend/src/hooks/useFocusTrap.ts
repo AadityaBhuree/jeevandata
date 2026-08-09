@@ -48,9 +48,9 @@ export function useFocusTrap<T extends HTMLElement = HTMLElement>(active: boolea
     function getFocusable(): HTMLElement[] {
       const root = containerRef.current;
       if (!root) return [];
-      return Array.from(
-        root.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR),
-      ).filter((el) => isVisible(el));
+      return Array.from(root.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)).filter((el) =>
+        isVisible(el),
+      );
     }
 
     function handleKeyDown(e: KeyboardEvent) {

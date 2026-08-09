@@ -73,13 +73,10 @@ describe('DashboardController (E2E)', () => {
 
   async function createApp(): Promise<INestApplication> {
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [
-        ConfigModule.forRoot({ isGlobal: true, ignoreEnvFile: true }),
-        DashboardModule,
-      ],
+      imports: [ConfigModule.forRoot({ isGlobal: true, ignoreEnvFile: true }), DashboardModule],
     })
       .overrideProvider(PrismaService)
-      .useValue({} as any)
+      .useValue({} as unknown as PrismaService)
       .overrideProvider(DashboardService)
       .useValue(mockDashboardService)
       .compile();
@@ -135,9 +132,7 @@ describe('DashboardController (E2E)', () => {
     });
 
     it('should propagate service errors as 500', async () => {
-      mockDashboardService.getLatestBrief.mockRejectedValue(
-        new Error('Database unavailable'),
-      );
+      mockDashboardService.getLatestBrief.mockRejectedValue(new Error('Database unavailable'));
 
       await request(app.getHttpServer())
         .get(`/dashboard/patient/${validPatientId}/latest-brief`)
@@ -156,9 +151,7 @@ describe('DashboardController (E2E)', () => {
     it('should return active sessions with pagination', async () => {
       mockDashboardService.getActiveSessions.mockResolvedValue(paginatedResponse);
 
-      const res = await request(app.getHttpServer())
-        .get('/dashboard/active-sessions')
-        .expect(200);
+      const res = await request(app.getHttpServer()).get('/dashboard/active-sessions').expect(200);
 
       expect(res.body).toHaveProperty('data');
       expect(Array.isArray(res.body.data)).toBe(true);
@@ -183,25 +176,17 @@ describe('DashboardController (E2E)', () => {
     });
 
     it('should reject negative page numbers', async () => {
-      await request(app.getHttpServer())
-        .get('/dashboard/active-sessions?page=-1')
-        .expect(400);
+      await request(app.getHttpServer()).get('/dashboard/active-sessions?page=-1').expect(400);
     });
 
     it('should reject limit exceeding 100', async () => {
-      await request(app.getHttpServer())
-        .get('/dashboard/active-sessions?limit=200')
-        .expect(400);
+      await request(app.getHttpServer()).get('/dashboard/active-sessions?limit=200').expect(400);
     });
 
     it('should propagate service errors as 500', async () => {
-      mockDashboardService.getActiveSessions.mockRejectedValue(
-        new Error('Query failed'),
-      );
+      mockDashboardService.getActiveSessions.mockRejectedValue(new Error('Query failed'));
 
-      await request(app.getHttpServer())
-        .get('/dashboard/active-sessions')
-        .expect(500);
+      await request(app.getHttpServer()).get('/dashboard/active-sessions').expect(500);
     });
   });
 
@@ -216,9 +201,7 @@ describe('DashboardController (E2E)', () => {
     it('should return recent briefs with pagination', async () => {
       mockDashboardService.getRecentBriefs.mockResolvedValue(paginatedResponse);
 
-      const res = await request(app.getHttpServer())
-        .get('/dashboard/recent-briefs')
-        .expect(200);
+      const res = await request(app.getHttpServer()).get('/dashboard/recent-briefs').expect(200);
 
       expect(res.body).toHaveProperty('data');
       expect(res.body.data).toHaveLength(1);
@@ -231,27 +214,19 @@ describe('DashboardController (E2E)', () => {
         pagination: { page: 3, limit: 5, total: 0, totalPages: 0 },
       });
 
-      await request(app.getHttpServer())
-        .get('/dashboard/recent-briefs?page=3&limit=5')
-        .expect(200);
+      await request(app.getHttpServer()).get('/dashboard/recent-briefs?page=3&limit=5').expect(200);
 
       expect(mockDashboardService.getRecentBriefs).toHaveBeenCalledWith(3, 5);
     });
 
     it('should reject non-numeric page param', async () => {
-      await request(app.getHttpServer())
-        .get('/dashboard/recent-briefs?page=abc')
-        .expect(400);
+      await request(app.getHttpServer()).get('/dashboard/recent-briefs?page=abc').expect(400);
     });
 
     it('should propagate service errors as 500', async () => {
-      mockDashboardService.getRecentBriefs.mockRejectedValue(
-        new Error('Query failed'),
-      );
+      mockDashboardService.getRecentBriefs.mockRejectedValue(new Error('Query failed'));
 
-      await request(app.getHttpServer())
-        .get('/dashboard/recent-briefs')
-        .expect(500);
+      await request(app.getHttpServer()).get('/dashboard/recent-briefs').expect(500);
     });
   });
 
@@ -276,25 +251,17 @@ describe('DashboardController (E2E)', () => {
         new NotFoundException(`Brief ${unusedUuid} not found`),
       );
 
-      await request(app.getHttpServer())
-        .patch(`/brief/${unusedUuid}/review`)
-        .expect(404);
+      await request(app.getHttpServer()).patch(`/brief/${unusedUuid}/review`).expect(404);
     });
 
     it('should reject invalid brief UUID', async () => {
-      await request(app.getHttpServer())
-        .patch('/brief/not-a-uuid/review')
-        .expect(400);
+      await request(app.getHttpServer()).patch('/brief/not-a-uuid/review').expect(400);
     });
 
     it('should propagate service errors as 500', async () => {
-      mockDashboardService.markBriefReviewed.mockRejectedValue(
-        new Error('Update failed'),
-      );
+      mockDashboardService.markBriefReviewed.mockRejectedValue(new Error('Update failed'));
 
-      await request(app.getHttpServer())
-        .patch(`/brief/${validBriefId}/review`)
-        .expect(500);
+      await request(app.getHttpServer()).patch(`/brief/${validBriefId}/review`).expect(500);
     });
   });
 
@@ -332,9 +299,7 @@ describe('DashboardController (E2E)', () => {
     });
 
     it('should reject invalid patientId UUID', async () => {
-      await request(app.getHttpServer())
-        .get('/dashboard/patient/bad-uuid/history')
-        .expect(400);
+      await request(app.getHttpServer()).get('/dashboard/patient/bad-uuid/history').expect(400);
     });
 
     it('should reject limit exceeding 100', async () => {
@@ -344,9 +309,7 @@ describe('DashboardController (E2E)', () => {
     });
 
     it('should propagate service errors as 500', async () => {
-      mockDashboardService.getPatientHistory.mockRejectedValue(
-        new Error('Query failed'),
-      );
+      mockDashboardService.getPatientHistory.mockRejectedValue(new Error('Query failed'));
 
       await request(app.getHttpServer())
         .get(`/dashboard/patient/${validPatientId}/history`)

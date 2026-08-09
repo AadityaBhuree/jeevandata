@@ -16,8 +16,7 @@ export class LoggingInterceptor implements NestInterceptor {
     const ctx = context.switchToHttp();
     const request = ctx.getRequest<Request>();
     const { method, url } = request;
-    const correlationId =
-      (request.headers['x-correlation-id'] as string) ?? 'unknown';
+    const correlationId = (request.headers['x-correlation-id'] as string) ?? 'unknown';
     const now = Date.now();
 
     return next.handle().pipe(
@@ -31,9 +30,7 @@ export class LoggingInterceptor implements NestInterceptor {
         },
         error: (error: Error) => {
           const duration = Date.now() - now;
-          this.logger.error(
-            `${method} ${url} ${duration}ms [${correlationId}] - ${error.message}`,
-          );
+          this.logger.error(`${method} ${url} ${duration}ms [${correlationId}] - ${error.message}`);
         },
       }),
     );

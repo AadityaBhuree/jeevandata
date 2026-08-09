@@ -96,10 +96,13 @@ async function acquireStream(
   }
 }
 
-export function useCamera(
-  options: UseCameraOptions = {},
-): UseCameraReturn {
-  const { facingMode: initialFacingMode = 'user', width = 640, height = 480, isMobile = false } = options;
+export function useCamera(options: UseCameraOptions = {}): UseCameraReturn {
+  const {
+    facingMode: initialFacingMode = 'user',
+    width = 640,
+    height = 480,
+    isMobile = false,
+  } = options;
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const [isActive, setIsActive] = useState(false);
@@ -120,13 +123,12 @@ export function useCamera(
         .map((d) => ({
           deviceId: d.deviceId,
           label: d.label || `Camera ${d.deviceId.slice(0, 4)}`,
-          facingMode: (
+          facingMode:
             d.label.toLowerCase().includes('back') ||
             d.label.toLowerCase().includes('rear') ||
             d.label.toLowerCase().includes('environment')
-              ? 'environment' as const
-              : 'user' as const
-          ),
+              ? ('environment' as const)
+              : ('user' as const),
         }));
 
       setDevices(videoDevices);
