@@ -1,0 +1,27 @@
+# Line-ending normalization: every text file is checked out as LF on all OSes.
+#
+# Why: Prettier is configured with endOfLine: "lf" (.prettierrc). On Windows,
+# core.autocrlf=true produces CRLF working trees, so `pnpm format:check` fails
+# locally even though CI (Linux, LF checkout) passes. eol=lf makes git check
+# out LF everywhere, so local and CI checks agree.
+#
+# If you already have CRLF files in your working tree, refresh them with:
+#   git add --renormalize . && git restore .
+* text=auto eol=lf
+
+# Binary assets: never EOL-normalize or apply diff/merge heuristics
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.eot binary
+*.pdf binary
+*.zip binary
+*.gz binary
+*.bin binary
+*.wasm binary
