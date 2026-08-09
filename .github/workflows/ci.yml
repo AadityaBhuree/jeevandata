@@ -76,6 +76,9 @@ jobs:
       - name: Prisma generate
         run: pnpm --filter @jeevandata/backend prisma:generate
 
+      - name: Build shared packages (required by ts-jest type resolution)
+        run: pnpm --filter '@jeevandata/shared-*' build
+
       - name: Backend unit tests (coverage)
         run: pnpm --filter @jeevandata/backend test:cov
 
