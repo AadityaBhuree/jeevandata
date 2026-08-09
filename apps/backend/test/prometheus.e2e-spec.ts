@@ -96,10 +96,8 @@ describe('Prometheus + Monitoring (e2e)', () => {
     });
 
     it('is not rate limited (unthrottled)', async () => {
-      const responses = await Promise.all(
-        Array.from({ length: 10 }, () => request(app.getHttpServer()).get('/metrics')),
-      );
-      for (const res of responses) {
+      for (let i = 0; i < 10; i++) {
+        const res = await request(app.getHttpServer()).get('/metrics');
         expect(res.status).toBe(200);
       }
     });
