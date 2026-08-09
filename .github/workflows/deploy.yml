@@ -126,12 +126,14 @@ jobs:
     needs: smoke-test
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    if: ${{ secrets.STAGING_HOST != '' }}
     environment: staging
     steps:
       - uses: actions/checkout@v4
 
       - name: Deploy via SSH
+        if: ${{ env.STAGING_HOST != '' }}
+        env:
+          STAGING_HOST: ${{ secrets.STAGING_HOST }}
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.STAGING_HOST }}
@@ -149,7 +151,6 @@ jobs:
     needs: [smoke-test, deploy-staging]
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    if: ${{ secrets.PRODUCTION_HOST != '' }}
     environment:
       name: production
       url: https://jeevandata.example.com
@@ -157,6 +158,9 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Deploy via SSH with env
+        if: ${{ env.PRODUCTION_HOST != '' }}
+        env:
+          PRODUCTION_HOST: ${{ secrets.PRODUCTION_HOST }}
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.PRODUCTION_HOST }}
