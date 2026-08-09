@@ -29,8 +29,10 @@ concurrency:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_BACKEND: ghcr.io/${{ github.repository }}/backend
-  IMAGE_FRONTEND: ghcr.io/${{ github.repository }}/frontend
+  # NOTE: repository names must be lowercase for Docker/GHCR — hardcode the
+  # lowercase owner path instead of using github.repository (mixed case).
+  IMAGE_BACKEND: ghcr.io/aadityabhuree/jeevandata/backend
+  IMAGE_FRONTEND: ghcr.io/aadityabhuree/jeevandata/frontend
   NEXT_PUBLIC_API_URL: https://api.jeevandata.example.com
   NEXT_PUBLIC_WS_URL: wss://api.jeevandata.example.com
 
