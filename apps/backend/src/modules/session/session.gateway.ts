@@ -7,7 +7,7 @@ import {
   type OnGatewayInit,
 } from '@nestjs/websockets';
 import { Logger } from '@nestjs/common';
-import { type Server, type Socket } from 'socket.io';
+import { type Namespace, type Server, type Socket } from 'socket.io';
 // eslint-disable-next-line @typescript-eslint/consistent-type-imports -- NestJS DI requires runtime value import
 import { PrismaService } from '../../prisma/prisma.service';
 // eslint-disable-next-line @typescript-eslint/consistent-type-imports -- NestJS DI requires runtime value import
@@ -46,12 +46,14 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
   handleConnection(client: Socket): void {
     this.logger.log(`Client connected: ${client.id}`);
     client.emit('connected', { clientId: client.id });
-    this.metrics.setActiveSessions(this.server.engine.clientsCount);
+    // For a namespaced gateway, @WebSocketServer() exposes the '/ws' namespace
+    // adapter (no .engine on it) - count via the namespace's sockets Map.
+    this.metrics.setActiveSessions((this.server as unknown as Namespace).sockets.size);
   }
 
   handleDisconnect(_client: Socket): void {
     this.logger.log(`Client disconnected: ${_client.id}`);
-    this.metrics.setActiveSessions(this.server.engine.clientsCount);
+    this.metrics.setActiveSessions((this.server as unknown as Namespace).sockets.size);
     // Clean up any in-progress audio recordings for this client's sessions
     // Iterate over audioBuffers and remove entries that are stale (>30s old)
     const now = Date.now();
