@@ -1,7 +1,7 @@
 # Jeevandata — Engineering Roadmap
 
 > **Version:** 0.2.0 | **Status:** Active Development
-> **Phases 1–6 Complete** — Phase 7 (Infrastructure & Deployment) 2/6 steps done (7.1 CI/CD ✅, 7.6 monitoring stack ✅)
+> **Phases 1–6 Complete** — Phase 7 (Infrastructure & Deployment) 2/6 steps done (7.1 CI/CD ✅ incl. deploy, 7.6 monitoring stack ✅)
 
 ---
 
@@ -357,7 +357,9 @@ Validate all critical env vars at startup (both backend and frontend):
 - **test** — backend unit `--coverage`, backend E2E (service-layer mocked — no DB required), frontend vitest `--coverage`; coverage/ artifacts uploaded (14-day retention)
 - **build** — `pnpm build` (turbo, cached) with dist/.next artifacts uploaded
 - pnpm/action-setup@v4 (9.15.4) + setup-node@v4 `cache: pnpm`, frozen lockfile, concurrency cancel-in-progress, non-secret env defaults (validation schema provides defaults for every key — verified)
-- Remaining: `deploy.yml` (images → registry → staging → smoke → promote) — tracked as a follow-up inside 7.1
+- ✅ **Follow-up complete (commit `ed00cf5`):** `deploy.yml` — builds + pushes backend/frontend images to GHCR (sha + latest, gha cache), smoke-tests the backend image in a container (`/health/live` probe), then deploys to staging and promotes to production behind a manual approval gate (jobs gated on `STAGING_HOST`/`PRODUCTION_HOST` secrets; env written from `APP_ENV_B64`)
+- ✅ Added `docker-compose.app.yml` (backend/frontend GHCR images + healthcheck, extending postgres/redis/qdrant from `docker-compose.yml`) used by the SSH deploy steps; `Dockerfile.frontend` now accepts `NEXT_PUBLIC_API_URL`/`WS_URL` build args; `next.config.js` enables `output: standalone`
+- **To activate remote deploys:** create `staging`/`production` environments + required reviewer on `production`, add the documented secrets (`STAGING_HOST`/`USER`/`SSH_KEY`, `PRODUCTION_*`, `APP_ENV_B64`), and point `NEXT_PUBLIC_*` build URLs at the real domains
 
 **Est. effort:** 2h (✅ CI portion complete)
 
@@ -454,8 +456,8 @@ Validate all critical env vars at startup (both backend and frontend):
 
 | Phase                               | Steps | Min (h) | Max (h) |
 | :---------------------------------- | :---- | :------ | :------ |
-| **7 — Infrastructure & Deployment** | 6     | 8       | 12      |
-| **Total remaining**                 | **6** | **8**   | **12**  |
+| **7 — Infrastructure & Deployment** | 6     | 6       | 9       |
+| **Total remaining**                 | **4** | **5**   | **8**   |
 
 ---
 
