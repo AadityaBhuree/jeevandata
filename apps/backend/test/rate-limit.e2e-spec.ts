@@ -60,12 +60,10 @@ describe('Rate Limiting (e2e)', () => {
 
   describe('@SkipThrottle() on controller', () => {
     it('should never return 429 even after 10 rapid requests', async () => {
-      const promises = Array.from({ length: 10 }, () =>
-        request(app.getHttpServer()).get('/rate-skipped').expect(HttpStatus.OK),
-      );
-      const results = await Promise.all(promises);
-
-      for (const res of results) {
+      // Sequential, not Promise.all: concurrent requests on a shared agent
+      // trigger "read ECONNRESET" on Node 20 (CI) but pass on Node 24.
+      for (let i = 0; i < 10; i++) {
+        const res = await request(app.getHttpServer()).get('/rate-skipped').expect(HttpStatus.OK);
         expect(res.body).toEqual({ message: 'rate skip' });
       }
     });
