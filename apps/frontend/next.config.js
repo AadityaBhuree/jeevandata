@@ -2,6 +2,9 @@
 const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
+  // Standalone output so Dockerfile.frontend can copy .next/standalone
+  // (self-contained server bundle with no node_modules in the image).
+  output: 'standalone',
 };
 
 const isDev = process.env.NODE_ENV === 'development';
