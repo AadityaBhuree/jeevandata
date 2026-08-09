@@ -59,8 +59,20 @@ Supertest-based E2E tests validating the full HTTP layer (routes, Zod validation
 | `test/health.e2e-spec.ts`            | GET /health, /health/ready, /health/live                      | ✅     |
 | `test/rate-limit.e2e-spec.ts`        | Throttler enforcement on protected routes                     | ✅     |
 | `test/health-rate-limit.e2e-spec.ts` | Health endpoints bypass rate limiting                         | ✅     |
+| `test/intake-kiosk.e2e-spec.ts`      | Kiosk completion regression — real FSM + patientId            | ✅     |
 
-**Result:** 113 E2E tests green across 8 suites.
+**Result:** 195 E2E tests green across 14 suites.
+
+### Step 2.1b — Kiosk completion regression E2E ✅
+
+Guards the three production bugs found during the live clinic-journey verification (Qdrant point IDs, FSM dead-end, patientId UUID write). Unlike the earlier intake suite (which mocked `IntakeService` — _why those bugs shipped_), this spec runs the **real controller + real IntakeService + real SessionService FSM**, faking only Prisma (stateful in-memory), Redis, and the AI brief:
+
+| Test                                                          | Guards                                               |
+| :------------------------------------------------------------ | :--------------------------------------------------- |
+| Fresh `INITIATED` kiosk session → `complete` → 200 + FSM walk | Fast-forward revert → `INITIATED → TRANSCRIBING` 400 |
+| Complete with **no patientId** → 400 "Patient not identified" | Old empty-UUID behavior returning 200                |
+| `TIMED_OUT` session rejects completion                        | Fast-forward must not weaken terminal states         |
+| Idempotent replay (`Idempotency-Key`) returns existing record | Offline-outbox path interacting with the new code    |
 
 ### Step 2.2 — Backend: Service unit tests ✅
 
@@ -96,7 +108,7 @@ Session timeout worker covered via `SessionService` specs (stale-session → TIM
 | i18n          | Locale fallback, interpolation, missing-key, Hindi/Marathi/Spanish content          | ✅     |
 | Accessibility | axe-core scan over intake page, keyboard + ARIA patterns                            | ✅     |
 
-**Result:** 440 frontend tests green across 24 files.
+**Result:** 601 frontend tests green (current).
 
 ### Step 2.8 — Coverage & CI integration ✅
 
@@ -321,6 +333,18 @@ Validate all critical env vars at startup (both backend and frontend):
 
 ---
 
+### Step 6.9 — Browser verification tooling ✅
+
+- `scripts/browser-journey.mjs` — reusable CDP script driving a **real Chrome** (headless default, fake camera/mic) through the kiosk flow: landing → Start New Intake Session → `/intake/<uuid>` → Start Camera → live stream + liveness UI
+- Reports PASS/FAIL per step; collects console errors, network failures, exceptions; optional screenshot; exit codes 0/1/2 for CI
+- Auto-detects Chrome on Windows/macOS/Linux (`CHROME_PATH` override), `FRONTEND_URL`/`BACKEND_URL` env; flags: `--no-headless`, `--screenshot <path>`, `--fail-on-console-errors`
+- Root alias: `pnpm verify:browser`
+- Verified live: 6/6 steps PASS, exit 0, zero orphaned Chrome processes (review fix: `process.exit()` → `process.exitCode` so the `finally` cleanup always runs)
+
+**Delivered:** `scripts/browser-journey.mjs` (commit `ff06085`), `package.json` `verify:browser` alias (commit `71f177f`)
+
+---
+
 ## Phase 7 — Infrastructure & Deployment 🔶 (1/6 steps done)
 
 > **Goal:** Production-ready deployment with CI/CD, container orchestration, secrets management, and disaster recovery.
@@ -390,9 +414,9 @@ Validate all critical env vars at startup (both backend and frontend):
 | Rate limiting                                          | Phase 1       | ✅     |
 | Input validation (Zod)                                 | Phase 1       | ✅     |
 | Session timeout worker                                 | Phase 1       | ✅     |
-| Backend unit tests (284 tests)                         | Phase 2.2     | ✅     |
-| Backend E2E tests (13 suites, 191 tests)               | Phase 2.1     | ✅     |
-| Frontend Vitest suite (45 files, 599 tests)            | Phase 2.5–2.7 | ✅     |
+| Backend unit tests (321 tests)                         | Phase 2.2     | ✅     |
+| Backend E2E tests (14 suites, 195 tests)               | Phase 2.1     | ✅     |
+| Frontend Vitest suite (45+ files, 601 tests)           | Phase 2.5–2.7 | ✅     |
 | PMS/EMR sync adapters                                  | Phase 3.1     | ✅     |
 | Audit logging wiring                                   | Phase 3.2     | ✅     |
 | Health checks + OpenTelemetry tracing                  | Phase 3.3     | ✅     |
@@ -411,6 +435,7 @@ Validate all critical env vars at startup (both backend and frontend):
 | HIPAA compliance audit module                          | Phase 6.6     | ✅     |
 | Offline mode with IndexedDB sync                       | Phase 6.7     | ✅     |
 | Performance monitoring & alerting                      | Phase 6.8     | ✅     |
+| Browser verification tooling (CDP journey script)      | Phase 6.9     | ✅     |
 | CI/CD pipeline                                         | Phase 7.1     | ⬜     |
 | Container orchestration                                | Phase 7.2     | ⬜     |
 | Secrets management                                     | Phase 7.3     | ⬜     |
