@@ -12,6 +12,7 @@ const mockPrisma = {
   intakeSession: {
     create: jest.fn(),
     findUnique: jest.fn(),
+    update: jest.fn(),
   },
   intakeRecord: {
     create: jest.fn(),
@@ -318,7 +319,23 @@ describe('IntakeService', () => {
       expect(mockPrisma.intakeRecord.findFirst).not.toHaveBeenCalled();
     });
 
-    it('should handle empty patientId by using empty string', async () => {
+    it('should reject completion when no patient is identified (no patientId anywhere)', async () => {
+      mockPrisma.intakeSession.findUnique.mockResolvedValue({
+        ...mockSession,
+        patientId: null,
+      });
+      mockSessionService.updateStatus.mockResolvedValue(undefined);
+
+      await expect(service.completeWithIntake(validSessionId, mockIntakeData)).rejects.toThrow(
+        BadRequestException,
+      );
+
+      // The IntakeRecord.patientId FK is a required UUID — writing '' used to
+      // 500 with an invalid-UUID error; now it fails fast with a clear 400.
+      expect(mockPrisma.intakeRecord.create).not.toHaveBeenCalled();
+    });
+
+    it('should use the patientId from the complete payload when the session has none', async () => {
       mockPrisma.intakeSession.findUnique.mockResolvedValue({
         ...mockSession,
         patientId: null,
@@ -327,15 +344,27 @@ describe('IntakeService', () => {
       mockPrisma.intakeRecord.create.mockResolvedValue({
         id: 'record-1',
         sessionId: validSessionId,
+        patientId: validPatientId,
+      });
+      mockPrisma.intakeSession.update.mockResolvedValue({});
+
+      const result = await service.completeWithIntake(validSessionId, {
+        ...mockIntakeData,
+        patientId: validPatientId,
       });
 
-      await service.completeWithIntake(validSessionId, mockIntakeData);
-
+      // patientId is persisted onto the session for later references…
+      expect(mockPrisma.intakeSession.update).toHaveBeenCalledWith({
+        where: { id: validSessionId },
+        data: { patientId: validPatientId },
+      });
+      // …and used for the intake record's required FK.
       expect(mockPrisma.intakeRecord.create).toHaveBeenCalledWith({
         data: expect.objectContaining({
-          patientId: '',
+          patientId: validPatientId,
         }),
       });
+      expect(result.intakeRecord.patientId).toBe(validPatientId);
     });
   });
 
