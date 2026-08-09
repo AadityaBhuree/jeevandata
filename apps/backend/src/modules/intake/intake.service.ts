@@ -9,7 +9,7 @@ import { BriefGeneratorService } from '../ai/brief-generator.service';
 import { AuditService } from '../audit/audit.service';
 /* eslint-enable @typescript-eslint/consistent-type-imports */
 import type { StartIntakeSessionInput, IntakeDataInput } from '@jeevandata/shared-schemas';
-import type { SessionStatus } from '@jeevandata/shared-types';
+import { SessionStatus } from '@jeevandata/shared-types';
 import type { Prisma } from '@prisma/client';
 
 @Injectable()
@@ -74,7 +74,16 @@ export class IntakeService {
       ipAddress: 'internal',
     });
 
-    return session;
+    // Prisma returns BigInt for the BIGINT timestampMs column; JSON cannot
+    // serialize BigInt, so every session WITH transcripts 500'd here. Convert
+    // to a Number (ms epoch) so dashboards can render the session history.
+    return {
+      ...session,
+      transcripts: session.transcripts.map((t) => ({
+        ...t,
+        timestampMs: Number(t.timestampMs),
+      })),
+    };
   }
 
   async completeWithIntake(
@@ -108,14 +117,50 @@ export class IntakeService {
       throw new BadRequestException('Session is already completed');
     }
 
-    await this.sessionService.updateStatus(sessionId, 'TRANSCRIBING' as SessionStatus);
+    // The kiosk UI drives the face-match / context-load / intake-start
+    // transitions only in local (IndexedDB) state and never reports them to
+    // the backend, so a fresh session is still INITIATED when the first
+    // completion arrives. Fast-forward through any un-reported intermediate
+    // stages so the TRANSCRIBING → BRIEF_GENERATED completion path is valid,
+    // while still enforcing the state machine for statuses it knows about
+    // (e.g. a TIMED_OUT/FAILED session still rejects completion).
+    const FAST_FORWARD: Partial<Record<SessionStatus, SessionStatus>> = {
+      [SessionStatus.INITIATED]: SessionStatus.FACE_MATCHED,
+      [SessionStatus.FACE_MATCHED]: SessionStatus.CONTEXT_LOADED,
+      [SessionStatus.CONTEXT_LOADED]: SessionStatus.INTAKE_IN_PROGRESS,
+    };
+    let current: SessionStatus = session.status as SessionStatus;
+    while (FAST_FORWARD[current]) {
+      current = FAST_FORWARD[current] as SessionStatus;
+      await this.sessionService.updateStatus(sessionId, current);
+    }
+    if (current !== SessionStatus.TRANSCRIBING) {
+      await this.sessionService.updateStatus(sessionId, SessionStatus.TRANSCRIBING);
+    }
 
     const brief = await this.generateBrief(session, intakeData);
+
+    // The kiosk UI creates sessions before face match (no patientId) and the
+    // patient is only known once the face match succeeds on the intake page.
+    // Accept the matched patientId from the complete payload and persist it
+    // onto the session so the intake record's required FK can be written.
+    const patientId = intakeData.patientId ?? session.patientId;
+    if (!patientId) {
+      throw new BadRequestException(
+        'Patient not identified for session — face match must complete before the intake can be finalized',
+      );
+    }
+    if (intakeData.patientId && session.patientId !== intakeData.patientId) {
+      await this.prisma.intakeSession.update({
+        where: { id: sessionId },
+        data: { patientId: intakeData.patientId },
+      });
+    }
 
     const intakeRecord = await this.prisma.intakeRecord.create({
       data: {
         sessionId,
-        patientId: session.patientId ?? '',
+        patientId,
         brief: brief as unknown as Prisma.InputJsonValue,
         intakeData: intakeData as Prisma.InputJsonValue,
       },
