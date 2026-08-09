@@ -1,7 +1,7 @@
 # Jeevandata — Engineering Roadmap
 
 > **Version:** 0.2.0 | **Status:** Active Development
-> **Phases 1–6 Complete** — Phase 7 (Infrastructure & Deployment) 2/6 steps done (7.1 CI/CD ✅ incl. deploy, 7.6 monitoring stack ✅)
+> **Phases 1–6 Complete** — Phase 7 (Infrastructure & Deployment) 3/6 steps done (7.1 CI/CD ✅, 7.2 orchestration ✅, 7.6 monitoring ✅)
 
 ---
 
@@ -23,8 +23,8 @@ Each phase contains numbered steps. Every step is sized for a **single atomic co
 | **4** | Authentication & Multi-Tenancy | ✅ **Done**        | 6/6         | Completed   |
 | **5** | UI/UX Excellence               | ✅ **Done**        | 8/8         | Completed   |
 | **6** | Feature Expansion              | ✅ **Done**        | 8/8         | Completed   |
-| **7** | Infrastructure & Deployment    | 🔶 **In progress** | 2/6         | 6–9h        |
-|       | **Total remaining**            |                    | **4 steps** | **5–8h**    |
+| **7** | Infrastructure & Deployment    | 🔶 **In progress** | 3/6         | 4–6h        |
+|       | **Total remaining**            |                    | **3 steps** | **3–5h**    |
 
 ---
 
@@ -363,12 +363,15 @@ Validate all critical env vars at startup (both backend and frontend):
 
 **Est. effort:** 2h (✅ CI portion complete)
 
-### Step 7.2 — Container orchestration
+### Step 7.2 — Container orchestration ✅ (commit `0ad6fcc`)
 
-- Resource limits on all docker-compose services
-- Kubernetes manifests (deployments, services, configmaps, secrets), probes, HPA, Ingress+TLS
+- **docker-compose.yml:** `deploy.resources` limits on all 9 infra services (postgres 2 CPU/2 GB, redis 1/512 MB, qdrant 2/1 GB, minio 1/1 GB, whisper 4/2 GB, prometheus/grafana/alertmanager/redis-commander modest caps) — validated with `docker compose config`
+- **`k8s/` manifests:** namespace, backend + frontend Deployments (rolling update `maxUnavailable: 0`, startup/readiness/liveness probes against `/health/live` + `/health/ready`, resource requests/limits, `runAsNonRoot` + `imagePullPolicy: Always`), ClusterIP Services, ConfigMap (non-secret env), `secret.example.yaml` template (envFrom — created before rollout), `autoscaling/v2` HPAs (backend CPU 60% + memory 75%, 2–8; frontend CPU 60%, 2–6; scale-down stabilization 300s), nginx Ingress with TLS (`jeevandata-tls` secret, cert-manager annotation)
+- **Dockerfile.backend:** non-root `nodejs` user (uid 1000) + chown'd copies so `runAsNonRoot` works
+- Review fixes applied: backend non-root user, `imagePullPolicy: Always` (GHCR `:latest` re-pushed each deploy), secret-before-rollout note
+- **To activate:** install nginx-ingress + cert-manager, `kubectl create secret generic jeevandata-secrets`, replace example domains
 
-**Est. effort:** 3–4h
+**Est. effort:** 3–4h (✅ complete)
 
 ### Step 7.3 — Secrets management
 
@@ -456,8 +459,8 @@ Validate all critical env vars at startup (both backend and frontend):
 
 | Phase                               | Steps | Min (h) | Max (h) |
 | :---------------------------------- | :---- | :------ | :------ |
-| **7 — Infrastructure & Deployment** | 6     | 6       | 9       |
-| **Total remaining**                 | **4** | **5**   | **8**   |
+| **7 — Infrastructure & Deployment** | 6     | 4       | 6       |
+| **Total remaining**                 | **3** | **3**   | **5**   |
 
 ---
 
