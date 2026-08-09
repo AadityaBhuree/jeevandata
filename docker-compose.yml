@@ -120,7 +120,7 @@ services:
   # Source-built (docker/whisper.Dockerfile): the upstream image is compiled
   # with AVX-512 (-march=native on GH runners) and SIGILLs on CPUs without it.
   # GGML_NATIVE=OFF gives portable x86-64 with runtime CPU dispatch. Model
-  # (ggml-base.en.bin) is baked into the image at /models.
+  # (ggml-small.bin, multilingual) is baked into the image at /models.
   whisper:
     build:
       context: .
@@ -134,16 +134,16 @@ services:
     #   WHISPER_MODEL            path to the ggml model baked into the image (mount a
     #                            replacement model into /models to swap model sizes)
     #   WHISPER_LANGUAGE         spoken language; default 'auto' auto-detects (the baked
-    #                            base model is multilingual: en, hi, mr, es, ...)
+    #                            small model is multilingual: en, hi, mr, es, ...)
     #   WHISPER_NO_SPEECH_THOLD  0.0-1.0; lower = more willing to transcribe quiet or
     #                            noisy audio, higher = more likely to emit [Inaudible]
     #   WHISPER_THREADS          CPU threads used for inference
     environment:
-      WHISPER_MODEL: ${WHISPER_MODEL:-/models/ggml-base.bin}
+      WHISPER_MODEL: ${WHISPER_MODEL:-/models/ggml-small.bin}
       WHISPER_LANGUAGE: ${WHISPER_LANGUAGE:-auto}
       WHISPER_NO_SPEECH_THOLD: ${WHISPER_NO_SPEECH_THOLD:-0.6}
       WHISPER_THREADS: ${WHISPER_THREADS:-4}
-    command: ['sh', '-c', 'whisper-server --host 0.0.0.0 --port 9001 --model "$${WHISPER_MODEL:-/models/ggml-base.bin}" --no-gpu --threads "$${WHISPER_THREADS:-4}" --language "$${WHISPER_LANGUAGE:-auto}" --no-speech-thold "$${WHISPER_NO_SPEECH_THOLD:-0.6}" --convert']
+    command: ['sh', '-c', 'whisper-server --host 0.0.0.0 --port 9001 --model "$${WHISPER_MODEL:-/models/ggml-small.bin}" --no-gpu --threads "$${WHISPER_THREADS:-4}" --language "$${WHISPER_LANGUAGE:-auto}" --no-speech-thold "$${WHISPER_NO_SPEECH_THOLD:-0.6}" --convert']
     healthcheck:
       test: ["CMD", "curl", "-sf", "http://localhost:9001/health"]
       interval: 15s
