@@ -135,3 +135,15 @@ jobs:
             apps/backend/dist
             apps/frontend/.next
           retention-days: 14
+  security-scripts:
+    name: Secrets validator tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Shell syntax check
+        run: bash -n scripts/validate-secrets.sh && bash -n scripts/test-validate-secrets.sh
+
+      - name: Run validator test suite
+        run: bash scripts/test-validate-secrets.sh
