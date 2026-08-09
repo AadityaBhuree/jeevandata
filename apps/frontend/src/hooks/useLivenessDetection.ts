@@ -3,7 +3,12 @@
 import { useCallback, useRef, useState } from 'react';
 import { calculateBothEyesEAR } from '@/lib/face-geometry';
 
-export type LivenessStatus = 'idle' | 'waiting_for_blink' | 'blink_detected' | 'verified' | 'failed';
+export type LivenessStatus =
+  | 'idle'
+  | 'waiting_for_blink'
+  | 'blink_detected'
+  | 'verified'
+  | 'failed';
 
 interface UseLivenessDetectionOptions {
   /** Threshold for blink detection (EAR below this = blink). Default: 0.20 */
@@ -24,9 +29,7 @@ interface UseLivenessDetectionReturn {
   /** Start the liveness challenge */
   startChallenge: () => void;
   /** Process a new frame's landmarks for blink detection */
-  processFrame: (
-    landmarks: Array<{ x: number; y: number; z?: number }>,
-  ) => void;
+  processFrame: (landmarks: Array<{ x: number; y: number; z?: number }>) => void;
   /** Reset liveness state */
   reset: () => void;
 }
@@ -34,12 +37,7 @@ interface UseLivenessDetectionReturn {
 export function useLivenessDetection(
   options: UseLivenessDetectionOptions = {},
 ): UseLivenessDetectionReturn {
-  const {
-    blinkThreshold = 0.20,
-    requiredBlinks = 2,
-    challengeTimeoutMs = 8000,
-    autoStart = false,
-  } = options;
+  const { blinkThreshold = 0.2, requiredBlinks = 2, challengeTimeoutMs = 8000 } = options;
 
   const [status, setStatus] = useState<LivenessStatus>('idle');
   const [blinkCount, setBlinkCount] = useState(0);
