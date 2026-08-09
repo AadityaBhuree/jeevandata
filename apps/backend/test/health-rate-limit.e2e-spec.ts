@@ -104,12 +104,8 @@ describe('HealthController Rate Limiting (e2e)', () => {
 
   describe('@SkipThrottle() on HealthController', () => {
     it('should never return 429 on /health/live after 10 rapid requests', async () => {
-      const promises = Array.from({ length: 10 }, () =>
-        request(app.getHttpServer()).get('/health/live').expect(HttpStatus.OK),
-      );
-      const results = await Promise.all(promises);
-
-      for (const res of results) {
+      for (let i = 0; i < 10; i++) {
+        const res = await request(app.getHttpServer()).get('/health/live').expect(HttpStatus.OK);
         expect(res.body).toHaveProperty('status', 'alive');
       }
       // Verify the service was actually called 10 times
@@ -117,24 +113,16 @@ describe('HealthController Rate Limiting (e2e)', () => {
     });
 
     it('should never return 429 on /health/ready after 10 rapid requests', async () => {
-      const promises = Array.from({ length: 10 }, () =>
-        request(app.getHttpServer()).get('/health/ready').expect(HttpStatus.OK),
-      );
-      const results = await Promise.all(promises);
-
-      for (const res of results) {
+      for (let i = 0; i < 10; i++) {
+        const res = await request(app.getHttpServer()).get('/health/ready').expect(HttpStatus.OK);
         expect(res.body).toHaveProperty('status', 'healthy');
       }
       expect(mockHealthService.getReadiness).toHaveBeenCalledTimes(10);
     });
 
     it('should never return 429 on /health after 10 rapid requests', async () => {
-      const promises = Array.from({ length: 10 }, () =>
-        request(app.getHttpServer()).get('/health').expect(HttpStatus.OK),
-      );
-      const results = await Promise.all(promises);
-
-      for (const res of results) {
+      for (let i = 0; i < 10; i++) {
+        const res = await request(app.getHttpServer()).get('/health').expect(HttpStatus.OK);
         expect(res.body).toHaveProperty('status', 'healthy');
       }
       expect(mockHealthService.getHealth).toHaveBeenCalledTimes(10);
