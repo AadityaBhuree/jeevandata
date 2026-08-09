@@ -26,25 +26,31 @@ function detectMobilePure(options: {
     (isAndroid && width >= 600 && !/mobile/.test(ua)) ||
     (isTouchDevice && width >= 768 && width <= 1024);
 
-  const isMobile =
-    width < 768 || (isTouchDevice && !isTablet) || isIOS || isAndroid;
+  const isMobile = width < 768 || (isTouchDevice && !isTablet) || isIOS || isAndroid;
 
   const hasLimitedGPU = isIOS || isAndroid;
 
-  return { isMobile, isTouchDevice, isTablet, isIOS, isAndroid, hasLimitedGPU, isLandscape, devicePixelRatio: options.dpr, screenWidth: width, screenHeight: height };
+  return {
+    isMobile,
+    isTouchDevice,
+    isTablet,
+    isIOS,
+    isAndroid,
+    hasLimitedGPU,
+    isLandscape,
+    devicePixelRatio: options.dpr,
+    screenWidth: width,
+    screenHeight: height,
+  };
 }
 
 describe('useMobileDetection', () => {
   // Save originals
-  let originalUserAgent: string;
-  let originalTouchPoints: number;
   let originalWidth: number;
   let originalHeight: number;
   let originalDpr: number;
 
   beforeEach(() => {
-    originalUserAgent = navigator.userAgent;
-    originalTouchPoints = navigator.maxTouchPoints;
     originalWidth = window.innerWidth;
     originalHeight = window.innerHeight;
     originalDpr = window.devicePixelRatio;
