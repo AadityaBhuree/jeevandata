@@ -71,3 +71,10 @@ openssl rand -hex 24       # DB / Redis passwords
 ```
 
 Exits non-zero and lists every problem; safe to run in CI before a deploy.
+
+The one-liner for local dev runs the 10-check automated suite **and** validates
+the real `.env` in local mode:
+
+```bash
+make validate-secrets   # = scripts/test-validate-secrets.sh + check on apps/backend/.env
+```
