@@ -116,12 +116,42 @@ The result: shorter queues, no repeated intake questions, and early emergency sc
 
 ---
 
+## Windows Development Notes
+
+Two local-only quirks on Windows. CI on Linux is unaffected.
+
+### 1. Line endings — `pnpm format:check`
+
+Prettier is configured with `endOfLine: "lf"` (`.prettierrc`). The repo ships a
+`.gitattributes` with `* text=auto eol=lf`, so every text file is checked out as
+LF on all platforms and `pnpm format:check` passes locally. If you have an older
+checkout with CRLF files, refresh the working tree once (⚠ discards uncommitted
+changes):
+
+```bash
+git add --renormalize . && git rm -r --cached . && git reset --hard HEAD
+```
+
+### 2. Frontend build — enable Windows Developer Mode
+
+`apps/frontend/next.config.js` uses `output: 'standalone'`, which creates
+symlinks while tracing dependencies. On Windows this fails with
+`EPERM: operation not permitted, symlink ...` unless Developer Mode is enabled:
+
+1. **Settings → Privacy & security → For developers**
+2. Toggle **Developer Mode** **On** (no admin rights needed)
+3. Or run: `start ms-settings:developers`
+
+CI builds on `ubuntu-latest` are unaffected — symlinks are always permitted there.
+
+---
+
 ## Installation
 
 ### 1. Clone & install dependencies
 
 ```bash
-git clone https://github.com/AadityaBhuree/face-detection.git jeevandata
+git clone https://github.com/AadityaBhuree/jeevandata.git
 cd jeevandata
 pnpm install
 ```
