@@ -3,13 +3,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { socketService } from '@/services/socket';
 
-interface TranscriptionResult {
-  /** The transcribed text */
-  text: string;
-  /** Whether this is a final transcription (vs interim) */
-  isFinal: boolean;
-}
-
 interface UseTranscriptionOptions {
   /** Called when a final transcription is received */
   onFinalText: (text: string) => void;
