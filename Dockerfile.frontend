@@ -13,6 +13,8 @@ RUN pnpm install --frozen-lockfile --prod
 FROM base AS builder
 COPY . .
 RUN pnpm install --frozen-lockfile
+# Shared packages must be built first (next build resolves @jeevandata/* via dist).
+RUN pnpm --filter '@jeevandata/shared-*' build
 ENV NEXT_TELEMETRY_DISABLED=1
 
 # Injected at build time by CI (docker/build-push-action build-args) so the
