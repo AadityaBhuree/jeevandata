@@ -18,22 +18,19 @@ RUN pnpm install --frozen-lockfile
 RUN pnpm --filter '@jeevandata/shared-*' build
 # Prisma client must be generated before compiling (TS2307/TS2694 otherwise).
 RUN pnpm --filter @jeevandata/backend prisma:generate
-# Stage the generated @prisma/client to a stable path so the runner can copy
-# it without depending on pnpm's version-hashed virtual-store directory name.
-RUN mkdir -p /app/prisma-client && cp -a /app/node_modules/.pnpm/@prisma+client@*/node_modules/@prisma/client/. /app/prisma-client/
 RUN pnpm --filter @jeevandata/backend build
 
 # ─── Production ───────────────────────────────
 FROM base AS runner
 ENV NODE_ENV=production
 
-COPY --from=deps /app/node_modules ./node_modules
-COPY --from=deps /app/apps/backend/node_modules ./apps/backend/node_modules
-# The deps stage only ran a --prod install (no schema, no prisma CLI), so its
-# @prisma/client has no generated code. Overlay the builder's generated client
-# (from prisma:generate) into the pnpm virtual store so runtime imports resolve.
-COPY --from=builder /app/prisma-client /app/prisma-client
-RUN cp -a /app/prisma-client/. /app/node_modules/.pnpm/@prisma+client@*/node_modules/@prisma/client/ && rm -rf /app/prisma-client
+# node_modules comes from the BUILDER (full install incl. devDeps + generated
+# @prisma/client). The --prod deps stage's install is a different pnpm virtual
+# store (no generated client, different peer-dep hash), so copying from it broke
+# runtime prisma resolution (@prisma/client did not initialize yet).
+# TODO(slim): switch deps stage to `pnpm deploy` to shrink the image again.
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/apps/backend/node_modules ./apps/backend/node_modules
 # Run as a non-root user (k8s manifests enforce runAsNonRoot + runAsUser 1000).
 # node:20-alpine already ships a 'node' user with uid/gid 1000, so reuse it
 # instead of addgroup/adduser (gid 1000 is already in use in the base image).
