@@ -26,8 +26,8 @@
     "db:seed": "pnpm --filter @jeevandata/backend prisma db seed",
     "docker:up": "docker compose up -d",
     "docker:down": "docker compose down",
-    "prepare": "husky",
-    "postinstall": "husky"
+    "prepare": "husky || node -e \"process.exit(0)\"",
+    "postinstall": "husky || node -e \"process.exit(0)\""
   },
   "devDependencies": {
     "@types/node": "^22.10.0",
