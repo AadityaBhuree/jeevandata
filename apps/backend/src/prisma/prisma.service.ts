@@ -23,8 +23,18 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
   }
 
   async onModuleInit(): Promise<void> {
-    await this.$connect();
-    this.logger.log('Connected to PostgreSQL database');
+    try {
+      await this.$connect();
+      this.logger.log('Connected to PostgreSQL database');
+    } catch (error) {
+      // Do NOT abort Nest startup when the DB is briefly unreachable (k8s API
+      // pods may start before the DB pod; the readiness probe reports DB health
+      // separately). Prisma reconnects lazily on first query. Without this, a
+      // down DB takes the whole API down — the smoke test caught exactly that.
+      this.logger.warn(
+        `PostgreSQL unavailable at boot, deferring connect: ${(error as Error).message}`,
+      );
+    }
 
     if (process.env.NODE_ENV === 'development') {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
