@@ -13,6 +13,9 @@ RUN pnpm install --frozen-lockfile --prod
 FROM base AS builder
 COPY . .
 RUN pnpm install --frozen-lockfile
+# Shared packages must be built first: ts-jest/tsc resolve @jeevandata/*
+# through node_modules -> dist, which does not exist on a fresh clone.
+RUN pnpm --filter '@jeevandata/shared-*' build
 RUN pnpm --filter @jeevandata/backend build
 
 # ─── Production ───────────────────────────────
