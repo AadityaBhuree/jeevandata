@@ -97,6 +97,9 @@ jobs:
       - name: Pull backend image
         run: docker pull ${{ env.IMAGE_BACKEND }}:${{ github.sha }}
 
+      - name: Start Redis (BullMQ dependency)
+        run: docker run -d --name smoke-redis -p 6379:6379 redis:7-alpine
+
       - name: Run backend container
         run: |
           docker run -d --name smoke-backend -p 4000:4000 \
@@ -121,7 +124,7 @@ jobs:
 
       - name: Clean up
         if: always()
-        run: docker rm -f smoke-backend || true
+        run: docker rm -f smoke-backend smoke-redis || true
 
   deploy-staging:
     name: Deploy to staging
