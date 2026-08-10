@@ -97,14 +97,16 @@ jobs:
       - name: Pull backend image
         run: docker pull ${{ env.IMAGE_BACKEND }}:${{ github.sha }}
 
-      - name: Start Redis (BullMQ dependency)
-        run: docker run -d --name smoke-redis -p 6379:6379 redis:7-alpine
-
-      - name: Run backend container
+      - name: Create shared network + start Redis (BullMQ dependency)
         run: |
-          docker run -d --name smoke-backend -p 4000:4000 \
+          docker network create smoke-net
+          docker run -d --network smoke-net --name smoke-redis redis:7-alpine
+
+      - name: Run backend container (on smoke-net so REDIS_URL resolves)
+        run: |
+          docker run -d --network smoke-net --name smoke-backend -p 4000:4000 \
             -e DATABASE_URL="$DATABASE_URL" \
-            -e REDIS_URL="$REDIS_URL" \
+            -e REDIS_URL="redis://smoke-redis:6379" \
             -e JWT_SECRET="$JWT_SECRET" \
             -e NODE_ENV=test \
             ${{ env.IMAGE_BACKEND }}:${{ github.sha }}
@@ -124,7 +126,7 @@ jobs:
 
       - name: Clean up
         if: always()
-        run: docker rm -f smoke-backend smoke-redis || true
+        run: docker rm -f smoke-backend smoke-redis || true; docker network rm smoke-net || true
 
   deploy-staging:
     name: Deploy to staging
