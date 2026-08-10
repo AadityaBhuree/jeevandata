@@ -83,10 +83,14 @@ describe('FaceService', () => {
       expect(mockQdrantClient.createCollection).not.toHaveBeenCalled();
     });
 
-    it('should handle Qdrant connection errors gracefully', async () => {
+    it('should handle Qdrant connection errors gracefully (boot must not fail)', async () => {
+      // Qdrant is optional at boot: a down vector DB must not abort Nest startup
+      // (the readiness probe reports its health separately). onModuleInit should
+      // resolve and the collection creation is deferred.
       mockQdrantClient.getCollections.mockRejectedValue(new Error('Connection refused'));
 
-      await expect(service.onModuleInit()).rejects.toThrow('Connection refused');
+      await expect(service.onModuleInit()).resolves.toBeUndefined();
+      expect(mockQdrantClient.createCollection).not.toHaveBeenCalled();
     });
   });
 
