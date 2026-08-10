@@ -52,7 +52,12 @@ export class FaceService {
       }
     } catch (error) {
       this.metrics.recordQdrantLatency('get_collections', Date.now() - start);
-      throw error;
+      // Do NOT rethrow: Qdrant is optional at boot (the readiness probe reports
+      // its health separately). Rethrowing here aborts Nest startup when the
+      // vector DB is down, taking the whole API down with it. Log and continue.
+      this.logger.warn(
+        `Qdrant unavailable at boot, deferring collection ensure: ${(error as Error).message}`,
+      );
     }
   }
 
