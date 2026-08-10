@@ -65,6 +65,10 @@ async function bootstrap() {
 }
 
 bootstrap().catch((err) => {
-  new Logger('Bootstrap').error('Failed to start server', err);
+  // Use console.error (NOT the buffered Nest logger): bufferLogs: true means
+  // the Nest logger only flushes after app.listen() succeeds — if bootstrap
+  // throws, buffered output is lost and the real error is invisible (the smoke
+  // test saw exactly this: only direct console.warn lines appeared).
+  console.error('Failed to start server:', err);
   process.exit(1);
 });
