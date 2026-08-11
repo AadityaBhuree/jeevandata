@@ -1,0 +1,58 @@
+# =============================================================================
+# Jeevandata - Caddy for LOCAL development (Phase 7.5)
+#
+# Same reverse-proxy + security-header behavior as Caddyfile, but uses an
+# internal CA + self-signed certs so no Let's Encrypt / public DNS is needed.
+# Browsers will warn about the self-signed cert - that is expected. To make
+# the warning go away on your own machine, trust the generated CA at:
+#   ./data/caddy/pki/authorities/local/root.crt  (see docs/tls-setup.md)
+#
+# Use with:  docker compose -f docker-compose.yml -f docker-compose.app.yml \
+#              -f docker-compose.tls.local.yml up
+#
+# Hosts resolve via /etc/hosts:
+#   127.0.0.1  app.jeevandata.local api.jeevandata.local
+# =============================================================================
+
+{
+	# Internal CA - generates a local root + leaf certs, no public ACME.
+	local_certs
+}
+
+# ─── Frontend (Next.js standalone) ────────────────────────────────────────────
+app.jeevandata.local {
+	reverse_proxy frontend:3000
+
+	encode zstd gzip
+
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self' https: wss: ws:; worker-src 'self' blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		Permissions-Policy "camera=(self), microphone=(self), geolocation=()"
+		-Server
+	}
+
+	handle_path /_next/static/* {
+		reverse_proxy frontend:3000
+		header Cache-Control "public, max-age=31536000, immutable"
+	}
+}
+
+# ─── Backend (NestJS API) ──────────────────────────────────────────────────────
+api.jeevandata.local {
+	reverse_proxy backend:4000
+
+	encode zstd gzip
+
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "no-referrer"
+		Permissions-Policy "camera=(), microphone=()"
+		-Server
+	}
+}
