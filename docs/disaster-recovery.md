@@ -8,13 +8,13 @@
 
 ## 1. Backup inventory
 
-| Component  | Artifact(s) per run          | Schedule (cron)               | Remote location                      | Retention |
-| :--------- | :--------------------------- | :---------------------------- | :----------------------------------- | :-------- |
-| PostgreSQL | `postgres.dump` (custom fmt) | daily `0 2 * * *`             | `<bucket>/<STAMP>/postgres.dump`     | 14 days   |
-| PostgreSQL | `pg_base/` (physical base)   | weekly `0 3 * * 0`            | `<bucket>/<STAMP>/pg_base/`          | 14 days   |
-| PostgreSQL | `wal/*.gz` (WAL archive)     | continuous (every backup run) | `<bucket>/<STAMP>/wal/`              | 14 days   |
-| Redis      | `redis.rdb`                  | daily `0 2 * * *`             | `<bucket>/<STAMP>/redis.rdb`         | 14 days   |
-| Qdrant     | `qdrant-<col>.snapshot`      | daily `0 2 * * *`             | `<bucket>/<STAMP>/qdrant-*.snapshot` | 14 days   |
+| Component  | Artifact(s) per run          | Schedule (cron)                          | Remote location                      | Retention |
+| :--------- | :--------------------------- | :--------------------------------------- | :----------------------------------- | :-------- |
+| PostgreSQL | `postgres.dump` (custom fmt) | daily `0 2 * * *`                        | `<bucket>/<STAMP>/postgres.dump`     | 14 days   |
+| PostgreSQL | `pg_base/` (physical base)   | weekly `0 3 * * 0`                       | `<bucket>/<STAMP>/pg_base/`          | 14 days   |
+| PostgreSQL | `wal/*` (WAL segments)       | every backup run (archived continuously) | `<bucket>/<STAMP>/wal/`              | 14 days   |
+| Redis      | `redis.rdb`                  | daily `0 2 * * *`                        | `<bucket>/<STAMP>/redis.rdb`         | 14 days   |
+| Qdrant     | `qdrant-<col>.snapshot`      | daily `0 2 * * *`                        | `<bucket>/<STAMP>/qdrant-*.snapshot` | 14 days   |
 
 - **Bucket:** `jeevandata-backups` on the S3/R2 endpoint (MinIO `http://minio:9000` locally, Cloudflare R2 in production).
 - **Retention:** objects older than `BACKUP_RETENTION_DAYS` (default 14) are pruned automatically by `mc rm --older-than`.
@@ -67,7 +67,8 @@ cat restore/postgres.dump | docker exec -i jeevandata-postgres-restore   pg_rest
 ### 4.2 Point-in-time recovery (base + WAL replay)
 
 Requires a weekly `pg_base/` run **plus** the `wal/` segments from that run and
-**all subsequent runs** up to your target time.
+**all subsequent runs** up to your target time. Segments are archived
+uncompressed (see the `archive_command` in `docker-compose.yml`).
 
 ```bash
 # 1. Restore the physical base into the data dir
