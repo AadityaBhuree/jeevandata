@@ -1,0 +1,20 @@
+# =============================================================================
+# Jeevandata - Caddy LOCAL override (Phase 7.5)
+#
+# Swap the Let's Encrypt Caddyfile for the self-signed local one and map the
+# internal CA data volume. Combine with docker-compose.tls.yml:
+#
+#   docker compose -f docker-compose.yml -f docker-compose.tls.yml \
+#     -f docker-compose.tls.local.yml up -d
+#
+# Then add to your hosts file (C:\Windows\System32\drivers\etc\hosts):
+#   127.0.0.1  app.jeevandata.local api.jeevandata.local
+#
+# The self-signed warning is expected; to trust it, import the root CA from
+# ./data/caddy/pki/authorities/local/root.crt (see docs/tls-setup.md).
+# =============================================================================
+
+services:
+  caddy:
+    volumes:
+      - ./caddy/Caddyfile.local:/etc/caddy/Caddyfile:ro
