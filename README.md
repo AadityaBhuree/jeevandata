@@ -524,7 +524,7 @@ All of Phases 1–6 are **complete and shipped**. The detailed, step-by-step pla
 - [x] **Phase 4 — Authentication & Multi-Tenancy**: register/login/refresh/logout endpoints, RBAC guards + decorators, API-key auth, clinic multi-tenancy, frontend login UI + role-gated routes
 - [x] **Phase 5 — UI/UX Excellence**: design-system animations, dark mode, accessibility (axe + keyboard), responsive kiosk/dashboard redesign
 - [x] **Phase 6 — Feature Expansion**: patient registration UI, mobile camera PWA, multilingual intake (EN/HI/MR/ES), advanced a11y, admin analytics dashboard, HIPAA audit module, offline mode with encrypted IndexedDB + idempotent sync, performance monitoring & alerting (Prometheus + admin panels)
-- [ ] **Phase 7 — Infrastructure & Deployment** (remaining): CI/CD pipeline, container orchestration, secrets management, DB backup & DR, SSL/TLS + domain, Prometheus/Grafana monitoring stack
+- [x] **Phase 7 — Infrastructure & Deployment** (5/6 shipped): CI/CD pipeline (GitHub Actions CI + build/push/smoke deploy), container orchestration (k8s manifests + resource limits + HPA + Ingress TLS), secrets management (`validate-secrets.sh` + rotation runbook), **DB backup & disaster recovery** (daily `pg_dump` + WAL PITR + Qdrant snapshots + Redis RDB → S3/R2, `docs/disaster-recovery.md`), Prometheus/Grafana/Alertmanager monitoring stack. **Remaining:** SSL/TLS + domain setup (7.5)
 
 ---
 
