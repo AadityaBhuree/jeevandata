@@ -25,7 +25,7 @@ services:
       -c wal_level=replica
       -c archive_mode=on
       -c archive_timeout=300
-      -c "archive_command=mkdir -p /var/lib/postgresql/data/wal_archive && test ! -f /var/lib/postgresql/data/wal_archive/%f && cp %p /var/lib/postgresql/data/wal_archive/%f"
+      -c "archive_command=mkdir -p /var/lib/postgresql/data/wal_archive && cp %p /var/lib/postgresql/data/wal_archive/%f"
     environment:
       POSTGRES_USER: jeevandata
       POSTGRES_PASSWORD: jeevandata_secret
