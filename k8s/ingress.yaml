@@ -10,6 +10,17 @@ metadata:
     nginx.ingress.kubernetes.io/proxy-body-size: 50m
     nginx.ingress.kubernetes.io/proxy-read-timeout: '120'
     cert-manager.io/cluster-issuer: letsencrypt-prod
+    # HSTS + security headers. NOTE: configuration-snippet requires
+    # --allow-snippet-annotations=true on the ingress-nginx controller.
+    nginx.ingress.kubernetes.io/ssl-redirect: 'true'
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      more_set_headers "Strict-Transport-Security: max-age=31536000; includeSubDomains";
+      more_set_headers "X-Content-Type-Options: nosniff";
+      more_set_headers "X-Frame-Options: DENY";
+      more_set_headers "Referrer-Policy: strict-origin-when-cross-origin";
+      more_set_headers "Permissions-Policy: camera=(self), microphone=(self), geolocation=()";
+      more_set_headers "Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self' https: wss: ws:; worker-src 'self' blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'";
+      server_tokens off;
 spec:
   ingressClassName: nginx
   tls:
