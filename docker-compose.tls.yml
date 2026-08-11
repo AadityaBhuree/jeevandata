@@ -1,0 +1,51 @@
+# =============================================================================
+# Jeevandata - Caddy reverse proxy (production TLS, Phase 7.5)
+#
+# Adds the Caddy edge proxy in front of the app. Caddy obtains + renews
+# Let's Encrypt certificates automatically for APP_DOMAIN / API_DOMAIN and
+# sets HSTS/CSP/security headers (see caddy/Caddyfile).
+#
+# Usage:
+#   docker compose -f docker-compose.yml -f docker-compose.tls.yml up -d
+#
+# Requires (set in your .env next to this file):
+#   APP_DOMAIN   app.jeevandata.health
+#   API_DOMAIN   api.jeevandata.health
+#   ACME_EMAIL   you@example.com           (optional)
+#
+# For local self-signed testing add: -f docker-compose.tls.local.yml
+# =============================================================================
+
+services:
+  caddy:
+    image: caddy:2.9-alpine
+    container_name: jeevandata-caddy
+    restart: unless-stopped
+    depends_on:
+      - frontend
+      - backend
+    ports:
+      - '80:80'
+      - '443:443'
+      - '443:443/udp' # HTTP/3 (QUIC) - browsers fall back to HTTP/2 if UDP is blocked
+    environment:
+      APP_DOMAIN: ${APP_DOMAIN:?set APP_DOMAIN in .env e.g. app.jeevandata.health}
+      API_DOMAIN: ${API_DOMAIN:?set API_DOMAIN in .env e.g. api.jeevandata.health}
+      ACME_EMAIL: ${ACME_EMAIL:-}
+      CADDY_STAGING: ${CADDY_STAGING:-false}
+    volumes:
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    # No explicit networks: the base compose has none, so caddy joins the
+    # auto-created default network and can resolve frontend/backend by name.
+    healthcheck:
+      test: ['CMD', 'wget', '-q', '--spider', 'http://localhost:2019/config/']
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  caddy_data:
+  caddy_config:
