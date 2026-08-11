@@ -26,7 +26,9 @@ app.jeevandata.local {
 	encode zstd gzip
 
 	header {
-		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		# NO HSTS here: it is a self-signed .local host. Once a browser caches
+		# HSTS for this host it refuses plain HTTP and only tries HTTPS with an
+		# untrusted cert, locking the user behind the warning.
 		Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self' https: wss: ws:; worker-src 'self' blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
 		X-Content-Type-Options "nosniff"
 		X-Frame-Options "DENY"
@@ -35,7 +37,7 @@ app.jeevandata.local {
 		-Server
 	}
 
-	handle_path /_next/static/* {
+	handle /_next/static/* {
 		reverse_proxy frontend:3000
 		header Cache-Control "public, max-age=31536000, immutable"
 	}

@@ -56,7 +56,7 @@
 	}
 
 	# Long-cache immutable hashed build assets (_next/static are content-hashed).
-	handle_path /_next/static/* {
+	handle /_next/static/* {
 		reverse_proxy frontend:3000
 		header Cache-Control "public, max-age=31536000, immutable"
 	}
