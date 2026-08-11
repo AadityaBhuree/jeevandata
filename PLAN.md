@@ -1,7 +1,7 @@
 # Jeevandata — Engineering Roadmap
 
 > **Version:** 0.2.0 | **Status:** Active Development
-> **Phases 1–6 Complete** — Phase 7 (Infrastructure & Deployment) 5/6 steps done (7.1 CI/CD ✅, 7.2 orchestration ✅, 7.3 secrets ✅, 7.4 backup/DR ✅, 7.6 monitoring ✅ — only 7.5 SSL/TLS remains)
+> **All phases complete** — Phase 7 (Infrastructure & Deployment) 6/6 steps done (7.1 CI/CD ✅, 7.2 orchestration ✅, 7.3 secrets ✅, 7.4 backup/DR ✅, 7.5 SSL/TLS ✅, 7.6 monitoring ✅). Jeevandata is feature-complete per this roadmap.
 
 ---
 
@@ -15,16 +15,16 @@ Each phase contains numbered steps. Every step is sized for a **single atomic co
 
 ## Progress Overview
 
-| Phase | Title                          | Status             | Steps      | Est. Effort |
-| :---- | :----------------------------- | :----------------- | :--------- | :---------- |
-| **1** | Emergency Repairs              | ✅ **Done**        | 7/7        | Completed   |
-| **2** | Testing & Validation           | ✅ **Done**        | 8/8        | Completed   |
-| **3** | Backend Production Hardening   | ✅ **Done**        | 7/7        | Completed   |
-| **4** | Authentication & Multi-Tenancy | ✅ **Done**        | 6/6        | Completed   |
-| **5** | UI/UX Excellence               | ✅ **Done**        | 8/8        | Completed   |
-| **6** | Feature Expansion              | ✅ **Done**        | 8/8        | Completed   |
-| **7** | Infrastructure & Deployment    | 🔶 **In progress** | 5/6        | 1–2h        |
-|       | **Total remaining**            |                    | **1 step** | **1–2h**    |
+| Phase | Title                          | Status      | Steps      | Est. Effort |
+| :---- | :----------------------------- | :---------- | :--------- | :---------- |
+| **1** | Emergency Repairs              | ✅ **Done** | 7/7        | Completed   |
+| **2** | Testing & Validation           | ✅ **Done** | 8/8        | Completed   |
+| **3** | Backend Production Hardening   | ✅ **Done** | 7/7        | Completed   |
+| **4** | Authentication & Multi-Tenancy | ✅ **Done** | 6/6        | Completed   |
+| **5** | UI/UX Excellence               | ✅ **Done** | 8/8        | Completed   |
+| **6** | Feature Expansion              | ✅ **Done** | 8/8        | Completed   |
+| **7** | Infrastructure & Deployment    | ✅ **Done** | 6/6        | Completed   |
+|       | **Total remaining**            |             | **1 step** | **1–2h**    |
 
 ---
 
@@ -345,7 +345,7 @@ Validate all critical env vars at startup (both backend and frontend):
 
 ---
 
-## Phase 7 — Infrastructure & Deployment 🔶 (5/6 steps done)
+## Phase 7 — Infrastructure & Deployment ✅ (6/6 steps done)
 
 > **Goal:** Production-ready deployment with CI/CD, container orchestration, secrets management, and disaster recovery.
 
@@ -412,9 +412,20 @@ Validate all critical env vars at startup (both backend and frontend):
 
 **Est. effort:** 2h (✅ complete)
 
-### Step 7.5 — SSL/TLS & domain setup
+### Step 7.5 — SSL/TLS & domain setup ✅
 
-- Caddy/nginx with Let's Encrypt; staging + production domains; CORS; HSTS/CSP headers
+**Delivered:**
+
+- `caddy/Caddyfile` — Caddy reverse proxy: automatic Let's Encrypt (no certbot cron), HTTP/3, two virtual hosts (`APP_DOMAIN` → frontend:3000, `API_DOMAIN` → backend:4000), long-cache immutable `/_next/static`, edge security headers (HSTS 1y + subdomains, kiosk-tailored CSP with camera/mic/blob/WebSocket allowances, nosniff, frame DENY, referrer + permissions policies, Server banner removed)
+- `caddy/Caddyfile.local` — self-signed variant (internal CA `local_certs`) for offline TLS testing; documented root-CA trust path
+- `docker-compose.tls.yml` + `docker-compose.tls.local.yml` — Caddy compose service (80/443, `APP_DOMAIN`/`API_DOMAIN`/`ACME_EMAIL` env, healthcheck, `caddy_data`/`caddy_config` volumes); local override swaps in the self-signed Caddyfile
+- Backend `main.ts` — `trust proxy` via Express adapter (correct `req.ip`/`req.protocol` behind the edge) + explicit helmet HSTS (1y, includeSubDomains) so direct API deployments still enforce HTTPS
+- Frontend `next.config.js` — `headers()` (HSTS, nosniff, X-Frame-Options DENY, referrer, permissions-policy) for direct deploys; CSP intentionally left at the edge
+- `k8s/ingress.yaml` — `ssl-redirect: true` + HSTS/CSP/security headers via `configuration-snippet` (requires `allowSnippetAnnotations` on ingress-nginx)
+- `docs/tls-setup.md` — 211-line runbook: Caddy vs cert-manager paths, DNS prereqs, env vars, header table, CORS scheme note, local self-signed workflow, troubleshooting, renewal/monitoring
+- Validated: `caddy validate` (prod + local) both `Valid configuration`, `docker compose config` passes (with a root `.env` present — app.yml requires it), backend 321 unit tests green, backend + frontend `tsc --noEmit` clean, next.config.js loads with `headers` function
+
+**Est. effort:** 1.5h (✅ complete — Phase 7 now 6/6)
 
 **Est. effort:** 1.5h
 
@@ -475,7 +486,7 @@ Validate all critical env vars at startup (both backend and frontend):
 | Container orchestration                                | Phase 7.2     | ✅     |
 | Secrets management                                     | Phase 7.3     | ✅     |
 | DB backup & disaster recovery                          | Phase 7.4     | ✅     |
-| SSL/TLS & domain                                       | Phase 7.5     | ⬜     |
+| SSL/TLS & domain                                       | Phase 7.5     | ✅     |
 | Monitoring stack (Prometheus + Grafana + Alertmanager) | Phase 7.6     | ✅     |
 
 ---
@@ -514,7 +525,7 @@ git commit -m "feat: complete patient registration dialog with form validation"
 
 ## How to Use This Plan
 
-1. **Pick a phase** — Phase 7 (Infrastructure & Deployment) is the only remaining phase; **5/6 done**, next up is 7.5 (SSL/TLS & domain)
+1. **All 7 phases are complete (7/7).** The roadmap below is fully shipped; use it as a reference for maintenance, re-runs, and new features
 2. **Pick a step** — Each step is self-contained and commit-sized
 3. **Implement** — Follow the Elite Engineer protocol: research → plan → implement → verify → report
 4. **Commit & push** — Use conventional commits, one logical change per commit
