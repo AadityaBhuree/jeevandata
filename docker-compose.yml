@@ -16,6 +16,16 @@ services:
     restart: unless-stopped
     ports:
       - "5432:5432"
+    # PITR (Phase 7.4): archive every WAL segment (switch forced every 5 min so
+    # there is always a recent archive point) into a subdir of the data volume.
+    # The backup container mounts postgres-data read-only and ships these to
+    # S3/R2. wal_level=replica is the PG16 default; set explicitly for clarity.
+    command: >
+      postgres
+      -c wal_level=replica
+      -c archive_mode=on
+      -c archive_timeout=300
+      -c "archive_command=mkdir -p /var/lib/postgresql/data/wal_archive && test ! -f /var/lib/postgresql/data/wal_archive/%f && cp %p /var/lib/postgresql/data/wal_archive/%f"
     environment:
       POSTGRES_USER: jeevandata
       POSTGRES_PASSWORD: jeevandata_secret
@@ -138,6 +148,7 @@ services:
       /bin/sh -c "
       mc alias set local http://minio:9000 minioadmin minioadmin &&
       mc mb local/jeevandata-media --ignore-existing &&
+      mc mb local/jeevandata-backups --ignore-existing &&
       mc anonymous set download local/jeevandata-media &&
       mc policy set public local/jeevandata-media &&
       echo 'MinIO buckets initialized successfully'
@@ -314,6 +325,61 @@ services:
         reservations:
           memory: 128m
 
+  # ─── Backup & Disaster Recovery (Phase 7.4) ─────────────────
+  # Scheduled full-stack backups (postgres dump + WAL, redis RDB, qdrant
+  # snapshots) uploaded to MinIO/R2 (S3-compatible) with retention pruning.
+  # Built from docker/backup.Dockerfile; backup output streams to
+  # `docker logs jeevandata-backup`. Disable the immediate run with
+  # BACKUP_RUN_ON_START=false; schedules via BACKUP_SCHEDULE / BACKUP_BASE_SCHEDULE.
+  backup:
+    build:
+      context: .
+      dockerfile: docker/backup.Dockerfile
+    image: jeevandata-backup:local
+    container_name: jeevandata-backup
+    restart: unless-stopped
+    environment:
+      BACKUP_SCHEDULE: ${BACKUP_SCHEDULE:-0 2 * * *}
+      BACKUP_BASE_SCHEDULE: ${BACKUP_BASE_SCHEDULE:-0 3 * * 0}
+      BACKUP_RUN_ON_START: ${BACKUP_RUN_ON_START:-false}
+      BACKUP_RETENTION_DAYS: ${BACKUP_RETENTION_DAYS:-14}
+      S3_ENDPOINT: http://minio:9000
+      S3_ACCESS_KEY: minioadmin
+      S3_SECRET_KEY: minioadmin
+      S3_BUCKET: jeevandata-backups
+      PG_HOST: postgres
+      PG_PORT: "5432"
+      PG_USER: jeevandata
+      PG_PASSWORD: jeevandata_secret
+      PG_DB: jeevandata
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+      REDIS_PASSWORD: redis_secret
+      QDRANT_URL: http://qdrant:6333
+      QDRANT_COLLECTIONS: face_embeddings
+      PG_WAL_DIR: /var/lib/postgresql/data/wal_archive
+      STAGE_DIR: /staging
+    volumes:
+      - postgres-data:/var/lib/postgresql/data:ro
+      - backup-staging:/staging
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      qdrant:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    logging: *default-logging
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512m
+        reservations:
+          memory: 128m
+
 volumes:
   postgres-data:
     driver: local
@@ -328,4 +394,6 @@ volumes:
   grafana-data:
     driver: local
   alertmanager-data:
+    driver: local
+  backup-staging:
     driver: local
