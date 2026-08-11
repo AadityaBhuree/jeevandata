@@ -30,10 +30,13 @@ async function bootstrap() {
   const port = configService.get('APP_PORT', 4000);
 
   // ─── Security Middleware ──────────────────────────────────────
-  // Trust the first proxy hop (Caddy/nginx) so req.ip, req.protocol and
-  // helmet's HSTS see the real client + scheme instead of the proxy's.
-  // (INestApplication does not expose .set(); go through the Express adapter.)
-  app.getHttpAdapter().getInstance().set('trust proxy', 1);
+  // When behind Caddy/nginx, trust the first proxy hop so req.ip/req.protocol
+  // reflect the real client (needed for audit logs + rate limiting). Gated on
+  // TRUST_PROXY=1: enabling it on a directly-exposed API would let clients
+  // spoof X-Forwarded-For. (INestApplication lacks .set(); use the adapter.)
+  if (process.env.TRUST_PROXY === '1') {
+    app.getHttpAdapter().getInstance().set('trust proxy', 1);
+  }
 
   // Helmet security headers. HSTS is set explicitly so direct API exposure
   // (non-Caddy deploys) still enforces HTTPS for a full year; the Caddy edge
