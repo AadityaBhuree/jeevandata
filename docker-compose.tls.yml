@@ -29,8 +29,10 @@ services:
       - '443:443'
       - '443:443/udp' # HTTP/3 (QUIC) - browsers fall back to HTTP/2 if UDP is blocked
     environment:
-      APP_DOMAIN: ${APP_DOMAIN:?set APP_DOMAIN in .env e.g. app.jeevandata.health}
-      API_DOMAIN: ${API_DOMAIN:?set API_DOMAIN in .env e.g. api.jeevandata.health}
+      # Defaults make the local self-signed flow (tls.local.yml) work with no
+      # .env; PRODUCTION must set both explicitly (see docs/tls-setup.md).
+      APP_DOMAIN: ${APP_DOMAIN:-app.jeevandata.health}
+      API_DOMAIN: ${API_DOMAIN:-api.jeevandata.health}
       ACME_EMAIL: ${ACME_EMAIL:-}
       CADDY_STAGING: ${CADDY_STAGING:-false}
     volumes:
@@ -40,7 +42,8 @@ services:
     # No explicit networks: the base compose has none, so caddy joins the
     # auto-created default network and can resolve frontend/backend by name.
     healthcheck:
-      test: ['CMD', 'wget', '-q', '--spider', 'http://localhost:2019/config/']
+      # BusyBox wget (present in caddy:2.9-alpine) - no --spider reliance.
+      test: ['CMD', 'wget', '-q', '-O', '/dev/null', 'http://localhost:2019/config/']
       interval: 30s
       timeout: 5s
       retries: 3
