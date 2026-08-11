@@ -30,7 +30,23 @@ async function bootstrap() {
   const port = configService.get('APP_PORT', 4000);
 
   // ─── Security Middleware ──────────────────────────────────────
-  app.use(helmet());
+  // Trust the first proxy hop (Caddy/nginx) so req.ip, req.protocol and
+  // helmet's HSTS see the real client + scheme instead of the proxy's.
+  // (INestApplication does not expose .set(); go through the Express adapter.)
+  app.getHttpAdapter().getInstance().set('trust proxy', 1);
+
+  // Helmet security headers. HSTS is set explicitly so direct API exposure
+  // (non-Caddy deploys) still enforces HTTPS for a full year; the Caddy edge
+  // additionally serves CSP/HSTS for browser traffic (see caddy/Caddyfile).
+  app.use(
+    helmet({
+      hsts: {
+        maxAge: 31536000, // 1 year
+        includeSubDomains: true,
+        preload: false,
+      },
+    }),
+  );
 
   // ─── Correlation ID ──────────────────────────────────────────
   app.use(new CorrelationIdMiddleware().use);
