@@ -5,6 +5,26 @@ const nextConfig = {
   // Standalone output so Dockerfile.frontend can copy .next/standalone
   // (self-contained server bundle with no node_modules in the image).
   output: 'standalone',
+
+  // Security headers for direct frontend deploys (no Caddy edge). When served
+  // behind Caddy (docker-compose.tls.yml) these are redundant but harmless -
+  // Caddy's edge headers win. CSP intentionally lives at the edge (Caddyfile)
+  // because Next.js static chunks need 'unsafe-inline'/'unsafe-eval' and a
+  // strict per-route CSP would break them.
+  async headers() {
+    return [
+      {
+        source: '/(.*)',
+        headers: [
+          { key: 'Strict-Transport-Security', value: 'max-age=31536000; includeSubDomains' },
+          { key: 'X-Content-Type-Options', value: 'nosniff' },
+          { key: 'X-Frame-Options', value: 'DENY' },
+          { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+          { key: 'Permissions-Policy', value: 'camera=(self), microphone=(self), geolocation=()' },
+        ],
+      },
+    ];
+  },
 };
 
 const isDev = process.env.NODE_ENV === 'development';
