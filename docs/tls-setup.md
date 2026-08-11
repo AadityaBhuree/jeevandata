@@ -167,8 +167,13 @@ kubectl get certificate   # cert should become Ready within a minute or two
 | `-Server`                   | (removed)                                                     | hide Caddy version banner            |
 
 The backend also sets helmet HSTS itself (`apps/backend/src/main.ts`) for
-any deployment that exposes the API directly, and `trust proxy` so
-`req.ip`/`req.protocol` stay correct behind the edge.
+any deployment that exposes the API directly. `trust proxy` is **opt-in**
+(`TRUST_PROXY=1` env) so a directly-exposed API never trusts spoofable
+`X-Forwarded-For`; set it when serving behind Caddy/nginx.
+
+> **Path difference:** the Caddy API block deliberately omits CSP (JSON API),
+> while the k8s ingress applies the same CSP to both hosts because they share
+> one Ingress. Swagger UI renders fine under it (inline scripts allowed).
 
 ---
 
