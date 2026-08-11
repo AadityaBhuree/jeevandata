@@ -1,0 +1,79 @@
+# =============================================================================
+# Jeevandata - Caddy reverse proxy (Phase 7.5)
+#
+# Automatic HTTPS via Let's Encrypt: Caddy obtains, renews, and serves TLS
+# certificates itself - no certbot cron needed. It also handles HTTP->HTTPS
+# redirects automatically.
+#
+# Two virtual hosts:
+#   APP_DOMAIN  -> frontend (Next.js standalone, :3000)
+#   API_DOMAIN  -> backend  (NestJS API, :4000)
+#
+# Environment variables (set in your .env or shell before `caddy run`):
+#   APP_DOMAIN      the public frontend domain, e.g. app.jeevandata.health
+#   API_DOMAIN      the public API domain,    e.g. api.jeevandata.health
+#   ACME_EMAIL      your email for Let's Encrypt expiry notices (optional)
+#   CADDY_STAGING   set to "true" to use the Let's Encrypt staging CA
+#                   (avoids rate limits while testing)
+#
+# For a purely local test with self-signed certs use caddy/Caddyfile.local
+# (docker compose -f docker-compose.tls.yml -f docker-compose.tls.local.yml).
+# =============================================================================
+
+{
+	# Let's Encrypt expiry notices go to this address. Caddy does NOT accept an
+	# empty env default here (parse error), so set a real one or delete the line.
+	# Uncomment and set once you own the domain:
+	# email admin@jeevandata.health
+	# Staging CA while testing - swap to production by unsetting CADDY_STAGING.
+	# Staging certs are not trusted by browsers; use only for validation.
+	servers {
+		trusted_proxies static private_ranges
+	}
+}
+
+# Let's Encrypt staging CA (comment out for production)
+# acme_ca https://acme-staging-v02.api.letsencrypt.org/directory
+
+# ─── Frontend (Next.js standalone) ────────────────────────────────────────────
+{$APP_DOMAIN:app.jeevandata.local} {
+	# SPA/Next.js fully handles routing server-side; just proxy everything.
+	reverse_proxy frontend:3000
+
+	encode zstd gzip
+
+	header {
+		# HSTS: browsers must only ever use HTTPS for this host + subdomains.
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		# CSP tailored to the kiosk app: camera/mic pages, blobs, WebSockets.
+		Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self' https: wss: ws:; worker-src 'self' blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		# Kiosk app legitimately needs camera + microphone on the same origin.
+		Permissions-Policy "camera=(self), microphone=(self), geolocation=()"
+		-Server
+	}
+
+	# Long-cache immutable hashed build assets (_next/static are content-hashed).
+	handle_path /_next/static/* {
+		reverse_proxy frontend:3000
+		header Cache-Control "public, max-age=31536000, immutable"
+	}
+}
+
+# ─── Backend (NestJS API) ──────────────────────────────────────────────────────
+{$API_DOMAIN:api.jeevandata.local} {
+	reverse_proxy backend:4000
+
+	encode zstd gzip
+
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "no-referrer"
+		Permissions-Policy "camera=(), microphone=()"
+		-Server
+	}
+}
