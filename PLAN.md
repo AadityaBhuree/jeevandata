@@ -1,7 +1,7 @@
 # Jeevandata — Engineering Roadmap
 
 > **Version:** 0.2.0 | **Status:** Active Development
-> **Phases 1–6 Complete** — Phase 7 (Infrastructure & Deployment) 4/6 steps done (7.1 CI/CD ✅, 7.2 orchestration ✅, 7.3 secrets ✅, 7.6 monitoring ✅)
+> **Phases 1–6 Complete** — Phase 7 (Infrastructure & Deployment) 5/6 steps done (7.1 CI/CD ✅, 7.2 orchestration ✅, 7.3 secrets ✅, 7.4 backup/DR ✅, 7.6 monitoring ✅ — only 7.5 SSL/TLS remains)
 
 ---
 
@@ -15,16 +15,16 @@ Each phase contains numbered steps. Every step is sized for a **single atomic co
 
 ## Progress Overview
 
-| Phase | Title                          | Status             | Steps       | Est. Effort |
-| :---- | :----------------------------- | :----------------- | :---------- | :---------- |
-| **1** | Emergency Repairs              | ✅ **Done**        | 7/7         | Completed   |
-| **2** | Testing & Validation           | ✅ **Done**        | 8/8         | Completed   |
-| **3** | Backend Production Hardening   | ✅ **Done**        | 7/7         | Completed   |
-| **4** | Authentication & Multi-Tenancy | ✅ **Done**        | 6/6         | Completed   |
-| **5** | UI/UX Excellence               | ✅ **Done**        | 8/8         | Completed   |
-| **6** | Feature Expansion              | ✅ **Done**        | 8/8         | Completed   |
-| **7** | Infrastructure & Deployment    | 🔶 **In progress** | 4/6         | 2–4h        |
-|       | **Total remaining**            |                    | **2 steps** | **2–3h**    |
+| Phase | Title                          | Status             | Steps      | Est. Effort |
+| :---- | :----------------------------- | :----------------- | :--------- | :---------- |
+| **1** | Emergency Repairs              | ✅ **Done**        | 7/7        | Completed   |
+| **2** | Testing & Validation           | ✅ **Done**        | 8/8        | Completed   |
+| **3** | Backend Production Hardening   | ✅ **Done**        | 7/7        | Completed   |
+| **4** | Authentication & Multi-Tenancy | ✅ **Done**        | 6/6        | Completed   |
+| **5** | UI/UX Excellence               | ✅ **Done**        | 8/8        | Completed   |
+| **6** | Feature Expansion              | ✅ **Done**        | 8/8        | Completed   |
+| **7** | Infrastructure & Deployment    | 🔶 **In progress** | 5/6        | 1–2h        |
+|       | **Total remaining**            |                    | **1 step** | **1–2h**    |
 
 ---
 
@@ -345,7 +345,7 @@ Validate all critical env vars at startup (both backend and frontend):
 
 ---
 
-## Phase 7 — Infrastructure & Deployment 🔶 (1/6 steps done)
+## Phase 7 — Infrastructure & Deployment 🔶 (5/6 steps done)
 
 > **Goal:** Production-ready deployment with CI/CD, container orchestration, secrets management, and disaster recovery.
 
@@ -380,12 +380,37 @@ Validate all critical env vars at startup (both backend and frontend):
 
 **Est. effort:** 1.5h (✅ complete)
 
-### Step 7.4 — Database backup & disaster recovery
+### Step 7.4 — Database backup & disaster recovery ✅ (commits `cd62245`→`6459af7`)
 
-- Daily pg_dump → S3/R2, PITR config, Qdrant snapshot schedule, Redis persistence
-- `docs/disaster-recovery.md` restore procedure
+**Delivered:**
 
-**Est. effort:** 2h
+- **`scripts/backup/backup.sh`** — full-stack backup: PostgreSQL logical dump
+  (`pg_dump -Fc`) + optional weekly physical base (`pg_basebackup -Xs`) + WAL
+  archive copy, Redis RDB (live `redis-cli --rdb` stream), and Qdrant
+  per-collection snapshots via the REST API (async creation polled); uploads
+  everything to S3/R2 (MinIO-compatible) under `<bucket>/<STAMP>/...` and prunes
+  objects older than `BACKUP_RETENTION_DAYS` (14d) via `mc rm --older-than`;
+  per-component failure tracking, non-zero exit on any failure
+- **`scripts/backup/entrypoint.sh`** — crond-based scheduler: daily logical backup
+  (`BACKUP_SCHEDULE`, default `0 2 * * *`), weekly physical base (`BACKUP_BASE_SCHEDULE`,
+  default `0 3 * * 0`), optional `BACKUP_RUN_ON_START` baseline run; log streamed
+  to stdout for `docker logs`
+- **`docker/backup.Dockerfile`** — Alpine with exactly the client tools each step
+  needs (postgresql16-client, redis-tools, curl, minio-client)
+- **`docker-compose.yml`** — new `backup` service (resource-capped, depends on
+  healthy postgres/redis/qdrant/minio, mounts `postgres-data` read-only for WAL
+  - a `backup-staging` volume); Postgres now runs with `archive_mode=on` +
+    `archive_timeout=300` archiving WAL to `wal_archive/` inside the data volume
+    (PITR enabled, ≤5 min RPO); `minio-init` also creates the `jeevandata-backups` bucket
+- **`docs/disaster-recovery.md`** — restore procedures for every artifact:
+  logical dump restore, point-in-time recovery (base + WAL replay with
+  `recovery.signal`), Redis RDB restore, Qdrant snapshot restore (multipart +
+  local-path), MinIO/R2 media, full-stack runbook, RTO/RPO table, scheduled DR
+  drill guidance
+- Validated: `bash -n` clean on both scripts, `docker compose config` passes,
+  YAML parses
+
+**Est. effort:** 2h (✅ complete)
 
 ### Step 7.5 — SSL/TLS & domain setup
 
@@ -446,10 +471,10 @@ Validate all critical env vars at startup (both backend and frontend):
 | Offline mode with IndexedDB sync                       | Phase 6.7     | ✅     |
 | Performance monitoring & alerting                      | Phase 6.8     | ✅     |
 | Browser verification tooling (CDP journey script)      | Phase 6.9     | ✅     |
-| CI/CD pipeline                                         | Phase 7.1     | ⬜     |
-| Container orchestration                                | Phase 7.2     | ⬜     |
-| Secrets management                                     | Phase 7.3     | ⬜     |
-| DB backup & disaster recovery                          | Phase 7.4     | ⬜     |
+| CI/CD pipeline                                         | Phase 7.1     | ✅     |
+| Container orchestration                                | Phase 7.2     | ✅     |
+| Secrets management                                     | Phase 7.3     | ✅     |
+| DB backup & disaster recovery                          | Phase 7.4     | ✅     |
 | SSL/TLS & domain                                       | Phase 7.5     | ⬜     |
 | Monitoring stack (Prometheus + Grafana + Alertmanager) | Phase 7.6     | ✅     |
 
@@ -489,7 +514,7 @@ git commit -m "feat: complete patient registration dialog with form validation"
 
 ## How to Use This Plan
 
-1. **Pick a phase** — Phase 7 (Infrastructure & Deployment) is the only remaining phase; **7.6 is done**, next up is 7.1 (CI/CD)
+1. **Pick a phase** — Phase 7 (Infrastructure & Deployment) is the only remaining phase; **5/6 done**, next up is 7.5 (SSL/TLS & domain)
 2. **Pick a step** — Each step is self-contained and commit-sized
 3. **Implement** — Follow the Elite Engineer protocol: research → plan → implement → verify → report
 4. **Commit & push** — Use conventional commits, one logical change per commit
