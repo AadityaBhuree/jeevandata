@@ -27,6 +27,9 @@
 	# email admin@jeevandata.health
 	# Staging CA while testing - swap to production by unsetting CADDY_STAGING.
 	# Staging certs are not trusted by browsers; use only for validation.
+	# Caddy 2.9 disables the admin API by default; the compose healthcheck
+	# probes it (localhost:2019), so opt back in on localhost only.
+	admin localhost:2019
 	servers {
 		trusted_proxies static private_ranges
 	}
