@@ -17,6 +17,9 @@
 {
 	# Internal CA - generates a local root + leaf certs, no public ACME.
 	local_certs
+	# Caddy 2.9 disables the admin API by default; the compose healthcheck
+	# probes it (localhost:2019), so opt back in on localhost only.
+	admin localhost:2019
 }
 
 # ─── Frontend (Next.js standalone) ────────────────────────────────────────────
