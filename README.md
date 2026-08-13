@@ -191,8 +191,13 @@ cp .env.example .env
 
 ```bash
 pnpm db:generate   # generate the Prisma client
-pnpm db:push       # sync the schema to PostgreSQL
+pnpm db:migrate    # apply versioned migrations (prisma/migrations/) — see below
 pnpm db:seed       # create seed clinic users (see prisma/seed.ts)
+
+> **Schema changes use versioned migrations** (`prisma migrate dev`), not
+> `db push` — db push is a best-effort sync that can silently drop columns in
+> production. Every schema change lands as a new file under
+> `apps/backend/prisma/migrations/`.
 ```
 
 ### 5. Run everything
