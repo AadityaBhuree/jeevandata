@@ -197,6 +197,64 @@ describe('SessionGateway', () => {
 
   // ─── Session rooms ───────────────────────────────────────────
 
+  describe('audio buffer memory management (8.1.4)', () => {
+    it('should evict stale buffers after the 2-minute idle window', () => {
+      // Simulate a buffer that received its last chunk >120s ago
+      const staleBuffer = { chunks: [Buffer.from('x')], lastChunkTime: Date.now() - 130_000 };
+      (gateway as unknown as { audioBuffers: Map<string, unknown> }).audioBuffers.set(
+        's-stale',
+        staleBuffer,
+      );
+      (gateway as unknown as { audioBuffers: Map<string, unknown> }).audioBuffers.set('s-fresh', {
+        chunks: [Buffer.from('y')],
+        lastChunkTime: Date.now(),
+      });
+
+      (gateway as unknown as { sweepStaleAudioBuffers: () => void }).sweepStaleAudioBuffers();
+
+      const buffers = (gateway as unknown as { audioBuffers: Map<string, unknown> }).audioBuffers;
+      expect(buffers.has('s-stale')).toBe(false);
+      expect(buffers.has('s-fresh')).toBe(true);
+    });
+
+    it('should evict a buffer that exceeds the 10MB cap and emit a friendly error', async () => {
+      const bigChunk = Buffer.alloc(6 * 1024 * 1024, 1); // 6MB — two chunks (12MB) blow the cap
+      client.data.user = { id: 'user-1', email: 'doctor@clinic.test', role: 'DOCTOR' };
+
+      await gateway.handleAudioChunk(client as unknown as Socket, {
+        sessionId: 's-big',
+        data: bigChunk,
+        chunkIndex: 0,
+        isFinal: false,
+        timestamp: Date.now(),
+      });
+      await gateway.handleAudioChunk(client as unknown as Socket, {
+        sessionId: 's-big',
+        data: bigChunk,
+        chunkIndex: 1,
+        isFinal: false,
+        timestamp: Date.now(),
+      });
+
+      const buffers = (gateway as unknown as { audioBuffers: Map<string, unknown> }).audioBuffers;
+      expect(buffers.has('s-big')).toBe(false);
+      // The friendly message is emitted to the room instead of OOM-ing
+      expect(server.to).toHaveBeenCalledWith('session:s-big');
+      // Transcription is never attempted for the oversized recording
+      expect(mockTranscription.transcribeBuffer).not.toHaveBeenCalled();
+    });
+
+    it('should clear the sweep interval on module destroy', () => {
+      // afterInit isn't called in beforeEach, so arm the timer directly
+      (gateway as unknown as { audioBufferSweepTimer: NodeJS.Timeout }).audioBufferSweepTimer =
+        setInterval(() => {}, 1000);
+      const clearSpy = jest.spyOn(global, 'clearInterval');
+      (gateway as unknown as { onModuleDestroy: () => void }).onModuleDestroy();
+      expect(clearSpy).toHaveBeenCalled();
+      clearSpy.mockRestore();
+    });
+  });
+
   describe('session room handlers', () => {
     it('should join and leave a session room', () => {
       gateway.handleJoinSession(client as unknown as Socket, 's1');
