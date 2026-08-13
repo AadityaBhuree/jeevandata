@@ -1,6 +1,7 @@
 import { io, type Socket } from 'socket.io-client';
 import { WS_BASE_URL } from '@/lib/utils';
 import { logger } from '@/lib/logger';
+import { useAuthStore } from '@/stores/auth-store';
 
 class SocketService {
   private socket: Socket | null = null;
@@ -11,6 +12,11 @@ class SocketService {
       return this.socket;
     }
 
+    // Send the access token in the Socket.IO handshake so the backend can
+    // authenticate the connection — the gateway rejects sockets without a
+    // valid JWT before they can join session rooms or receive PHI.
+    const token = useAuthStore.getState().accessToken;
+
     this.socket = io(`${WS_BASE_URL}/ws`, {
       transports: ['websocket', 'polling'],
       reconnection: true,
@@ -18,6 +24,7 @@ class SocketService {
       reconnectionDelay: 1000,
       reconnectionDelayMax: 5000,
       timeout: 10000,
+      auth: token ? { token } : undefined,
     });
 
     this.socket.on('connect', () => {
@@ -30,6 +37,12 @@ class SocketService {
 
     this.socket.on('connect_error', (error) => {
       logger.error('Socket connection error', error, { socketId: this.socket?.id });
+    });
+
+    // Backend rejects unauthenticated connections — surface it so the caller
+    // knows the socket never joined any session rooms.
+    this.socket.on('auth:error', (data: { code: string; message: string }) => {
+      logger.warn('Socket auth rejected', { code: data.code, message: data.message });
     });
 
     // Re-attach all registered listeners
