@@ -37,10 +37,17 @@ export class IntakeAgentService {
   private readonly logger = new Logger(IntakeAgentService.name);
   private readonly apiKey: string;
   private readonly model: string;
+  private readonly anthropicApiKey: string;
+  private readonly anthropicModel: string;
 
   constructor(private readonly configService: ConfigService) {
     this.apiKey = this.configService.get<string>('google.apiKey')!;
     this.model = this.configService.get<string>('google.model', 'gemini-2.0-flash');
+    this.anthropicApiKey = this.configService.get<string>('anthropic.apiKey', '');
+    this.anthropicModel = this.configService.get<string>(
+      'anthropic.model',
+      'claude-sonnet-4-20250514',
+    );
   }
 
   private buildSystemPrompt(language: string): string {
@@ -65,15 +72,43 @@ ${langInstruction}`;
     ];
 
     try {
-      const result = await withRetry(() => this.callGemini(messages, systemPrompt), {
+      // 1. Primary: Gemini with exponential-backoff retry (1s/2s/4s, max 3)
+      return await withRetry(() => this.callGemini(messages, systemPrompt), {
         maxAttempts: 3,
         baseDelayMs: 1000,
       });
+    } catch (geminiError) {
+      // 2. Fallback: Claude (Anthropic Messages API) if a key is configured
+      if (this.anthropicApiKey) {
+        this.logger.warn(
+          `Gemini failed for session ${data.sessionId}, falling back to ${this.anthropicModel}`,
+          geminiError,
+        );
+        try {
+          return await withRetry(() => this.callClaude(messages, systemPrompt), {
+            maxAttempts: 2,
+            baseDelayMs: 1000,
+          });
+        } catch (claudeError) {
+          this.logger.error(
+            `Intake agent conversation failed for session ${data.sessionId} (Gemini + Claude fallback)`,
+            { geminiError, claudeError },
+          );
+        }
+      } else {
+        this.logger.error(
+          `Intake agent conversation failed for session ${data.sessionId} (no fallback configured)`,
+          geminiError,
+        );
+      }
 
-      return result;
-    } catch (error) {
-      this.logger.error(`Intake agent conversation failed for session ${data.sessionId}`, error);
-      throw error;
+      // 3. Never surface a raw error to the patient — hand back a graceful
+      //    message summarizing that the conversation continues offline.
+      return {
+        response:
+          "I'm having trouble with my connection right now. Let me summarize what we've discussed so far — please tell me if anything is missing.",
+        intakeComplete: false,
+      };
     }
   }
 
@@ -131,6 +166,57 @@ ${langInstruction}`;
     const finishReason = candidate?.finishReason ?? '';
     // On Gemini, 'STOP' indicates the model naturally finished (intake complete)
     const intakeComplete = finishReason === 'STOP';
+
+    return { response: responseText, intakeComplete };
+  }
+
+  /** Anthropic Claude fallback — used only when Gemini is unavailable. */
+  private async callClaude(
+    messages: Array<{ role: string; content: string }>,
+    systemPrompt: string,
+  ): Promise<{ response: string; intakeComplete: boolean }> {
+    // The Anthropic Messages API takes a system block + a user/assistant
+    // alternation; the first message is our system prompt, so strip it.
+    const conversation = messages.filter(
+      (m) => m.role !== 'assistant' || m.content !== systemPrompt,
+    );
+    const userMessages = conversation.filter((m) => m.role === 'user');
+    const assistantMessages = conversation.filter((m) => m.role === 'assistant');
+
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': this.anthropicApiKey,
+        'anthropic-version': '2023-06-01',
+      },
+      body: JSON.stringify({
+        model: this.anthropicModel,
+        max_tokens: 1024,
+        system: systemPrompt,
+        messages: [
+          ...assistantMessages.slice(0, -1).map((m) => ({ role: 'assistant', content: m.content })),
+          ...userMessages.map((m) => ({ role: 'user', content: m.content })),
+          { role: 'user', content: messages[messages.length - 1]!.content },
+        ],
+      }),
+    });
+
+    if (!response.ok) {
+      const errBody = await response.text().catch(() => '');
+      throw new Error(
+        `Anthropic API error: ${response.status} ${response.statusText} — ${errBody}`,
+      );
+    }
+
+    const result = (await response.json()) as {
+      content?: Array<{ type: string; text?: string }>;
+      stop_reason?: string;
+    };
+
+    const responseText = result.content?.find((c) => c.type === 'text')?.text ?? '';
+    // Claude's natural stop ('end_turn') signals the intake is complete
+    const intakeComplete = result.stop_reason === 'end_turn';
 
     return { response: responseText, intakeComplete };
   }
