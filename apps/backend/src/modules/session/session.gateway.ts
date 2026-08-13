@@ -6,7 +6,8 @@ import {
   type OnGatewayDisconnect,
   type OnGatewayInit,
 } from '@nestjs/websockets';
-import { Logger } from '@nestjs/common';
+import { Logger, UnauthorizedException } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 import { type Namespace, type Server, type Socket } from 'socket.io';
 // eslint-disable-next-line @typescript-eslint/consistent-type-imports -- NestJS DI requires runtime value import
 import { PrismaService } from '../../prisma/prisma.service';
@@ -37,18 +38,76 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
     private readonly prisma: PrismaService,
     private readonly transcriptionService: TranscriptionService,
     private readonly metrics: MetricsService,
+    private readonly jwtService: JwtService,
   ) {}
 
   afterInit(): void {
     this.logger.log('WebSocket gateway initialized');
   }
 
-  handleConnection(client: Socket): void {
-    this.logger.log(`Client connected: ${client.id}`);
+  /**
+   * Authenticate every socket connection with the same JWT the HTTP layer
+   * uses. The token arrives via the Socket.IO handshake (`auth: { token }`
+   * or an `Authorization: Bearer <token>` header) and is verified with the
+   * shared @nestjs/jwt secret — unauthenticated clients are disconnected
+   * before they can join session rooms or receive PHI.
+   */
+  async handleConnection(client: Socket): Promise<void> {
+    const token = this.extractToken(client);
+    if (!token) {
+      this.logger.warn(`Rejecting socket ${client.id}: missing JWT`);
+      client.emit('auth:error', {
+        code: 'AUTH_REQUIRED',
+        message: 'Authentication token is required',
+      });
+      client.disconnect(true);
+      return;
+    }
+
+    try {
+      const payload = await this.jwtService.verifyAsync<{
+        sub: string;
+        email: string;
+        role: string;
+        clinicId?: string;
+        type?: string;
+      }>(token);
+      // Only access tokens (type: 'access') may open a socket.
+      if (payload.type && payload.type !== 'access') {
+        throw new UnauthorizedException('Refresh tokens are not accepted');
+      }
+      client.data.user = {
+        id: payload.sub,
+        email: payload.email,
+        role: payload.role,
+        ...(payload.clinicId ? { clinicId: payload.clinicId } : {}),
+      };
+      this.logger.log(`Client authenticated: ${client.id} (${payload.email})`);
+    } catch {
+      this.logger.warn(`Rejecting socket ${client.id}: invalid or expired JWT`);
+      client.emit('auth:error', { code: 'AUTH_INVALID', message: 'Invalid or expired token' });
+      client.disconnect(true);
+      return;
+    }
+
     client.emit('connected', { clientId: client.id });
     // For a namespaced gateway, @WebSocketServer() exposes the '/ws' namespace
     // adapter (no .engine on it) - count via the namespace's sockets Map.
     this.metrics.setActiveSessions((this.server as unknown as Namespace).sockets.size);
+  }
+
+  private extractToken(client: Socket): string | null {
+    // Preferred: socket.io client sends auth: { token }
+    const authToken = client.handshake?.auth?.token;
+    if (typeof authToken === 'string' && authToken.length > 0) {
+      return authToken;
+    }
+    // Fallback: standard Authorization: Bearer <token> header
+    const header = client.handshake?.headers?.authorization;
+    if (typeof header === 'string' && header.startsWith('Bearer ')) {
+      return header.slice('Bearer '.length).trim();
+    }
+    return null;
   }
 
   handleDisconnect(_client: Socket): void {
@@ -67,8 +126,18 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
 
   @SubscribeMessage('join:session')
   handleJoinSession(client: Socket, sessionId: string): void {
+    // Only authenticated sockets may join session rooms (PHI is emitted there).
+    if (!client.data?.user) {
+      client.emit('auth:error', {
+        code: 'AUTH_REQUIRED',
+        message: 'Authentication token is required',
+      });
+      return;
+    }
     client.join(`session:${sessionId}`);
-    this.logger.debug(`Client ${client.id} joined session ${sessionId}`);
+    this.logger.debug(
+      `Client ${client.id} (${client.data.user.email}) joined session ${sessionId}`,
+    );
   }
 
   @SubscribeMessage('leave:session')
