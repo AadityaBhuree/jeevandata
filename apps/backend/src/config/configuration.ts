@@ -82,6 +82,9 @@ export interface AppConfiguration {
     cacheTtlMs: number;
   };
   rateLimit: RateLimitConfig;
+  cors: {
+    origins: string[];
+  };
   logging: {
     level: string;
     format: string;
@@ -175,5 +178,11 @@ export const configuration = (): AppConfiguration => ({
   logging: {
     level: process.env.LOG_LEVEL ?? 'debug',
     format: process.env.LOG_FORMAT ?? 'json',
+  },
+  cors: {
+    origins: (process.env.CORS_ORIGINS ?? 'http://localhost:3000')
+      .split(',')
+      .map((o) => o.trim())
+      .filter(Boolean),
   },
 });
