@@ -18,16 +18,21 @@ async function bootstrap() {
 
   const app = await NestFactory.create(AppModule, {
     bufferLogs: true,
-    cors: {
-      origin: process.env.CORS_ORIGINS?.split(',') ?? ['http://localhost:3000'],
-      credentials: true,
-      methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-      allowedHeaders: ['Content-Type', 'Authorization', 'X-Correlation-Id', 'X-Requested-With'],
-    },
   });
 
   const configService = app.get(ConfigService);
   const port = configService.get('APP_PORT', 4000);
+
+  // CORS origins come from ConfigService (which loads .env via ConfigModule)
+  // so the value is available to every consumer of the config, not just
+  // whoever reads process.env first. The gateway decorator still reads
+  // process.env directly — see session.gateway.ts for why that is fine.
+  app.enableCors({
+    origin: configService.get<string[]>('cors.origins'),
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Correlation-Id', 'X-Requested-With'],
+  });
 
   // ─── Security Middleware ──────────────────────────────────────
   // When behind Caddy/nginx, trust the first proxy hop so req.ip/req.protocol
