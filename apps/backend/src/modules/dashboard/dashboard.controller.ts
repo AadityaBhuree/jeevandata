@@ -4,6 +4,10 @@ import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { DashboardService } from './dashboard.service';
 import { ZodValidationPipe } from '../../common/pipes/zod-validation.pipe';
 import { Roles } from '../../common/decorators/roles.decorator';
+import {
+  CurrentUser,
+  type AuthenticatedUser,
+} from '../../common/decorators/current-user.decorator';
 import { UserRole } from '@jeevandata/shared-types';
 import {
   paginationQuerySchema,
@@ -40,8 +44,9 @@ export class DashboardController {
   async getActiveSessions(
     @Query(new ZodValidationPipe(paginationQuerySchema))
     query: PaginationQuery,
+    @CurrentUser() user: AuthenticatedUser,
   ) {
-    return this.dashboardService.getActiveSessions(query.page, query.limit);
+    return this.dashboardService.getActiveSessions(query.page, query.limit, user);
   }
 
   @Get('dashboard/recent-briefs')
@@ -52,8 +57,9 @@ export class DashboardController {
   async getRecentBriefs(
     @Query(new ZodValidationPipe(paginationQuerySchema))
     query: PaginationQuery,
+    @CurrentUser() user: AuthenticatedUser,
   ) {
-    return this.dashboardService.getRecentBriefs(query.page, query.limit);
+    return this.dashboardService.getRecentBriefs(query.page, query.limit, user);
   }
 
   @Patch('brief/:id/review')
@@ -79,7 +85,8 @@ export class DashboardController {
     params: { patientId: string },
     @Query(new ZodValidationPipe(patientHistoryQuerySchema))
     query: PatientHistoryQuery,
+    @CurrentUser() user: AuthenticatedUser,
   ) {
-    return this.dashboardService.getPatientHistory(params.patientId, query.page, query.limit);
+    return this.dashboardService.getPatientHistory(params.patientId, query.page, query.limit, user);
   }
 }
