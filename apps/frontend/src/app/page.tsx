@@ -1,9 +1,11 @@
 'use client';
 
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSessionStore } from '@/stores/session-store';
 import { intakeApi } from '@/services/api';
 import { logger } from '@/lib/logger';
+import { toast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import {
   Camera,
@@ -18,8 +20,13 @@ import {
 export default function HomePage() {
   const router = useRouter();
   const setSessionId = useSessionStore((s) => s.setSessionId);
+  const [isLoading, setIsLoading] = useState(false);
 
   async function handleStartIntake() {
+    if (isLoading) {
+      return; // prevent double-clicks creating duplicate sessions
+    }
+    setIsLoading(true);
     try {
       const session = await intakeApi.startSession({
         deviceId: `web-${crypto.randomUUID().slice(0, 8)}`,
@@ -28,6 +35,13 @@ export default function HomePage() {
       router.push(`/intake/${session.id}`);
     } catch (err) {
       logger.error('Failed to start session', err);
+      toast({
+        title: 'Failed to start session',
+        description: err instanceof Error ? err.message : 'Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoading(false);
     }
   }
 
@@ -121,6 +135,8 @@ export default function HomePage() {
               variant="jeevandata"
               size="xl"
               onClick={handleStartIntake}
+              disabled={isLoading}
+              loading={isLoading}
               className="shadow-glow hover:shadow-glow-lg w-full"
               rightIcon={<ArrowRight className="h-4 w-4" />}
             >
