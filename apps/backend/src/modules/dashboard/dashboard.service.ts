@@ -2,6 +2,8 @@ import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuditService } from '../audit/audit.service';
 import { MetricsService } from '../opentelemetry/metrics.service';
+import { getClinicFilter, type ClinicScopeUser } from '../../common/utils/clinic-scope';
+import { SessionStatus, type SessionStatus as SessionStatusType } from '@jeevandata/shared-types';
 
 @Injectable()
 export class DashboardService {
@@ -53,13 +55,18 @@ export class DashboardService {
     };
   }
 
-  async getActiveSessions(page: number, limit: number) {
+  async getActiveSessions(page: number, limit: number, user?: ClinicScopeUser) {
+    const clinicFilter = getClinicFilter(user);
+    const statusFilter: { status: { notIn: SessionStatusType[] } } = {
+      status: {
+        notIn: [SessionStatus.COMPLETED, SessionStatus.FAILED, SessionStatus.TIMED_OUT],
+      },
+    };
     const [sessions, total] = await Promise.all([
       this.prisma.intakeSession.findMany({
         where: {
-          status: {
-            notIn: ['COMPLETED', 'FAILED', 'TIMED_OUT'],
-          },
+          ...clinicFilter,
+          ...statusFilter,
         },
         orderBy: { startedAt: 'desc' },
         skip: (page - 1) * limit,
@@ -76,9 +83,8 @@ export class DashboardService {
       }),
       this.prisma.intakeSession.count({
         where: {
-          status: {
-            notIn: ['COMPLETED', 'FAILED', 'TIMED_OUT'],
-          },
+          ...clinicFilter,
+          ...statusFilter,
         },
       }),
     ]);
@@ -104,9 +110,15 @@ export class DashboardService {
     };
   }
 
-  async getRecentBriefs(page: number, limit: number) {
+  async getRecentBriefs(page: number, limit: number, user?: ClinicScopeUser) {
+    const clinicFilter = getClinicFilter(user);
+    const briefWhere = {
+      // IntakeRecord has no clinicId column — scope via its session relation
+      ...(clinicFilter.clinicId ? { session: { clinicId: clinicFilter.clinicId } } : {}),
+    };
     const [records, total] = await Promise.all([
       this.prisma.intakeRecord.findMany({
+        where: briefWhere,
         orderBy: { generatedAt: 'desc' },
         skip: (page - 1) * limit,
         take: limit,
@@ -127,7 +139,7 @@ export class DashboardService {
           },
         },
       }),
-      this.prisma.intakeRecord.count(),
+      this.prisma.intakeRecord.count({ where: briefWhere }),
     ]);
 
     await this.auditService.log({
@@ -184,10 +196,15 @@ export class DashboardService {
     return { success: true, message: 'Brief marked as reviewed' };
   }
 
-  async getPatientHistory(patientId: string, page: number, limit: number) {
+  async getPatientHistory(patientId: string, page: number, limit: number, user?: ClinicScopeUser) {
+    const clinicFilter = getClinicFilter(user);
+    const historyWhere = {
+      patientId,
+      ...(clinicFilter.clinicId ? { session: { clinicId: clinicFilter.clinicId } } : {}),
+    };
     const [records, total] = await Promise.all([
       this.prisma.intakeRecord.findMany({
-        where: { patientId },
+        where: historyWhere,
         orderBy: { generatedAt: 'desc' },
         skip: (page - 1) * limit,
         take: limit,
@@ -202,7 +219,7 @@ export class DashboardService {
         },
       }),
       this.prisma.intakeRecord.count({
-        where: { patientId },
+        where: historyWhere,
       }),
     ]);
 
