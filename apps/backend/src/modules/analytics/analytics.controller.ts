@@ -6,6 +6,11 @@ import { AnalyticsService } from './analytics.service';
 import { ZodValidationPipe } from '../../common/pipes/zod-validation.pipe';
 import { Roles } from '../../common/decorators/roles.decorator';
 import {
+  CurrentUser,
+  type AuthenticatedUser,
+} from '../../common/decorators/current-user.decorator';
+import { isGlobalScope } from '../../common/utils/clinic-scope';
+import {
   analyticsRangeQuerySchema,
   analyticsExportQuerySchema,
   type AnalyticsRangeQuery,
@@ -28,8 +33,12 @@ export class AnalyticsController {
   })
   async getOverview(
     @Query(new ZodValidationPipe(analyticsRangeQuerySchema)) query: AnalyticsRangeQuery,
+    @CurrentUser() user: AuthenticatedUser,
   ) {
-    return this.analyticsService.getOverview(query.days, query.clinicId);
+    // Non-global users are hard-scoped to their own clinic — a query param
+    // must never widen the scope to another clinic's data.
+    const clinicId = isGlobalScope(user) ? query.clinicId : user.clinicId;
+    return this.analyticsService.getOverview(query.days, clinicId);
   }
 
   @Get('volume')
@@ -39,8 +48,10 @@ export class AnalyticsController {
   })
   async getVolume(
     @Query(new ZodValidationPipe(analyticsRangeQuerySchema)) query: AnalyticsRangeQuery,
+    @CurrentUser() user: AuthenticatedUser,
   ) {
-    return this.analyticsService.getVolume(query.days, query.clinicId);
+    const clinicId = isGlobalScope(user) ? query.clinicId : user.clinicId;
+    return this.analyticsService.getVolume(query.days, clinicId);
   }
 
   @Get('hours')
@@ -50,8 +61,10 @@ export class AnalyticsController {
   })
   async getHours(
     @Query(new ZodValidationPipe(analyticsRangeQuerySchema)) query: AnalyticsRangeQuery,
+    @CurrentUser() user: AuthenticatedUser,
   ) {
-    return this.analyticsService.getHours(query.days, query.clinicId);
+    const clinicId = isGlobalScope(user) ? query.clinicId : user.clinicId;
+    return this.analyticsService.getHours(query.days, clinicId);
   }
 
   @Get('flow')
@@ -61,8 +74,10 @@ export class AnalyticsController {
   })
   async getFlow(
     @Query(new ZodValidationPipe(analyticsRangeQuerySchema)) query: AnalyticsRangeQuery,
+    @CurrentUser() user: AuthenticatedUser,
   ) {
-    return this.analyticsService.getFlow(query.clinicId);
+    const clinicId = isGlobalScope(user) ? query.clinicId : user.clinicId;
+    return this.analyticsService.getFlow(clinicId);
   }
 
   @Get('export')
@@ -74,8 +89,10 @@ export class AnalyticsController {
   async exportCsv(
     @Query(new ZodValidationPipe(analyticsExportQuerySchema)) query: AnalyticsExportQuery,
     @Res({ passthrough: true }) res: Response,
+    @CurrentUser() user: AuthenticatedUser,
   ) {
-    const { filename, csv } = await this.analyticsService.exportCsv(query.days, query.clinicId);
+    const clinicId = isGlobalScope(user) ? query.clinicId : user.clinicId;
+    const { filename, csv } = await this.analyticsService.exportCsv(query.days, clinicId);
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
     return csv;
   }
