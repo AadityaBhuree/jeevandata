@@ -172,7 +172,7 @@ describe('DashboardController (E2E)', () => {
 
       expect(res.body.pagination).toHaveProperty('page', 2);
       expect(res.body.pagination).toHaveProperty('limit', 10);
-      expect(mockDashboardService.getActiveSessions).toHaveBeenCalledWith(2, 10);
+      expect(mockDashboardService.getActiveSessions).toHaveBeenCalledWith(2, 10, undefined);
     });
 
     it('should reject negative page numbers', async () => {
@@ -216,7 +216,7 @@ describe('DashboardController (E2E)', () => {
 
       await request(app.getHttpServer()).get('/dashboard/recent-briefs?page=3&limit=5').expect(200);
 
-      expect(mockDashboardService.getRecentBriefs).toHaveBeenCalledWith(3, 5);
+      expect(mockDashboardService.getRecentBriefs).toHaveBeenCalledWith(3, 5, undefined);
     });
 
     it('should reject non-numeric page param', async () => {
@@ -295,7 +295,12 @@ describe('DashboardController (E2E)', () => {
         .get(`/dashboard/patient/${validPatientId}/history?page=2&limit=5`)
         .expect(200);
 
-      expect(mockDashboardService.getPatientHistory).toHaveBeenCalledWith(validPatientId, 2, 5);
+      expect(mockDashboardService.getPatientHistory).toHaveBeenCalledWith(
+        validPatientId,
+        2,
+        5,
+        undefined,
+      );
     });
 
     it('should reject invalid patientId UUID', async () => {
