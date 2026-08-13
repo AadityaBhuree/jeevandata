@@ -205,7 +205,17 @@ pnpm dev           # starts frontend (:3000) + backend (:4000) in parallel via T
 
 ## Configuration
 
-Copy `.env.example` to `.env` and set the values below. **Never commit the real `.env`** — it is git-ignored.
+Two env files are used, **both git-ignored** (never commit either):
+
+- **`.env`** — local development. Copy from `.env.example`; URLs point at
+  `localhost` and `NODE_ENV=development` (Swagger + debug logs on).
+- **`.env.docker`** — used by `docker-compose.app.yml` (`env_file`) for
+  container deployments. Same variables, but URL hosts are the container
+  names (`jeevandata-postgres`, `jeevandata-redis`, `jeevandata-qdrant`,
+  `jeevandata-minio`, `jeevandata-whisper`) and `NODE_ENV=production`.
+
+Copy `.env.example` to `.env` and set the values below (and to `.env.docker`
+with container hostnames for Docker).
 
 | Variable                                                    | Description                                                           | Required | Default                                                 |
 | :---------------------------------------------------------- | :-------------------------------------------------------------------- | :------: | :------------------------------------------------------ |
