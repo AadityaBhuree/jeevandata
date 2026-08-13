@@ -2,7 +2,7 @@
 
 > **Full name:** Face Detection & Clinical AI Intake System
 > **Directory:** `jeevandata/`
-> **Version:** 0.1.0 · **Status:** Active development (Phases 1–3, 5–6 complete; 4, 7 in progress)
+> **Version:** 1.0.0 · **Status:** All 7 phases complete
 
 ---
 
@@ -165,7 +165,7 @@ NestJS Backend (API Gateway)
 (relational), Redis (cache/queues), MinIO/R2 (object storage), whisper.cpp
 (speech-to-text).
 
-### Backend module map (10 modules)
+### Backend module map (14 modules)
 
 | Module           | Responsibility                                                     |
 | :--------------- | :----------------------------------------------------------------- |
@@ -180,6 +180,10 @@ NestJS Backend (API Gateway)
 | `transcription/` | Whisper speech-to-text client                                      |
 | `health/`        | `/health`, `/health/ready`, `/health/live`                         |
 | `opentelemetry/` | Jaeger tracing instrumentation                                     |
+| `api-keys/`      | API key management for external integrations                       |
+| `clinics/`       | Multi-tenancy clinic CRUD                                          |
+| `analytics/`     | Clinic KPIs — volume, hours, flow, export                          |
+| `monitoring/`    | Prometheus metrics, latency percentiles, alert evaluation          |
 
 ---
 
@@ -204,7 +208,7 @@ PmsPatientCache: offline-first EMR cache
 
 | Area              | Status                                                                                                              |
 | :---------------- | :------------------------------------------------------------------------------------------------------------------ |
-| **Testing**       | 162 backend unit tests + 129 E2E tests (9 suites) + 448 frontend tests (25 files)                                   |
+| **Testing**       | 331 backend unit tests + 195 E2E tests (14 suites) + 601 frontend tests (45 files) — 1,127 tests total              |
 | **Validation**    | Zod schemas shared across frontend/backend via `shared-schemas`                                                     |
 | **Security**      | JWT auth, bcrypt hashing, refresh-token rotation, rate limiting, helmet, env validation fail-fast                   |
 | **Observability** | OpenTelemetry/Jaeger tracing, pino structured logging, health checks                                                |
@@ -215,15 +219,15 @@ PmsPatientCache: offline-first EMR cache
 
 ## 7. Current Roadmap Status
 
-| Phase | Title                                                                                                                   | Status                                     |
-| :---- | :---------------------------------------------------------------------------------------------------------------------- | :----------------------------------------- |
-| 1     | Emergency repairs (auth infra, validation, rate limits)                                                                 | ✅ Done                                    |
-| 2     | Testing & validation (unit + E2E + frontend)                                                                            | ✅ Done                                    |
-| 3     | Backend hardening (PMS sync, audit wiring, OTel, env validation)                                                        | 🔶 2 steps left (Swagger, frontend logger) |
-| 4     | Auth & multi-tenancy (login/register done; RBAC, API keys, clinics pending)                                             | 🔶 In progress                             |
-| 5     | UI/UX excellence                                                                                                        | ✅ Done                                    |
-| 6     | Feature expansion (registration UI, mobile, i18n, a11y done; admin dashboard, HIPAA audit, offline, monitoring pending) | 🔶 In progress                             |
-| 7     | Infrastructure & deployment                                                                                             | ⬜ Not started                             |
+| Phase | Title                                                                                                      | Status  |
+| :---- | :--------------------------------------------------------------------------------------------------------- | :------ |
+| 1     | Emergency repairs (auth infra, validation, rate limits)                                                    | ✅ Done |
+| 2     | Testing & validation (unit + E2E + frontend)                                                               | ✅ Done |
+| 3     | Backend hardening (PMS sync, audit wiring, OTel, env validation)                                           | ✅ Done |
+| 4     | Auth & multi-tenancy (login/register, RBAC, API keys, clinics)                                             | ✅ Done |
+| 5     | UI/UX excellence                                                                                           | ✅ Done |
+| 6     | Feature expansion (registration UI, mobile, i18n, a11y, admin analytics, HIPAA audit, offline, monitoring) | ✅ Done |
+| 7     | Infrastructure & deployment (CI/CD, k8s, secrets, backup/DR, TLS)                                          | ✅ Done |
 
 See **`PLAN.md`** for the detailed step-by-step roadmap.
 
