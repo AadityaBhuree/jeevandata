@@ -3,6 +3,7 @@ import type { Server, Socket } from 'socket.io';
 import type { PrismaService } from '../../prisma/prisma.service';
 import type { TranscriptionService } from '../transcription/transcription.service';
 import type { MetricsService } from '../opentelemetry/metrics.service';
+import type { JwtService } from '@nestjs/jwt';
 import type { SessionStatus } from '@jeevandata/shared-types';
 
 // ─── Mocks ─────────────────────────────────────────────────────
@@ -19,6 +20,14 @@ const mockTranscription = {
 
 const mockMetrics = {
   setActiveSessions: jest.fn(),
+};
+
+const mockJwt = {
+  verifyAsync: jest.fn().mockResolvedValue({
+    sub: 'user-1',
+    email: 'doctor@clinic.test',
+    role: 'DOCTOR',
+  }),
 };
 
 /**
@@ -42,6 +51,14 @@ function makeMockClient(id = 'client-1') {
     emit: jest.fn(),
     join: jest.fn(),
     leave: jest.fn(),
+    disconnect: jest.fn(),
+    data: {
+      user: { id: 'user-1', email: 'doctor@clinic.test', role: 'DOCTOR' },
+    },
+    handshake: {
+      auth: { token: 'valid-jwt' },
+      headers: {},
+    },
     to: jest.fn().mockReturnValue({ emit: jest.fn() }),
   };
 }
@@ -65,6 +82,7 @@ describe('SessionGateway', () => {
       mockPrisma as unknown as PrismaService,
       mockTranscription as unknown as TranscriptionService,
       mockMetrics as unknown as MetricsService,
+      mockJwt as unknown as JwtService,
     );
     gateway.server = server as unknown as Server;
   });
@@ -76,8 +94,8 @@ describe('SessionGateway', () => {
   // access, these tests fail the same way production did.
 
   describe('namespace-safe connection handling (regression)', () => {
-    it('should NOT access server.engine in handleConnection', () => {
-      expect(() => gateway.handleConnection(client as unknown as Socket)).not.toThrow();
+    it('should NOT access server.engine in handleConnection', async () => {
+      await expect(gateway.handleConnection(client as unknown as Socket)).resolves.toBeUndefined();
 
       // Count comes from the namespace's sockets Map, not engine.clientsCount
       expect(mockMetrics.setActiveSessions).toHaveBeenCalledWith(2);
@@ -90,11 +108,11 @@ describe('SessionGateway', () => {
       expect(mockMetrics.setActiveSessions).toHaveBeenCalledWith(2);
     });
 
-    it('should report the live socket count from the namespace map', () => {
+    it('should report the live socket count from the namespace map', async () => {
       // Simulate a socket joining the namespace after startup
       server.sockets.set('socket-late', { id: 'socket-late' });
 
-      gateway.handleConnection(client as unknown as Socket);
+      await gateway.handleConnection(client as unknown as Socket);
 
       expect(mockMetrics.setActiveSessions).toHaveBeenCalledWith(3);
     });
