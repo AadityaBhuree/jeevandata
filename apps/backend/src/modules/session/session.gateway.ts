@@ -6,7 +6,7 @@ import {
   type OnGatewayDisconnect,
   type OnGatewayInit,
 } from '@nestjs/websockets';
-import { Logger, UnauthorizedException } from '@nestjs/common';
+import { Logger, UnauthorizedException, type OnModuleDestroy } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { type Namespace, type Server, type Socket } from 'socket.io';
 // eslint-disable-next-line @typescript-eslint/consistent-type-imports -- NestJS DI requires runtime value import
@@ -19,20 +19,33 @@ import type { SessionStatus } from '@jeevandata/shared-types';
 
 @WebSocketGateway({
   cors: {
+    // The decorator runs at import time, before ConfigModule initializes, so
+    // it reads process.env directly (loaded early via dotenv in main.ts).
+    // This is an acceptable trade-off vs a dynamic gateway factory.
     origin: process.env.CORS_ORIGINS?.split(',') ?? ['http://localhost:3000'],
     credentials: true,
   },
   namespace: '/ws',
   transports: ['websocket', 'polling'],
 })
-export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
+export class SessionGateway
+  implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect, OnModuleDestroy
+{
   private readonly logger = new Logger(SessionGateway.name);
+
+  /** How long an audio buffer may idle before it is swept (ms) */
+  private static readonly AUDIO_BUFFER_STALE_MS = 120_000;
+  /** Sweep cadence for stale buffers (ms) */
+  private static readonly AUDIO_BUFFER_SWEEP_MS = 60_000;
+  /** Hard cap per session — a single recording may never exceed this (bytes) */
+  private static readonly AUDIO_BUFFER_MAX_BYTES = 10 * 1024 * 1024;
 
   @WebSocketServer()
   server!: Server;
 
   /** In-memory buffer for streaming audio chunks per session */
   private audioBuffers = new Map<string, { chunks: Buffer[]; lastChunkTime: number }>();
+  private audioBufferSweepTimer: NodeJS.Timeout | null = null;
 
   constructor(
     private readonly prisma: PrismaService,
@@ -43,6 +56,33 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
 
   afterInit(): void {
     this.logger.log('WebSocket gateway initialized');
+    // Periodically sweep stale audio buffers so a client that never sends
+    // isFinal (disconnect, network drop) cannot leak memory forever.
+    this.audioBufferSweepTimer = setInterval(() => {
+      this.sweepStaleAudioBuffers();
+    }, SessionGateway.AUDIO_BUFFER_SWEEP_MS);
+  }
+
+  onModuleDestroy(): void {
+    if (this.audioBufferSweepTimer) {
+      clearInterval(this.audioBufferSweepTimer);
+      this.audioBufferSweepTimer = null;
+    }
+  }
+
+  private sweepStaleAudioBuffers(): void {
+    const now = Date.now();
+    let evicted = 0;
+    for (const [sessionId, buffer] of this.audioBuffers.entries()) {
+      if (now - buffer.lastChunkTime > SessionGateway.AUDIO_BUFFER_STALE_MS) {
+        this.audioBuffers.delete(sessionId);
+        evicted += 1;
+        this.logger.debug(`Evicted stale audio buffer for session ${sessionId}`);
+      }
+    }
+    if (evicted > 0) {
+      this.logger.log(`Audio buffer sweep: evicted ${evicted} stale session(s)`);
+    }
   }
 
   /**
@@ -215,6 +255,26 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
     const buffer = this.audioBuffers.get(sessionId)!;
     buffer.chunks.push(Buffer.from(chunkData));
     buffer.lastChunkTime = Date.now();
+
+    // Guard against runaway buffers: if a single session exceeds the cap,
+    // drop everything and surface an error instead of OOM-ing the process.
+    const totalBytes = buffer.chunks.reduce((sum, c) => sum + c.length, 0);
+    if (totalBytes > SessionGateway.AUDIO_BUFFER_MAX_BYTES) {
+      this.audioBuffers.delete(sessionId);
+      this.logger.error(
+        `Audio buffer for session ${sessionId} exceeded ${SessionGateway.AUDIO_BUFFER_MAX_BYTES} bytes — evicted`,
+      );
+      this.server.to(`session:${sessionId}`).emit('transcript:chunk', {
+        event: 'transcript:chunk',
+        sessionId,
+        payload: {
+          text: 'Recording was too long and was stopped. Please try again.',
+          isFinal: true,
+        },
+        timestamp: new Date().toISOString(),
+      });
+      return;
+    }
 
     // When recording is complete, send to Whisper
     if (isFinal) {
