@@ -130,8 +130,14 @@ describe('HealthController (e2e)', () => {
         .get('/health/ready')
         .expect(HttpStatus.SERVICE_UNAVAILABLE);
 
-      expect(res.body.status).toBe('unhealthy');
-      expect(res.body.checks.database).toMatchObject({
+      // 503 body carries the HealthCheckResult in the HttpException payload so
+      // the admin UI can still render per-dependency status when degraded.
+      // 503 body carries the HealthCheckResult in the HttpException payload so
+      // the admin UI can still render per-dependency status when degraded.
+      // (E2E module has no global filter — Nest emits the object verbatim.)
+      expect(res.body.code).toBe('HEALTH_UNHEALTHY');
+      expect(res.body.details.status).toBe('unhealthy');
+      expect(res.body.details.checks.database).toMatchObject({
         status: 'unhealthy',
         error: 'Connection refused',
       });
@@ -186,7 +192,8 @@ describe('HealthController (e2e)', () => {
         .get('/health')
         .expect(HttpStatus.SERVICE_UNAVAILABLE);
 
-      expect(res.body.status).toBe('unhealthy');
+      expect(res.body.code).toBe('HEALTH_UNHEALTHY');
+      expect(res.body.details.status).toBe('unhealthy');
     });
 
     it('should call getHealth service method', async () => {
