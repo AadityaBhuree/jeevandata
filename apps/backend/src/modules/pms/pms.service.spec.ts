@@ -13,6 +13,7 @@ import type { SyncResult } from './adapters/pms-sync-adapter';
 const mockPrisma = {
   patient: {
     findUnique: jest.fn(),
+    findFirst: jest.fn(),
   },
   pmsPatientCache: {
     findUnique: jest.fn(),
@@ -229,12 +230,12 @@ describe('PmsService', () => {
 
       expect(result).not.toBeNull();
       expect(result!.demographics).toHaveProperty('name', 'Priya Sharma');
-      expect(mockPrisma.patient.findUnique).not.toHaveBeenCalled();
+      expect(mockPrisma.patient.findFirst).not.toHaveBeenCalled();
     });
 
     it('should load from DB on cache miss and write-through', async () => {
       mockPrisma.pmsPatientCache.findUnique.mockResolvedValue(null);
-      mockPrisma.patient.findUnique.mockResolvedValue(mockPatient);
+      mockPrisma.patient.findFirst.mockResolvedValue(mockPatient);
 
       const result = await service.loadPatientContext(validPatientId);
 
@@ -246,7 +247,7 @@ describe('PmsService', () => {
 
     it('should return null when patient not found in DB', async () => {
       mockPrisma.pmsPatientCache.findUnique.mockResolvedValue(null);
-      mockPrisma.patient.findUnique.mockResolvedValue(null);
+      mockPrisma.patient.findFirst.mockResolvedValue(null);
 
       const result = await service.loadPatientContext(validPatientId);
 
@@ -260,12 +261,14 @@ describe('PmsService', () => {
         data: { demographics: { name: 'Old Data' } },
         lastSyncedAt: staleDate,
       });
-      mockPrisma.patient.findUnique.mockResolvedValue(mockPatient);
+      mockPrisma.patient.findFirst.mockResolvedValue(mockPatient);
 
       const result = await service.loadPatientContext(validPatientId);
 
       // Should have gone to DB despite having stale cache
-      expect(mockPrisma.patient.findUnique).toHaveBeenCalled();
+      expect(mockPrisma.patient.findFirst).toHaveBeenCalledWith({
+        where: expect.objectContaining({ isDeleted: false }),
+      });
       expect(result!.demographics.name).toBe('Priya Sharma'); // Fresh data
     });
 
@@ -288,7 +291,7 @@ describe('PmsService', () => {
 
     it('should log audit event on context load from DB', async () => {
       mockPrisma.pmsPatientCache.findUnique.mockResolvedValue(null);
-      mockPrisma.patient.findUnique.mockResolvedValue(mockPatient);
+      mockPrisma.patient.findFirst.mockResolvedValue(mockPatient);
 
       await service.loadPatientContext(validPatientId);
 
@@ -302,7 +305,7 @@ describe('PmsService', () => {
 
     it('should include visit history and risk flags (empty by default)', async () => {
       mockPrisma.pmsPatientCache.findUnique.mockResolvedValue(null);
-      mockPrisma.patient.findUnique.mockResolvedValue(mockPatient);
+      mockPrisma.patient.findFirst.mockResolvedValue(mockPatient);
 
       const result = await service.loadPatientContext(validPatientId);
 

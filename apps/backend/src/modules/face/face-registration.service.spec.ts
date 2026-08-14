@@ -12,6 +12,7 @@ const mockPrisma = {
     findUnique: jest.fn(),
     create: jest.fn(),
     findMany: jest.fn(),
+    update: jest.fn(),
   },
   faceEmbedding: {
     create: jest.fn(),
@@ -45,6 +46,18 @@ const existingPatient = {
   dob: new Date('1990-01-15'),
   mobile: '+919876543210',
   consentGranted: true,
+};
+
+const softDeletedPatient = {
+  ...existingPatient,
+  isDeleted: true,
+  deletedAt: new Date('2026-08-01T10:00:00Z'),
+};
+
+const restoredPatient = {
+  ...existingPatient,
+  isDeleted: false,
+  deletedAt: null,
 };
 
 describe('FaceRegistrationService', () => {
@@ -125,6 +138,30 @@ describe('FaceRegistrationService', () => {
       expect(mockFaceService.upsertEmbedding).not.toHaveBeenCalled();
     });
 
+    it('should restore a soft-deleted patient on re-registration instead of 409', async () => {
+      mockPrisma.patient.findUnique.mockResolvedValue(softDeletedPatient);
+      mockPrisma.patient.update.mockResolvedValue(restoredPatient);
+      mockFaceService.upsertEmbedding.mockResolvedValue(undefined);
+      mockPrisma.faceEmbedding.create.mockResolvedValue({ id: 'emb-2', patientId: validPatientId });
+
+      const result = await service.registerPatient(registrationDto);
+
+      expect(result).toEqual({
+        id: validPatientId,
+        name: 'Priya Sharma',
+        message: 'Patient restored',
+      });
+      expect(mockPrisma.patient.update).toHaveBeenCalledWith({
+        where: { id: validPatientId },
+        data: expect.objectContaining({
+          isDeleted: false,
+          deletedAt: null,
+          name: 'Priya Sharma',
+        }),
+      });
+      expect(mockPrisma.patient.create).not.toHaveBeenCalled();
+    });
+
     it('should propagate database errors', async () => {
       mockPrisma.patient.findUnique.mockRejectedValue(new Error('DB connection failed'));
 
@@ -160,6 +197,50 @@ describe('FaceRegistrationService', () => {
           mobile: '+919876543210',
         }),
       );
+      // Soft-deleted patients are excluded from face-match enrichment.
+      expect(mockPrisma.patient.findMany).toHaveBeenCalledWith({
+        where: { id: { in: [validPatientId] }, isDeleted: false },
+        select: expect.any(Object),
+      });
+    });
+  });
+
+  // ─── Soft Delete ──────────────────────────────────────────────
+
+  describe('softDeletePatient', () => {
+    it('should mark a patient soft-deleted and return true', async () => {
+      mockPrisma.patient.findUnique.mockResolvedValue({ id: validPatientId, isDeleted: false });
+      mockPrisma.patient.update.mockResolvedValue({
+        ...existingPatient,
+        isDeleted: true,
+        deletedAt: new Date(),
+      });
+
+      const result = await service.softDeletePatient(validPatientId);
+
+      expect(result).toBe(true);
+      expect(mockPrisma.patient.update).toHaveBeenCalledWith({
+        where: { id: validPatientId },
+        data: expect.objectContaining({ isDeleted: true, deletedAt: expect.any(Date) }),
+      });
+    });
+
+    it('should return false for an already-deleted patient (idempotent)', async () => {
+      mockPrisma.patient.findUnique.mockResolvedValue({ id: validPatientId, isDeleted: true });
+
+      const result = await service.softDeletePatient(validPatientId);
+
+      expect(result).toBe(false);
+      expect(mockPrisma.patient.update).not.toHaveBeenCalled();
+    });
+
+    it('should return false when the patient does not exist', async () => {
+      mockPrisma.patient.findUnique.mockResolvedValue(null);
+
+      const result = await service.softDeletePatient('missing-patient');
+
+      expect(result).toBe(false);
+      expect(mockPrisma.patient.update).not.toHaveBeenCalled();
     });
   });
 });
