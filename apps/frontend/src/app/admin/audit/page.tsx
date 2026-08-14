@@ -1,7 +1,8 @@
 'use client';
+import { TitleSetter } from '@/components/ui/title-setter';
+import { AppShell } from '@/components/layout/app-shell';
 
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
-import Link from 'next/link';
 import {
   auditApi,
   type AuditLogRecord,
@@ -19,10 +20,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { DarkModeToggle } from '@/components/ui/dark-mode-toggle';
 import { logger } from '@/lib/logger';
 import {
-  ScrollText,
   Download,
   RefreshCw,
   Search,
@@ -188,397 +187,378 @@ export default function AdminAuditPage() {
   const formatDate = (iso: string) => new Date(iso).toLocaleString();
 
   return (
-    <div className="flex min-h-screen bg-slate-50 dark:bg-slate-950">
-      <div className="flex flex-1 flex-col">
-        {/* Header */}
-        <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/80 backdrop-blur-md dark:border-slate-800 dark:bg-slate-900/80">
-          <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-            <div className="flex items-center gap-3">
-              <div className="bg-jeevandata-500 flex h-9 w-9 items-center justify-center rounded-xl shadow-sm">
-                <ScrollText className="h-4 w-4 text-white" />
-              </div>
-              <div>
-                <h1 className="text-lg font-semibold text-slate-900 dark:text-white">
-                  Audit Trail
-                </h1>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
-                  HIPAA compliance — filtered viewer, anonymized export
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <DarkModeToggle />
-              <Link href="/admin">
-                <Button variant="ghost" size="sm">
-                  Analytics
-                </Button>
-              </Link>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => load()}
-                loading={loading}
-                leftIcon={<RefreshCw className="h-3.5 w-3.5" />}
+    <AppShell>
+      <TitleSetter title="Audit Log" />
+
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="text-lg font-semibold text-slate-900 dark:text-white">Audit Trail</h1>
+          <p className="text-xs text-slate-500 dark:text-slate-400">
+            HIPAA compliance — filtered viewer, anonymized export
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => load()}
+            loading={loading}
+            leftIcon={<RefreshCw className="h-3.5 w-3.5" />}
+          >
+            Refresh
+          </Button>
+          <Button
+            variant="jeevandata"
+            size="sm"
+            onClick={handleExport}
+            loading={exporting}
+            leftIcon={<Download className="h-3.5 w-3.5" />}
+          >
+            Export CSV
+          </Button>
+        </div>
+      </div>
+      <div className="flex flex-col gap-6">
+        {error && (
+          <div
+            role="alert"
+            className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-900/30 dark:text-red-400"
+          >
+            {error}
+          </div>
+        )}
+
+        {/* Filter bar */}
+        <Card className="animate-fade-in-up p-5">
+          <form onSubmit={applyFilters} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-6">
+            <Input
+              id="filter-action"
+              label="Action"
+              placeholder="PATIENT_PROFILE_VIEW"
+              value={draft.action ?? ''}
+              onChange={(e) => setDraftValue('action', e.target.value)}
+            />
+            <Input
+              id="filter-actor"
+              label="Actor"
+              placeholder="user-123"
+              value={draft.actorId ?? ''}
+              onChange={(e) => setDraftValue('actorId', e.target.value)}
+            />
+            <div>
+              <label
+                htmlFor="filter-role"
+                className="mb-1.5 block text-xs font-medium text-slate-700 dark:text-slate-300"
               >
-                Refresh
-              </Button>
+                Role
+              </label>
+              <Select
+                value={draft.actorRole ?? 'ALL'}
+                onValueChange={(v) => setDraftValue('actorRole', v)}
+              >
+                <SelectTrigger id="filter-role">
+                  <SelectValue placeholder="All roles" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ALL">All roles</SelectItem>
+                  {ROLE_OPTIONS.map((role) => (
+                    <SelectItem key={role} value={role}>
+                      {role}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <Input
+              id="filter-resource"
+              label="Resource type"
+              placeholder="patient"
+              value={draft.resourceType ?? ''}
+              onChange={(e) => setDraftValue('resourceType', e.target.value)}
+            />
+            <Input
+              id="filter-from"
+              label="From"
+              type="date"
+              value={draft.from ?? ''}
+              onChange={(e) => setDraftValue('from', e.target.value)}
+            />
+            <Input
+              id="filter-to"
+              label="To"
+              type="date"
+              value={draft.to ?? ''}
+              onChange={(e) => setDraftValue('to', e.target.value)}
+            />
+            <div className="col-span-full flex items-center gap-2">
               <Button
+                type="submit"
                 variant="jeevandata"
                 size="sm"
-                onClick={handleExport}
-                loading={exporting}
-                leftIcon={<Download className="h-3.5 w-3.5" />}
+                leftIcon={<Search className="h-3.5 w-3.5" />}
               >
-                Export CSV
+                Apply filters
               </Button>
+              <Button type="button" variant="outline" size="sm" onClick={resetFilters}>
+                Reset
+              </Button>
+              {filteredCount && (
+                <span className="text-xs text-slate-400 dark:text-slate-500">
+                  Showing filtered results
+                </span>
+              )}
             </div>
-          </div>
-        </header>
+          </form>
+        </Card>
 
-        <main className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-6 p-6">
-          {error && (
-            <div
-              role="alert"
-              className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-900/30 dark:text-red-400"
-            >
-              {error}
+        {/* Log table */}
+        <Card className="animate-fade-in-up">
+          <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4 dark:border-slate-800">
+            <h2 className="text-sm font-semibold text-slate-900 dark:text-white">Audit logs</h2>
+            <span className="text-xs text-slate-400 dark:text-slate-500">
+              {total} log{total !== 1 ? 's' : ''}
+            </span>
+          </div>
+
+          {loading ? (
+            <div className="space-y-3 p-5">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="skeleton h-10 w-full rounded-lg" />
+              ))}
+            </div>
+          ) : logs.length === 0 ? (
+            <div className="px-5 py-10 text-center text-sm text-slate-400 dark:text-slate-500">
+              No audit logs match the current filters.
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm">
+                <thead>
+                  <tr className="border-b border-slate-100 text-xs uppercase tracking-wide text-slate-400 dark:border-slate-800 dark:text-slate-500">
+                    <th className="px-5 py-3 font-medium">Timestamp</th>
+                    <th className="px-5 py-3 font-medium">Action</th>
+                    <th className="px-5 py-3 font-medium">Actor</th>
+                    <th className="px-5 py-3 font-medium">Role</th>
+                    <th className="px-5 py-3 font-medium">Resource</th>
+                    <th className="px-5 py-3 font-medium">IP</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                  {logs.map((log) => (
+                    <tr key={log.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                      <td className="whitespace-nowrap px-5 py-3 text-xs text-slate-500 dark:text-slate-400">
+                        {formatDate(log.timestamp)}
+                      </td>
+                      <td className="px-5 py-3">
+                        <code className="rounded bg-slate-100 px-1.5 py-0.5 text-xs text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                          {log.action}
+                        </code>
+                      </td>
+                      <td className="px-5 py-3 text-xs text-slate-600 dark:text-slate-300">
+                        {log.actorId}
+                      </td>
+                      <td className="px-5 py-3">
+                        <Badge variant="info" size="sm">
+                          {log.actorRole}
+                        </Badge>
+                      </td>
+                      <td className="px-5 py-3 text-xs text-slate-500 dark:text-slate-400">
+                        {log.resourceType}
+                        <span className="ml-1 font-mono text-[10px] text-slate-400 dark:text-slate-500">
+                          {log.resourceId.slice(0, 8)}…
+                        </span>
+                      </td>
+                      <td className="whitespace-nowrap px-5 py-3 font-mono text-xs text-slate-400 dark:text-slate-500">
+                        {log.ipAddress}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
 
-          {/* Filter bar */}
+          {/* Pagination */}
+          <div className="flex items-center justify-between border-t border-slate-100 px-5 py-3 dark:border-slate-800">
+            <span className="text-xs text-slate-400 dark:text-slate-500">
+              Page {page} of {totalPages}
+            </span>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={page <= 1}
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                leftIcon={<ChevronLeft className="h-3.5 w-3.5" />}
+              >
+                Prev
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={page >= totalPages}
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                rightIcon={<ChevronRight className="h-3.5 w-3.5" />}
+              >
+                Next
+              </Button>
+            </div>
+          </div>
+        </Card>
+
+        <div className="grid gap-6 lg:grid-cols-2">
+          {/* PHI access summary */}
           <Card className="animate-fade-in-up p-5">
-            <form onSubmit={applyFilters} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-6">
+            <div className="mb-4 flex items-center gap-2">
+              <UserCheck className="text-jeevandata-500 h-4 w-4" />
+              <h2 className="text-sm font-semibold text-slate-900 dark:text-white">
+                PHI Access Summary
+              </h2>
+            </div>
+            <p className="mb-4 text-xs text-slate-500 dark:text-slate-400">
+              Who accessed a patient&apos;s record, grouped by day (HIPAA accounting of
+              disclosures).
+            </p>
+            <div className="mb-4 flex gap-2">
               <Input
-                id="filter-action"
-                label="Action"
-                placeholder="PATIENT_PROFILE_VIEW"
-                value={draft.action ?? ''}
-                onChange={(e) => setDraftValue('action', e.target.value)}
+                id="phi-patient"
+                label="Patient ID"
+                placeholder="550e8400-…"
+                value={phiPatientId}
+                onChange={(e) => setPhiPatientId(e.target.value)}
               />
-              <Input
-                id="filter-actor"
-                label="Actor"
-                placeholder="user-123"
-                value={draft.actorId ?? ''}
-                onChange={(e) => setDraftValue('actorId', e.target.value)}
-              />
-              <div>
+              <div className="w-32">
                 <label
-                  htmlFor="filter-role"
+                  htmlFor="phi-days"
                   className="mb-1.5 block text-xs font-medium text-slate-700 dark:text-slate-300"
                 >
-                  Role
+                  Days
                 </label>
-                <Select
-                  value={draft.actorRole ?? 'ALL'}
-                  onValueChange={(v) => setDraftValue('actorRole', v)}
-                >
-                  <SelectTrigger id="filter-role">
-                    <SelectValue placeholder="All roles" />
+                <Select value={String(phiDays)} onValueChange={(v) => setPhiDays(Number(v))}>
+                  <SelectTrigger id="phi-days">
+                    <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="ALL">All roles</SelectItem>
-                    {ROLE_OPTIONS.map((role) => (
-                      <SelectItem key={role} value={role}>
-                        {role}
+                    {[7, 30, 90, 365].map((d) => (
+                      <SelectItem key={d} value={String(d)}>
+                        {d}d
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
-              <Input
-                id="filter-resource"
-                label="Resource type"
-                placeholder="patient"
-                value={draft.resourceType ?? ''}
-                onChange={(e) => setDraftValue('resourceType', e.target.value)}
-              />
-              <Input
-                id="filter-from"
-                label="From"
-                type="date"
-                value={draft.from ?? ''}
-                onChange={(e) => setDraftValue('from', e.target.value)}
-              />
-              <Input
-                id="filter-to"
-                label="To"
-                type="date"
-                value={draft.to ?? ''}
-                onChange={(e) => setDraftValue('to', e.target.value)}
-              />
-              <div className="col-span-full flex items-center gap-2">
+              <div className="flex items-end">
                 <Button
-                  type="submit"
-                  variant="jeevandata"
+                  variant="outline"
                   size="sm"
+                  onClick={loadPhiSummary}
+                  loading={phiLoading}
+                  disabled={!phiPatientId.trim()}
                   leftIcon={<Search className="h-3.5 w-3.5" />}
                 >
-                  Apply filters
+                  Lookup
                 </Button>
-                <Button type="button" variant="outline" size="sm" onClick={resetFilters}>
-                  Reset
-                </Button>
-                {filteredCount && (
-                  <span className="text-xs text-slate-400 dark:text-slate-500">
-                    Showing filtered results
-                  </span>
-                )}
               </div>
-            </form>
-          </Card>
-
-          {/* Log table */}
-          <Card className="animate-fade-in-up">
-            <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4 dark:border-slate-800">
-              <h2 className="text-sm font-semibold text-slate-900 dark:text-white">Audit logs</h2>
-              <span className="text-xs text-slate-400 dark:text-slate-500">
-                {total} log{total !== 1 ? 's' : ''}
-              </span>
             </div>
 
-            {loading ? (
-              <div className="space-y-3 p-5">
-                {Array.from({ length: 6 }).map((_, i) => (
-                  <div key={i} className="skeleton h-10 w-full rounded-lg" />
-                ))}
-              </div>
-            ) : logs.length === 0 ? (
-              <div className="px-5 py-10 text-center text-sm text-slate-400 dark:text-slate-500">
-                No audit logs match the current filters.
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-sm">
-                  <thead>
-                    <tr className="border-b border-slate-100 text-xs uppercase tracking-wide text-slate-400 dark:border-slate-800 dark:text-slate-500">
-                      <th className="px-5 py-3 font-medium">Timestamp</th>
-                      <th className="px-5 py-3 font-medium">Action</th>
-                      <th className="px-5 py-3 font-medium">Actor</th>
-                      <th className="px-5 py-3 font-medium">Role</th>
-                      <th className="px-5 py-3 font-medium">Resource</th>
-                      <th className="px-5 py-3 font-medium">IP</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                    {logs.map((log) => (
-                      <tr key={log.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                        <td className="whitespace-nowrap px-5 py-3 text-xs text-slate-500 dark:text-slate-400">
-                          {formatDate(log.timestamp)}
-                        </td>
-                        <td className="px-5 py-3">
-                          <code className="rounded bg-slate-100 px-1.5 py-0.5 text-xs text-slate-700 dark:bg-slate-800 dark:text-slate-300">
-                            {log.action}
-                          </code>
-                        </td>
-                        <td className="px-5 py-3 text-xs text-slate-600 dark:text-slate-300">
-                          {log.actorId}
-                        </td>
-                        <td className="px-5 py-3">
-                          <Badge variant="info" size="sm">
-                            {log.actorRole}
-                          </Badge>
-                        </td>
-                        <td className="px-5 py-3 text-xs text-slate-500 dark:text-slate-400">
-                          {log.resourceType}
-                          <span className="ml-1 font-mono text-[10px] text-slate-400 dark:text-slate-500">
-                            {log.resourceId.slice(0, 8)}…
-                          </span>
-                        </td>
-                        <td className="whitespace-nowrap px-5 py-3 font-mono text-xs text-slate-400 dark:text-slate-500">
-                          {log.ipAddress}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+            {phiError && (
+              <p role="alert" className="mb-3 text-sm text-red-600 dark:text-red-400">
+                {phiError}
+              </p>
             )}
 
-            {/* Pagination */}
-            <div className="flex items-center justify-between border-t border-slate-100 px-5 py-3 dark:border-slate-800">
-              <span className="text-xs text-slate-400 dark:text-slate-500">
-                Page {page} of {totalPages}
-              </span>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={page <= 1}
-                  onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  leftIcon={<ChevronLeft className="h-3.5 w-3.5" />}
-                >
-                  Prev
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={page >= totalPages}
-                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                  rightIcon={<ChevronRight className="h-3.5 w-3.5" />}
-                >
-                  Next
-                </Button>
-              </div>
-            </div>
-          </Card>
-
-          <div className="grid gap-6 lg:grid-cols-2">
-            {/* PHI access summary */}
-            <Card className="animate-fade-in-up p-5">
-              <div className="mb-4 flex items-center gap-2">
-                <UserCheck className="text-jeevandata-500 h-4 w-4" />
-                <h2 className="text-sm font-semibold text-slate-900 dark:text-white">
-                  PHI Access Summary
-                </h2>
-              </div>
-              <p className="mb-4 text-xs text-slate-500 dark:text-slate-400">
-                Who accessed a patient&apos;s record, grouped by day (HIPAA accounting of
-                disclosures).
-              </p>
-              <div className="mb-4 flex gap-2">
-                <Input
-                  id="phi-patient"
-                  label="Patient ID"
-                  placeholder="550e8400-…"
-                  value={phiPatientId}
-                  onChange={(e) => setPhiPatientId(e.target.value)}
-                />
-                <div className="w-32">
-                  <label
-                    htmlFor="phi-days"
-                    className="mb-1.5 block text-xs font-medium text-slate-700 dark:text-slate-300"
-                  >
-                    Days
-                  </label>
-                  <Select value={String(phiDays)} onValueChange={(v) => setPhiDays(Number(v))}>
-                    <SelectTrigger id="phi-days">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {[7, 30, 90, 365].map((d) => (
-                        <SelectItem key={d} value={String(d)}>
-                          {d}d
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+            {phiSummary && (
+              <div className="space-y-3">
+                <div className="flex gap-3">
+                  <Badge variant="info">Total accesses: {phiSummary.totalAccesses}</Badge>
+                  <Badge variant="secondary">Unique actors: {phiSummary.uniqueActors}</Badge>
                 </div>
-                <div className="flex items-end">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={loadPhiSummary}
-                    loading={phiLoading}
-                    disabled={!phiPatientId.trim()}
-                    leftIcon={<Search className="h-3.5 w-3.5" />}
-                  >
-                    Lookup
-                  </Button>
-                </div>
-              </div>
-
-              {phiError && (
-                <p role="alert" className="mb-3 text-sm text-red-600 dark:text-red-400">
-                  {phiError}
-                </p>
-              )}
-
-              {phiSummary && (
-                <div className="space-y-3">
-                  <div className="flex gap-3">
-                    <Badge variant="info">Total accesses: {phiSummary.totalAccesses}</Badge>
-                    <Badge variant="secondary">Unique actors: {phiSummary.uniqueActors}</Badge>
-                  </div>
-                  {phiSummary.perDay.length === 0 ? (
-                    <p className="text-sm text-slate-400 dark:text-slate-500">
-                      No recorded accesses for this patient in the window.
-                    </p>
-                  ) : (
-                    <div className="space-y-2">
-                      {phiSummary.perDay.map((day) => (
-                        <div
-                          key={day.date}
-                          className="rounded-lg border border-slate-100 p-3 dark:border-slate-800"
-                        >
-                          <div className="flex items-center justify-between">
-                            <span className="text-sm font-medium text-slate-800 dark:text-slate-200">
-                              {day.date}
-                            </span>
-                            <span className="text-xs text-slate-500 dark:text-slate-400">
-                              {day.accessCount} access{day.accessCount !== 1 ? 'es' : ''} ·{' '}
-                              {day.uniqueActors} actor{day.uniqueActors !== 1 ? 's' : ''}
-                            </span>
-                          </div>
-                          <div className="mt-1.5 flex flex-wrap gap-1.5">
-                            {Object.entries(day.actions).map(([action, count]) => (
-                              <Badge key={action} variant="pending" size="sm">
-                                {action} ×{count}
-                              </Badge>
-                            ))}
-                          </div>
-                          <p className="mt-1.5 text-[10px] text-slate-400 dark:text-slate-500">
-                            Actors: {day.actors.join(', ')}
-                          </p>
+                {phiSummary.perDay.length === 0 ? (
+                  <p className="text-sm text-slate-400 dark:text-slate-500">
+                    No recorded accesses for this patient in the window.
+                  </p>
+                ) : (
+                  <div className="space-y-2">
+                    {phiSummary.perDay.map((day) => (
+                      <div
+                        key={day.date}
+                        className="rounded-lg border border-slate-100 p-3 dark:border-slate-800"
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-medium text-slate-800 dark:text-slate-200">
+                            {day.date}
+                          </span>
+                          <span className="text-xs text-slate-500 dark:text-slate-400">
+                            {day.accessCount} access{day.accessCount !== 1 ? 'es' : ''} ·{' '}
+                            {day.uniqueActors} actor{day.uniqueActors !== 1 ? 's' : ''}
+                          </span>
                         </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
-            </Card>
-
-            {/* Retention policy */}
-            <Card className="animate-fade-in-up p-5">
-              <div className="mb-4 flex items-center gap-2">
-                <ShieldCheck className="text-jeevandata-500 h-4 w-4" />
-                <h2 className="text-sm font-semibold text-slate-900 dark:text-white">
-                  Log Retention Policy
-                </h2>
-              </div>
-              <p className="mb-4 text-xs text-slate-500 dark:text-slate-400">
-                Audit logs are deleted after the retention window. Default is 90 days, configurable
-                via{' '}
-                <code className="rounded bg-slate-100 px-1 dark:bg-slate-800">
-                  AUDIT_RETENTION_DAYS
-                </code>
-                .
-              </p>
-              <div className="mb-4 rounded-lg border border-slate-100 p-4 dark:border-slate-800">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-slate-500 dark:text-slate-400">
-                    Retention window
-                  </span>
-                  <span className="text-sm font-semibold text-slate-900 dark:text-white">
-                    {retentionDays ?? '—'} days
-                  </span>
-                </div>
-              </div>
-              <div className="flex items-center justify-between">
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={runCleanup}
-                  loading={cleanupBusy}
-                  leftIcon={<Trash2 className="h-3.5 w-3.5" />}
-                >
-                  Run retention cleanup
-                </Button>
-                {cleanupResult && (
-                  <span className="text-xs text-emerald-600 dark:text-emerald-400">
-                    {cleanupResult}
-                  </span>
+                        <div className="mt-1.5 flex flex-wrap gap-1.5">
+                          {Object.entries(day.actions).map(([action, count]) => (
+                            <Badge key={action} variant="pending" size="sm">
+                              {action} ×{count}
+                            </Badge>
+                          ))}
+                        </div>
+                        <p className="mt-1.5 text-[10px] text-slate-400 dark:text-slate-500">
+                          Actors: {day.actors.join(', ')}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
                 )}
               </div>
-            </Card>
-          </div>
+            )}
+          </Card>
 
-          <p className="flex items-center justify-center gap-1.5 text-xs text-slate-400 dark:text-slate-500">
-            <ShieldCheck className="h-3.5 w-3.5" />
-            Exports mask PHI fields (names, mobiles, Aadhaar, emails) before download.
-          </p>
-        </main>
+          {/* Retention policy */}
+          <Card className="animate-fade-in-up p-5">
+            <div className="mb-4 flex items-center gap-2">
+              <ShieldCheck className="text-jeevandata-500 h-4 w-4" />
+              <h2 className="text-sm font-semibold text-slate-900 dark:text-white">
+                Log Retention Policy
+              </h2>
+            </div>
+            <p className="mb-4 text-xs text-slate-500 dark:text-slate-400">
+              Audit logs are deleted after the retention window. Default is 90 days, configurable
+              via{' '}
+              <code className="rounded bg-slate-100 px-1 dark:bg-slate-800">
+                AUDIT_RETENTION_DAYS
+              </code>
+              .
+            </p>
+            <div className="mb-4 rounded-lg border border-slate-100 p-4 dark:border-slate-800">
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-slate-500 dark:text-slate-400">Retention window</span>
+                <span className="text-sm font-semibold text-slate-900 dark:text-white">
+                  {retentionDays ?? '—'} days
+                </span>
+              </div>
+            </div>
+            <div className="flex items-center justify-between">
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={runCleanup}
+                loading={cleanupBusy}
+                leftIcon={<Trash2 className="h-3.5 w-3.5" />}
+              >
+                Run retention cleanup
+              </Button>
+              {cleanupResult && (
+                <span className="text-xs text-emerald-600 dark:text-emerald-400">
+                  {cleanupResult}
+                </span>
+              )}
+            </div>
+          </Card>
+        </div>
+
+        <p className="flex items-center justify-center gap-1.5 text-xs text-slate-400 dark:text-slate-500">
+          <ShieldCheck className="h-3.5 w-3.5" />
+          Exports mask PHI fields (names, mobiles, Aadhaar, emails) before download.
+        </p>
       </div>
-    </div>
+    </AppShell>
   );
 }
