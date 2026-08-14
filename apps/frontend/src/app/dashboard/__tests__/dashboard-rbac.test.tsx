@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { UserRole } from '@jeevandata/shared-types';
 import DashboardPage from '../page';
 import { ThemeProvider } from '@/components/ui/theme-provider';
@@ -116,10 +117,15 @@ const receptionistUser = {
 };
 
 function renderDashboard() {
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  });
   return render(
-    <ThemeProvider>
-      <DashboardPage />
-    </ThemeProvider>,
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider>
+        <DashboardPage />
+      </ThemeProvider>
+    </QueryClientProvider>,
   );
 }
 
