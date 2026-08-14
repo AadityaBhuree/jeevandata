@@ -1,12 +1,16 @@
 'use client';
+import { TitleSetter } from '@/components/ui/title-setter';
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { useLanguage } from '@/hooks/useLanguage';
 import { useSessionStore } from '@/stores/session-store';
 import { intakeApi } from '@/services/api';
 import { logger } from '@/lib/logger';
 import { toast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
+import { LanguageSelector } from '@/components/ui/language-selector';
 import {
   Camera,
   MessageSquareText,
@@ -21,6 +25,7 @@ export default function HomePage() {
   const router = useRouter();
   const setSessionId = useSessionStore((s) => s.setSessionId);
   const [isLoading, setIsLoading] = useState(false);
+  const { locale, setLocale } = useLanguage();
 
   async function handleStartIntake() {
     if (isLoading) {
@@ -47,6 +52,17 @@ export default function HomePage() {
 
   return (
     <div className="via-jeevandata-50 dark:via-jeevandata-950 relative min-h-screen overflow-hidden bg-gradient-to-br from-slate-50 to-white dark:from-slate-950 dark:to-slate-900">
+      <TitleSetter title="Welcome" />
+      {/* ─── Top Bar: language + staff login ────────────────── */}
+      <div className="relative z-10 mx-auto flex max-w-6xl items-center justify-end gap-3 px-4 pt-4">
+        <LanguageSelector currentLocale={locale} onLocaleChange={setLocale} compact />
+        <Link
+          href="/login"
+          className="hover:border-jeevandata-300 hover:text-jeevandata-600 dark:hover:border-jeevandata-700 dark:hover:text-jeevandata-400 inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white/70 px-3.5 py-1.5 text-xs font-medium text-slate-600 shadow-sm backdrop-blur transition-colors dark:border-slate-700 dark:bg-slate-900/50 dark:text-slate-300"
+        >
+          Staff login
+        </Link>
+      </div>
       {/* ─── Animated Background ──────────────────────────────── */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         {/* Gradient orbs */}
