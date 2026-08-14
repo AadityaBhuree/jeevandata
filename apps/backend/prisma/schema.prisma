@@ -88,6 +88,8 @@ model Patient {
   aadhaarRef     String?         @db.Char(64) // SHA-256 hash only
   consentGranted Boolean         @default(false)
   clinicId       String?         @db.Uuid
+  isDeleted      Boolean         @default(false)
+  deletedAt      DateTime?
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
 
@@ -97,6 +99,7 @@ model Patient {
   clinic          Clinic?         @relation(fields: [clinicId], references: [id], onDelete: SetNull)
 
   @@index([clinicId])
+  @@index([isDeleted])
   @@map("patients")
 }
 
