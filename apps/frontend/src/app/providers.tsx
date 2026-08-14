@@ -5,6 +5,7 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { ThemeProvider } from '@/components/ui/theme-provider';
 import { LanguageProvider } from '@/hooks/useLanguage';
 import { OfflineIndicator } from '@/components/ui/offline-indicator';
+import { Toaster } from '@/components/ui/toaster';
 import { initOfflineSync } from '@/services/sync';
 
 interface ProvidersProps {
@@ -40,6 +41,7 @@ export function Providers({ children }: ProvidersProps) {
         <ThemeProvider>
           <OfflineIndicator />
           {children}
+          <Toaster />
         </ThemeProvider>
       </LanguageProvider>
     </QueryClientProvider>
