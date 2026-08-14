@@ -104,6 +104,8 @@ vi.mock('@/hooks/useIntakeConversation', () => ({
 
 vi.mock('@/services/socket', () => ({
   socketService: {
+    isConnected: vi.fn(() => false),
+    onConnectionChange: vi.fn(() => () => {}),
     joinSession: vi.fn(),
     leaveSession: vi.fn(),
     sendConversationTurn: vi.fn(),
