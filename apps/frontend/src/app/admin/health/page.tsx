@@ -1,4 +1,5 @@
 'use client';
+import { TitleSetter } from '@/components/ui/title-setter';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { healthApi, type HealthSummary, type DependencyCheck } from '@/services/api';
@@ -78,6 +79,7 @@ export default function AdminHealthPage() {
 
   return (
     <div className="min-h-screen bg-slate-50 p-6 dark:bg-slate-950">
+      <TitleSetter title="System Health" />
       <div className="mx-auto max-w-3xl space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
