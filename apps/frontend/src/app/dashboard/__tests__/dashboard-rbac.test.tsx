@@ -30,6 +30,8 @@ const { replaceMock, pushMock, dashboardApiMock, authApiMock, socketServiceMock 
       disconnect: vi.fn(),
       joinSession: vi.fn(),
       leaveSession: vi.fn(),
+      isConnected: vi.fn(() => false),
+      onConnectionChange: vi.fn(() => () => {}),
       onSessionStatus: vi.fn(() => () => {}),
       onTranscriptChunk: vi.fn(() => () => {}),
       onBriefReady: vi.fn(() => () => {}),
