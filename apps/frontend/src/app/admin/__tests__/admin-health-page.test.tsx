@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import type * as ApiModule from '@/services/api';
 import AdminHealthPage from '../health/page';
 import { ThemeProvider } from '@/components/ui/theme-provider';
 
@@ -10,6 +11,12 @@ const { healthApiMock } = vi.hoisted(() => ({
     getLive: vi.fn(),
   },
 }));
+
+// The page reads per-dependency checks from the readiness endpoint.
+vi.mock('@/services/api', async (importOriginal) => {
+  const original = await importOriginal<typeof ApiModule>();
+  return { ...original, healthApi: healthApiMock };
+});
 
 vi.mock('@/services/api', () => ({
   healthApi: healthApiMock,
@@ -45,7 +52,7 @@ beforeEach(() => {
 
 describe('AdminHealthPage', () => {
   it('renders the overall status and every dependency with latency', async () => {
-    healthApiMock.getSummary.mockResolvedValue(healthySummary);
+    healthApiMock.getReady.mockResolvedValue(healthySummary);
     renderPage();
 
     expect(await screen.findByText('Healthy')).toBeInTheDocument();
@@ -61,7 +68,7 @@ describe('AdminHealthPage', () => {
   });
 
   it('marks a slow dependency as Degraded (yellow) even when healthy', async () => {
-    healthApiMock.getSummary.mockResolvedValue({
+    healthApiMock.getReady.mockResolvedValue({
       ...healthySummary,
       checks: { ...healthySummary.checks, qdrant: { status: 'healthy', latencyMs: 2500 } },
     });
@@ -83,7 +90,7 @@ describe('AdminHealthPage', () => {
       },
       timestamp: '2026-08-14T12:00:00Z',
     };
-    healthApiMock.getSummary.mockRejectedValue(err);
+    healthApiMock.getReady.mockRejectedValue(err);
     renderPage();
 
     expect(await screen.findByText('Unhealthy')).toBeInTheDocument();
@@ -94,7 +101,7 @@ describe('AdminHealthPage', () => {
   });
 
   it('shows the error message when the backend is unreachable (no details)', async () => {
-    healthApiMock.getSummary.mockRejectedValue(new Error('Network down'));
+    healthApiMock.getReady.mockRejectedValue(new Error('Network down'));
     renderPage();
 
     expect(
@@ -104,26 +111,26 @@ describe('AdminHealthPage', () => {
   });
 
   it('re-fetches on manual refresh', async () => {
-    healthApiMock.getSummary.mockResolvedValue(healthySummary);
+    healthApiMock.getReady.mockResolvedValue(healthySummary);
     renderPage();
     await screen.findByText('Healthy');
-    expect(healthApiMock.getSummary).toHaveBeenCalledTimes(1);
+    expect(healthApiMock.getReady).toHaveBeenCalledTimes(1);
 
     fireEvent.click(screen.getByRole('button', { name: /refresh/i }));
-    await waitFor(() => expect(healthApiMock.getSummary).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(healthApiMock.getReady).toHaveBeenCalledTimes(2));
   });
 
   it('auto-refreshes after 30 seconds', async () => {
     vi.useFakeTimers({ shouldAdvanceTime: true });
-    healthApiMock.getSummary.mockResolvedValue(healthySummary);
+    healthApiMock.getReady.mockResolvedValue(healthySummary);
     renderPage();
 
     // Let the initial load settle (auto-advancing fake clock keeps waitFor alive)
     await screen.findByText('Healthy');
-    expect(healthApiMock.getSummary).toHaveBeenCalledTimes(1);
+    expect(healthApiMock.getReady).toHaveBeenCalledTimes(1);
 
     vi.advanceTimersByTime(30_000);
-    await vi.waitFor(() => expect(healthApiMock.getSummary).toHaveBeenCalledTimes(2));
+    await vi.waitFor(() => expect(healthApiMock.getReady).toHaveBeenCalledTimes(2));
     vi.useRealTimers();
   });
 });
