@@ -116,13 +116,26 @@ export function CameraSelector({
         </div>
       )}
 
-      {/* Error message */}
+      {/* Error message + recovery guidance */}
       {cameraError && (
         <div
           role="alert"
-          className="rounded-xl bg-red-50 p-3 text-xs text-red-600 ring-1 ring-red-200 dark:bg-red-950/30 dark:text-red-400 dark:ring-red-800"
+          className="rounded-xl bg-red-50 p-3 ring-1 ring-red-200 dark:bg-red-950/30 dark:ring-red-800"
         >
-          {cameraError}
+          <p className="text-xs font-medium text-red-700 dark:text-red-400">{cameraError}</p>
+          <p className="mt-1.5 text-[11px] leading-relaxed text-red-600/80 dark:text-red-300/80">
+            Camera blocked or unavailable. Click the camera icon in your browser&apos;s address bar,
+            choose <span className="font-semibold">Allow</span>, then retry. If you&apos;re on a
+            kiosk, check the device&apos;s camera is connected and not in use by another app.
+          </p>
+          <button
+            type="button"
+            onClick={() => void onStartCamera()}
+            className="mt-2 inline-flex items-center gap-1.5 rounded-lg bg-red-600 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-red-700"
+          >
+            <RotateCw className="h-3 w-3" aria-hidden="true" />
+            Retry camera
+          </button>
         </div>
       )}
     </div>
