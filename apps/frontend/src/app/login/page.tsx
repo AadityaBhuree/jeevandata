@@ -1,4 +1,5 @@
 'use client';
+import { TitleSetter } from '@/components/ui/title-setter';
 
 import { useEffect, useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
@@ -78,6 +79,7 @@ export default function LoginPage() {
 
   return (
     <div className="via-jeevandata-50 dark:via-jeevandata-950 relative flex min-h-screen flex-col overflow-hidden bg-gradient-to-br from-slate-50 to-white dark:from-slate-950 dark:to-slate-900">
+      <TitleSetter title="Staff Sign In" />
       {/* ─── Animated background ─────────────────────────────── */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         <div className="animate-float bg-jeevandata-200/30 dark:bg-jeevandata-900/20 absolute -left-32 -top-32 h-96 w-96 rounded-full blur-3xl" />
