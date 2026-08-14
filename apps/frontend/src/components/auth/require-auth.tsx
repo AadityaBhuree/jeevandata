@@ -42,11 +42,16 @@ export function RequireAuth({
   const router = useRouter();
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const role = useAuthStore((s) => s.user?.role);
+  const hasHydrated = useAuthStore((s) => s._hasHydrated);
 
   const roleAllowed = !allowedRoles || hasRole(role, allowedRoles);
   const denied = isAuthenticated && !roleAllowed;
 
   useEffect(() => {
+    // Never redirect before the persisted session has rehydrated: during the
+    // SSR→client hydration window the store briefly reads as unauthenticated,
+    // and redirecting then would bounce every page refresh through /login.
+    if (!hasHydrated) return;
     if (!isAuthenticated) {
       router.replace(redirectTo);
       return;
@@ -54,9 +59,9 @@ export function RequireAuth({
     if (denied && deniedRedirectTo) {
       router.replace(deniedRedirectTo);
     }
-  }, [isAuthenticated, denied, deniedRedirectTo, redirectTo, router]);
+  }, [hasHydrated, isAuthenticated, denied, deniedRedirectTo, redirectTo, router]);
 
-  if (!isAuthenticated) {
+  if (!hasHydrated || !isAuthenticated) {
     return (
       <div
         role="status"

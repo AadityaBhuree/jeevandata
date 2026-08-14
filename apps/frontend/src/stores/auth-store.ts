@@ -23,12 +23,19 @@ interface AuthState {
   refreshToken: string | null;
   user: AuthUser | null;
   isAuthenticated: boolean;
+  /**
+   * True once the persisted session has been rehydrated from localStorage.
+   * Guards the first client render: RequireAuth must not redirect while this
+   * is false, or refreshing a protected page bounces through /login.
+   */
+  _hasHydrated: boolean;
 
   // Actions
   setSession: (tokens: AuthTokens, user: AuthUser) => void;
   setAccessToken: (accessToken: string) => void;
   setUser: (user: AuthUser) => void;
   clearSession: () => void;
+  setHasHydrated: (hydrated: boolean) => void;
 }
 
 /**
@@ -44,6 +51,9 @@ export const useAuthStore = create<AuthState>()(
       refreshToken: null,
       user: null,
       isAuthenticated: false,
+      _hasHydrated: false,
+
+      setHasHydrated: (hydrated) => set({ _hasHydrated: hydrated }),
 
       setSession: (tokens, user) =>
         set({
@@ -67,6 +77,11 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: 'jeevandata-auth',
+      // Flip _hasHydrated once localStorage has been read so client
+      // components can tell "no session yet" apart from "still hydrating".
+      onRehydrateStorage: () => (state) => {
+        state?.setHasHydrated(true);
+      },
     },
   ),
 );
