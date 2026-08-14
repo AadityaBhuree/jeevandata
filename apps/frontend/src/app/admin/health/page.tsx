@@ -42,9 +42,11 @@ export default function AdminHealthPage() {
 
   const load = useCallback(async () => {
     try {
-      // /health returns 503 (with the checks in error.details) when any
-      // dependency is down — so a failed call can still yield full detail.
-      const summary = await healthApi.getSummary();
+      // /health/ready returns the per-dependency checks map. (The summary
+      // /health endpoint only aggregates counts — no checks.)
+      // It returns 503 (with the checks in error.details) when any dependency
+      // is down — so a failed call can still yield full detail.
+      const summary = await healthApi.getReady();
       setHealth(summary);
       setError(null);
     } catch (err) {
@@ -121,7 +123,7 @@ export default function AdminHealthPage() {
             <Card className="p-5">
               <p className="text-sm text-slate-400">Checking dependencies…</p>
             </Card>
-          ) : health ? (
+          ) : health && health.checks ? (
             Object.entries(health.checks).map(([name, check]) => (
               <Card key={name} className="p-5">
                 <div className="flex items-center justify-between">
