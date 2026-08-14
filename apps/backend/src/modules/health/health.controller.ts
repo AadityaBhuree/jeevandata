@@ -31,7 +31,14 @@ export class HealthController {
   async getReadiness() {
     const result = await this.healthService.getReadiness();
     if (result.status === 'unhealthy') {
-      throw new HttpException(result, HttpStatus.SERVICE_UNAVAILABLE);
+      throw new HttpException(
+        {
+          code: 'HEALTH_UNHEALTHY',
+          message: 'One or more dependencies are unhealthy',
+          details: result as unknown as Record<string, unknown>,
+        },
+        HttpStatus.SERVICE_UNAVAILABLE,
+      );
     }
     return result;
   }
@@ -45,7 +52,14 @@ export class HealthController {
   async getHealth() {
     const result = await this.healthService.getHealth();
     if (result.status === 'unhealthy') {
-      throw new HttpException(result, HttpStatus.SERVICE_UNAVAILABLE);
+      throw new HttpException(
+        {
+          code: 'HEALTH_UNHEALTHY',
+          message: 'One or more dependencies are unhealthy',
+          details: result as unknown as Record<string, unknown>,
+        },
+        HttpStatus.SERVICE_UNAVAILABLE,
+      );
     }
     return result;
   }
