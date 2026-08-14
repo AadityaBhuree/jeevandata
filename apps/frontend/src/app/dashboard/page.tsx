@@ -2,7 +2,8 @@
 
 import { useEffect, useState, useRef, useCallback } from 'react';
 import Link from 'next/link';
-import { dashboardApi, authApi } from '@/services/api';
+import { useQueryClient } from '@tanstack/react-query';
+import { authApi } from '@/services/api';
 import { socketService } from '@/services/socket';
 import { Badge, StatusBadge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
@@ -12,36 +13,17 @@ import { formatDateTime, formatTime } from '@/lib/utils';
 import { cn } from '@/lib/utils';
 import { Plus, CheckCircle2, Pencil, ChevronRight, MessageSquare, LogOut } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import {
+  useActiveSessions,
+  useRecentBriefs,
+  useMarkBriefReviewed,
+  type ActiveSession,
+  type BriefRecord,
+} from '@/hooks/useQueries';
 import { ROLE_LABELS, hasRole } from '@/lib/roles';
 import { UserRole } from '@jeevandata/shared-types';
 
 // ─── Types ──────────────────────────────────────────────────────
-
-interface ActiveSession {
-  id: string;
-  patient: { id: string; name: string; dob: string } | null;
-  status: string;
-  startedAt: string;
-  deviceId: string;
-}
-
-interface BriefRecord {
-  id: string;
-  sessionId: string;
-  patientId: string;
-  brief: {
-    summary?: string;
-    chiefComplaint?: string;
-    riskFlags?: string[];
-    vitalsToCheck?: string[];
-    suggestedFollowups?: string[];
-    medicationsNote?: string;
-    icd10Hints?: string[];
-  };
-  generatedAt: string;
-  session: { id: string; startedAt: string; status: string };
-  patient?: { id: string; name: string; dob: string } | null;
-}
 
 interface ConversationTurn {
   sessionId: string;
@@ -65,11 +47,15 @@ export default function DashboardPage() {
   const { user, logout } = useAuth();
   const isDoctor = hasRole(user?.role, [UserRole.DOCTOR]);
 
-  const [activeSessions, setActiveSessions] = useState<ActiveSession[]>([]);
-  const [recentBriefs, setRecentBriefs] = useState<BriefRecord[]>([]);
-  const [sessionsLoading, setSessionsLoading] = useState(true);
-  const [briefsLoading, setBriefsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
+  const {
+    data: activeSessions = [],
+    isLoading: sessionsLoading,
+    isError: sessionsError,
+    error: sessionsErrorObj,
+  } = useActiveSessions(50);
+  const { data: recentBriefs = [], isLoading: briefsLoading } = useRecentBriefs(20);
+  const markReviewed = useMarkBriefReviewed();
 
   // Session detail state
   const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
@@ -79,37 +65,6 @@ export default function DashboardPage() {
 
   const turnsEndRef = useRef<HTMLDivElement>(null);
   const selectedSession = activeSessions.find((s) => s.id === selectedSessionId);
-
-  // ─── Initial Load ──────────────────────────────────────────────
-
-  useEffect(() => {
-    async function load() {
-      try {
-        const [sessionsRes] = await Promise.all([dashboardApi.getActiveSessions(1, 50)]);
-        setActiveSessions(sessionsRes.data as ActiveSession[]);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load');
-      } finally {
-        setSessionsLoading(false);
-      }
-    }
-    load();
-  }, []);
-
-  // Load briefs on mount
-  useEffect(() => {
-    async function loadBriefs() {
-      try {
-        const res = await dashboardApi.getRecentBriefs(1, 20);
-        setRecentBriefs(res.data as BriefRecord[]);
-      } catch {
-        // Briefs may not load if none exist — not critical
-      } finally {
-        setBriefsLoading(false);
-      }
-    }
-    loadBriefs();
-  }, []);
 
   // ─── WebSocket Subscriptions ───────────────────────────────────
 
@@ -125,17 +80,14 @@ export default function DashboardPage() {
         '';
       const rawSessionId = typeof payload.sessionId === 'string' ? payload.sessionId : '';
 
-      setActiveSessions((prev) =>
-        prev.map((s) => (s.id === rawSessionId ? { ...s, status: status as string } : s)),
+      queryClient.setQueryData<ActiveSession[]>(['active-sessions', 50], (prev) =>
+        (prev ?? []).map((s) => (s.id === rawSessionId ? { ...s, status: status as string } : s)),
       );
     });
 
-    // Listen for brief:ready — add to briefs list
+    // Listen for brief:ready — refetch the briefs list
     const unsubBrief = socketService.onBriefReady((_data) => {
-      dashboardApi
-        .getRecentBriefs(1, 20)
-        .then((res) => setRecentBriefs(res.data as BriefRecord[]))
-        .catch(() => {});
+      queryClient.invalidateQueries({ queryKey: ['recent-briefs'] });
     });
 
     // Listen for real-time conversation turns
@@ -208,25 +160,24 @@ export default function DashboardPage() {
   );
 
   const handleMarkReviewed = useCallback(
-    async (briefId: string) => {
+    (briefId: string) => {
       setReviewingId(briefId);
-      try {
-        await dashboardApi.markBriefReviewed(briefId);
-        setRecentBriefs((prev) => prev.filter((b) => b.id !== briefId));
-        setSelectedBrief(null);
-        const brief = recentBriefs.find((b) => b.id === briefId);
-        if (brief) {
-          setActiveSessions((prev) =>
-            prev.map((s) => (s.id === brief.sessionId ? { ...s, status: 'COMPLETED' } : s)),
-          );
-        }
-      } catch {
-        // Error handled silently
-      } finally {
-        setReviewingId(null);
-      }
+      markReviewed.mutate(briefId, {
+        onSuccess: () => {
+          setSelectedBrief(null);
+          const brief = recentBriefs.find((b) => b.id === briefId);
+          if (brief) {
+            queryClient.setQueryData<ActiveSession[]>(['active-sessions', 50], (prev) =>
+              (prev ?? []).map((s) =>
+                s.id === brief.sessionId ? { ...s, status: 'COMPLETED' } : s,
+              ),
+            );
+          }
+        },
+        onSettled: () => setReviewingId(null),
+      });
     },
-    [recentBriefs],
+    [markReviewed, recentBriefs, queryClient],
   );
 
   // ─── Stats ─────────────────────────────────────────────────────
@@ -378,9 +329,9 @@ export default function DashboardPage() {
                     </div>
                   ))}
                 </div>
-              ) : error ? (
+              ) : sessionsError ? (
                 <div className="px-5 py-8 text-center text-sm text-red-500 dark:text-red-400">
-                  {error}
+                  {(sessionsErrorObj as Error | null)?.message ?? 'Failed to load sessions'}
                   <button
                     onClick={() => window.location.reload()}
                     className="text-jeevandata-500 dark:text-jeevandata-400 ml-2 hover:underline"
