@@ -141,9 +141,10 @@ export class PmsService {
 
     this.logger.debug(`Cache miss for patient ${patientId} — loading from database`);
 
-    // Fall through to database
-    const patient = await this.prisma.patient.findUnique({
-      where: { id: patientId },
+    // Fall through to database (soft-deleted patients are excluded — a
+    // removed patient must never be synced to a PMS)
+    const patient = await this.prisma.patient.findFirst({
+      where: { id: patientId, isDeleted: false },
     });
 
     if (!patient) {

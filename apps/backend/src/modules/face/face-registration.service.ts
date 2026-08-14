@@ -24,7 +24,9 @@ export class FaceRegistrationService {
    * lost in transit.
    */
   async registerPatient(data: RegisterPatientDto, idempotencyKey?: string) {
-    // Check for duplicate mobile
+    // Check for duplicate mobile — a soft-deleted patient is re-activated
+    // (restored) rather than blocking re-registration, since healthcare
+    // retention rules keep the record but the patient may return later.
     const existing = await this.prisma.patient.findUnique({
       where: { mobile: data.mobile },
     });
@@ -40,6 +42,30 @@ export class FaceRegistrationService {
           message: 'Patient already registered (idempotent replay)',
         };
       }
+
+      if (existing.isDeleted) {
+        const restored = await this.prisma.patient.update({
+          where: { id: existing.id },
+          data: {
+            isDeleted: false,
+            deletedAt: null,
+            name: data.name,
+            dob: new Date(data.dob),
+            consentGranted: data.consent,
+          },
+        });
+        this.logger.log(`Restored soft-deleted patient ${restored.id} on re-registration`);
+        await this.faceService.upsertEmbedding({
+          patientId: restored.id,
+          vector: data.embedding,
+          capturedAt: new Date().toISOString(),
+        });
+        await this.prisma.faceEmbedding.create({
+          data: { patientId: restored.id },
+        });
+        return { id: restored.id, name: restored.name, message: 'Patient restored' };
+      }
+
       throw new ConflictException(
         `Patient with mobile ${data.mobile} already exists (ID: ${existing.id})`,
       );
@@ -105,7 +131,7 @@ export class FaceRegistrationService {
     // Fetch patient details for each match
     const patientIds = matches.map((m) => m.patientId);
     const patients = await this.prisma.patient.findMany({
-      where: { id: { in: patientIds } },
+      where: { id: { in: patientIds }, isDeleted: false },
       select: {
         id: true,
         name: true,
@@ -140,5 +166,33 @@ export class FaceRegistrationService {
     });
 
     return { matches: results, total: results.length };
+  }
+
+  /**
+   * Soft-delete a patient record (healthcare retention compliance).
+   *
+   * The row stays in the database with `isDeleted = true` / `deletedAt` set so
+   * audit trails and historical intake records remain intact. All queries that
+   * surface patient data filter soft-deleted rows out by default.
+   *
+   * Returns false when the patient doesn't exist or was already deleted.
+   */
+  async softDeletePatient(patientId: string): Promise<boolean> {
+    const patient = await this.prisma.patient.findUnique({
+      where: { id: patientId },
+      select: { id: true, isDeleted: true },
+    });
+
+    if (!patient || patient.isDeleted) {
+      return false;
+    }
+
+    await this.prisma.patient.update({
+      where: { id: patientId },
+      data: { isDeleted: true, deletedAt: new Date() },
+    });
+
+    this.logger.log(`Soft-deleted patient ${patientId}`);
+    return true;
   }
 }
