@@ -29,7 +29,11 @@ const nextConfig = {
 
 const isDev = process.env.NODE_ENV === 'development';
 
-const withPWA = require('next-pwa')({
+// @ducanh2912/next-pwa is the actively-maintained fork of the abandoned
+// next-pwa (no releases since 2022). Same Workbox-backed API — the fork
+// handles Next 14 App Router + Turbopack, which the original never did.
+// CJS interop: the package's default export (withPWAInit) lives at `.default`.
+const withPWA = require('@ducanh2912/next-pwa').default({
   dest: 'public',
   // Never register in dev — a stale service worker caching hot-reloaded
   // chunks is a classic Next.js dev footgun. Production only.
