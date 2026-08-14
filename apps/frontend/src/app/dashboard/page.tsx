@@ -1,18 +1,20 @@
 'use client';
+import { TitleSetter } from '@/components/ui/title-setter';
 
 import { useEffect, useState, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { useQueryClient } from '@tanstack/react-query';
-import { authApi } from '@/services/api';
+import { hasRole } from '@/lib/roles';
+import { useAuth } from '@/hooks/useAuth';
 import { socketService } from '@/services/socket';
-import { Badge, StatusBadge } from '@/components/ui/badge';
+import { StatusBadge, Badge } from '@/components/ui/badge';
+import { AppShell } from '@/components/layout/app-shell';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { DarkModeToggle } from '@/components/ui/dark-mode-toggle';
+import { getSessionStatusText } from '@/lib/session-status';
 import { formatDateTime, formatTime } from '@/lib/utils';
 import { cn } from '@/lib/utils';
-import { Plus, CheckCircle2, Pencil, ChevronRight, MessageSquare, LogOut } from 'lucide-react';
-import { useAuth } from '@/hooks/useAuth';
+import { Plus, CheckCircle2, ChevronRight, MessageSquare } from 'lucide-react';
 import {
   useActiveSessions,
   useRecentBriefs,
@@ -20,7 +22,6 @@ import {
   type ActiveSession,
   type BriefRecord,
 } from '@/hooks/useQueries';
-import { ROLE_LABELS, hasRole } from '@/lib/roles';
 import { UserRole } from '@jeevandata/shared-types';
 
 // ─── Types ──────────────────────────────────────────────────────
@@ -32,22 +33,14 @@ interface ConversationTurn {
   timestamp?: string;
 }
 
-// ─── Status helpers ─────────────────────────────────────────────
-
-function getSessionStatusText(status: string): string {
-  return status
-    .replace(/_/g, ' ')
-    .toLowerCase()
-    .replace(/\b\w/g, (c) => c.toUpperCase());
-}
-
 // ─── Dashboard Component ────────────────────────────────────────
 
 export default function DashboardPage() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const isDoctor = hasRole(user?.role, [UserRole.DOCTOR]);
 
   const queryClient = useQueryClient();
+  const [socketConnected, setSocketConnected] = useState(false);
   const {
     data: activeSessions = [],
     isLoading: sessionsLoading,
@@ -70,6 +63,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     socketService.connect();
+    const unsubConn = socketService.onConnectionChange(setSocketConnected);
 
     // Listen for session status updates
     const unsubStatus = socketService.onSessionStatus((data) => {
@@ -124,6 +118,7 @@ export default function DashboardPage() {
     joinRooms();
 
     return () => {
+      unsubConn();
       unsubStatus();
       unsubBrief();
       unsubTurns();
@@ -204,80 +199,63 @@ export default function DashboardPage() {
       desc: 'Active conversation',
     },
     {
-      label: 'Completed Today',
-      value: activeSessions.filter((s) => s.status === 'COMPLETED').length,
+      label: 'Started Today',
+      value: activeSessions.filter((s) => {
+        const d = new Date(s.startedAt);
+        const now = new Date();
+        return (
+          d.getFullYear() === now.getFullYear() &&
+          d.getMonth() === now.getMonth() &&
+          d.getDate() === now.getDate()
+        );
+      }).length,
       color: 'bg-violet-500',
-      desc: 'Reviewed sessions',
+      desc: 'Sessions opened today',
     },
   ];
 
   // ─── Render ────────────────────────────────────────────────────
 
   return (
-    <div className="flex min-h-screen bg-slate-50 dark:bg-slate-950">
-      {/* Main Content */}
-      <div className="flex flex-1 flex-col">
-        {/* Header */}
-        <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/80 backdrop-blur-md dark:border-slate-800 dark:bg-slate-900/80">
-          <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-            <div className="flex items-center gap-3">
-              <div className="bg-jeevandata-500 flex h-9 w-9 items-center justify-center rounded-xl shadow-sm">
-                <span className="text-sm font-bold text-white">AC</span>
-              </div>
-              <div>
-                <h1 className="text-lg font-semibold text-slate-900 dark:text-white">
-                  Doctor Dashboard
-                </h1>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
-                  Jeevandata — Live clinic intake monitor
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <DarkModeToggle />
-              {user && (
-                <div className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 dark:border-slate-700 dark:bg-slate-800">
-                  <div className="bg-jeevandata-500 flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-bold text-white">
-                    {user.name
-                      ?.split(' ')
-                      .map((n) => n[0])
-                      .slice(0, 2)
-                      .join('')}
-                  </div>
-                  <span className="max-w-[120px] truncate text-xs font-medium text-slate-700 dark:text-slate-300">
-                    {user.name}
-                  </span>
-                  <Badge variant="info" size="sm">
-                    {ROLE_LABELS[user.role]}
-                  </Badge>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      authApi.logout().catch(() => {});
-                      logout();
-                    }}
-                    className="text-slate-400 transition-colors hover:text-red-500 dark:text-slate-500 dark:hover:text-red-400"
-                    aria-label="Sign out"
-                    title="Sign out"
-                  >
-                    <LogOut className="h-4 w-4" />
-                  </button>
-                </div>
-              )}
-              <span className="flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400">
-                <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-500" />
-                Live
-              </span>
-              <Link href="/">
-                <Button variant="jeevandata" size="sm" leftIcon={<Plus className="h-3.5 w-3.5" />}>
-                  New Intake
-                </Button>
-              </Link>
-            </div>
+    <AppShell>
+      <div className="flex min-h-screen flex-col bg-slate-50 dark:bg-slate-950">
+        <TitleSetter title="Doctor Dashboard" />
+        {/* Content toolbar */}
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h1 className="text-lg font-semibold text-slate-900 dark:text-white">
+              Doctor Dashboard
+            </h1>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              Jeevandata — Live clinic intake monitor
+            </p>
           </div>
-        </header>
+          <div className="flex items-center gap-3">
+            <span
+              className={cn(
+                'flex items-center gap-1.5 text-xs',
+                socketConnected
+                  ? 'text-emerald-600 dark:text-emerald-400'
+                  : 'text-amber-600 dark:text-amber-400',
+              )}
+            >
+              <span
+                className={cn(
+                  'h-2 w-2 rounded-full',
+                  socketConnected ? 'animate-pulse bg-emerald-500' : 'bg-amber-500',
+                )}
+              />
+              {socketConnected ? 'Live' : 'Reconnecting'}
+            </span>
+            <Link href="/">
+              <Button variant="jeevandata" size="sm" leftIcon={<Plus className="h-3.5 w-3.5" />}>
+                New Intake
+              </Button>
+            </Link>
+          </div>
+        </div>
 
-        <main className="mx-auto flex w-full max-w-7xl flex-1 gap-6 p-6">
+        <main className="mx-auto flex w-full max-w-7xl flex-1 gap-6 p-0">
           {/* Left Panel — Sessions + Briefs */}
           <div className="flex flex-1 flex-col gap-6">
             {/* Stats Overview */}
@@ -696,13 +674,6 @@ export default function DashboardPage() {
                             Mark as Reviewed
                           </Button>
                         )}
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          leftIcon={<Pencil className="h-3.5 w-3.5" />}
-                        >
-                          Edit
-                        </Button>
                       </div>
                     </div>
                   </Card>
@@ -712,6 +683,6 @@ export default function DashboardPage() {
           </div>
         </main>
       </div>
-    </div>
+    </AppShell>
   );
 }
