@@ -6,6 +6,8 @@ import { useAuthStore } from '@/stores/auth-store';
 class SocketService {
   private socket: Socket | null = null;
   private listeners: Map<string, Set<(...args: unknown[]) => void>> = new Map();
+  private connected = false;
+  private connectionListeners = new Set<(connected: boolean) => void>();
 
   connect(): Socket {
     if (this.socket?.connected) {
@@ -28,14 +30,20 @@ class SocketService {
     });
 
     this.socket.on('connect', () => {
+      this.connected = true;
+      this.connectionListeners.forEach((cb) => cb(true));
       logger.info('Socket connected', { socketId: this.socket?.id });
     });
 
     this.socket.on('disconnect', (reason) => {
+      this.connected = false;
+      this.connectionListeners.forEach((cb) => cb(false));
       logger.info('Socket disconnected', { reason });
     });
 
     this.socket.on('connect_error', (error) => {
+      this.connected = false;
+      this.connectionListeners.forEach((cb) => cb(false));
       logger.error('Socket connection error', error, { socketId: this.socket?.id });
     });
 
@@ -56,8 +64,22 @@ class SocketService {
   }
 
   disconnect(): void {
+    this.connected = false;
+    this.connectionListeners.forEach((cb) => cb(false));
     this.socket?.disconnect();
     this.socket = null;
+  }
+
+  /** Current realtime connection state (true = connected to the WS gateway). */
+  isConnected(): boolean {
+    return this.connected;
+  }
+
+  /** Subscribe to connection-state changes. Returns an unsubscribe fn. */
+  onConnectionChange(callback: (connected: boolean) => void): () => void {
+    this.connectionListeners.add(callback);
+    callback(this.connected);
+    return () => this.connectionListeners.delete(callback);
   }
 
   joinSession(sessionId: string): void {
