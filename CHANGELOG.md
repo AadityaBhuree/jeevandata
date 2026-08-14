@@ -7,8 +7,8 @@ the doctor before the consultation.
 
 ## [1.0.0] — 2026-08
 
-**All 7 roadmap phases complete.** 428+ commits, 1,127 tests (331 backend
-unit + 195 backend E2E + 601 frontend), no open bugs.
+**All 8 roadmap phases complete.** 450+ commits, 1,162 tests (348 backend
+unit + 195 backend E2E + 619 frontend), no open bugs.
 
 ### Phase 1 — Emergency Repairs
 
@@ -54,5 +54,15 @@ unit + 195 backend E2E + 601 frontend), no open bugs.
 - Kubernetes manifests (probes, HPA, Ingress + TLS)
 - Secrets management (`validate-secrets.sh`), disaster-recovery docs
 - Caddy TLS edge with HSTS/CSP, automated backups to MinIO/R2
+
+### Phase 8 — Security & Reliability Hardening
+
+- Secret hygiene: verified no `.env` in git, JWT rotation, local vs Docker env split (`.env` / `.env.docker`)
+- WebSocket JWT auth (patients' kiosk flow untouched), audio-buffer leak guard (60s sweep + 10MB cap), CORS via ConfigService
+- Prisma cleanup: removed deprecated `previewFeatures`, switched `db push` → versioned migrations, Patient **soft-delete** with restore-on-re-register
+- Docs sync: PROJECT_OVERVIEW + PLAN.md refreshed, MIT LICENSE, version unified at 1.0.0
+- Frontend: landing-page loading/error states, app-level error boundary, **React Query** for the dashboard, `next-pwa` → `@ducanh2912/next-pwa`
+- Backend robustness: clinicId multi-tenancy filtering, Gemini retry + Claude fallback, compose `version:` field removed
+- Developer experience: `docker-compose.dev.yml` + `pnpm docker:dev`, `/admin/health` system-status page (auto-refresh, per-dependency badges)
 
 [1.0.0]: https://github.com/AadityaBhuree/jeevandata/releases/tag/v1.0.0
