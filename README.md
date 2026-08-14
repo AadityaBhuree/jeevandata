@@ -159,10 +159,17 @@ pnpm install
 ### 2. Start the infrastructure
 
 ```bash
-docker compose up -d
+pnpm docker:dev
 ```
 
-This boots PostgreSQL 16, Redis 7, Qdrant, MinIO, the Whisper.cpp server, and Redis Commander.
+This boots PostgreSQL 16, Redis 7, Qdrant, and MinIO with **dev-friendly**
+settings (password-less Redis, lighter Postgres buffers — see
+`docker-compose.dev.yml`). For the production-like stack (auth'd Redis,
+WAL archiving, Whisper, monitoring, backup):
+
+```bash
+docker compose up -d
+```
 
 | Service             | Container name               | Host port       | Notes                                                        |
 | :------------------ | :--------------------------- | :-------------- | :----------------------------------------------------------- |
@@ -255,17 +262,19 @@ Frontend public variables (in `apps/frontend/.env.local`):
 
 ### Common commands (run from the repo root)
 
-| Command                               | What it does                                                |
-| :------------------------------------ | :---------------------------------------------------------- |
-| `pnpm dev`                            | Start frontend + backend in watch mode (Turborepo parallel) |
-| `pnpm build`                          | Build all workspaces                                        |
-| `pnpm lint` / `pnpm lint:fix`         | Lint (and autofix) all workspaces                           |
-| `pnpm typecheck`                      | Type-check all workspaces                                   |
-| `pnpm test`                           | Run all unit/component tests                                |
-| `pnpm test:e2e`                       | Run backend E2E suites                                      |
-| `pnpm db:migrate`                     | Create/apply Prisma migrations                              |
-| `pnpm db:seed`                        | Seed the database                                           |
-| `pnpm docker:up` / `pnpm docker:down` | Start / stop the infrastructure stack                       |
+| Command                               | What it does                                                       |
+| :------------------------------------ | :----------------------------------------------------------------- |
+| `pnpm dev`                            | Start frontend + backend in watch mode (Turborepo parallel)        |
+| `pnpm build`                          | Build all workspaces                                               |
+| `pnpm lint` / `pnpm lint:fix`         | Lint (and autofix) all workspaces                                  |
+| `pnpm typecheck`                      | Type-check all workspaces                                          |
+| `pnpm test`                           | Run all unit/component tests                                       |
+| `pnpm test:e2e`                       | Run backend E2E suites                                             |
+| `pnpm db:migrate`                     | Create/apply Prisma migrations                                     |
+| `pnpm db:seed`                        | Seed the database                                                  |
+| `pnpm docker:up` / `pnpm docker:down` | Start / stop the infrastructure stack                              |
+| `pnpm docker:dev`                     | Start infra with dev overrides (password-less Redis, lighter PG)   |
+| `pnpm docker:dev:all`                 | Start infra **and** backend/frontend containers with dev overrides |
 
 ### Scoped commands
 
