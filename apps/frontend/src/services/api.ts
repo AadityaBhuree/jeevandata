@@ -259,6 +259,31 @@ export interface FlowStage {
   count: number;
 }
 
+// ─── Health API (admin health page) ────────────────────────────
+
+export interface DependencyCheck {
+  status: 'healthy' | 'unhealthy';
+  latencyMs: number;
+  error?: string;
+}
+
+export interface HealthSummary {
+  status: 'healthy' | 'unhealthy';
+  checks: Record<string, DependencyCheck>;
+  timestamp: string;
+}
+
+export const healthApi = {
+  /** Overall health summary — GET /health */
+  getSummary: () => request<HealthSummary>('/health'),
+
+  /** Readiness probe — GET /health/ready (503 when a dependency is down) */
+  getReady: () => request<HealthSummary>('/health/ready'),
+
+  /** Liveness probe — GET /health/live */
+  getLive: () => request<HealthSummary>('/health/live'),
+};
+
 export const analyticsApi = {
   getOverview: (days = 30) =>
     request<{
