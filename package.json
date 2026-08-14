@@ -25,9 +25,11 @@
     "db:migrate": "pnpm --filter @jeevandata/backend prisma migrate dev",
     "db:seed": "pnpm --filter @jeevandata/backend prisma db seed",
     "docker:up": "docker compose up -d",
-    "docker:down": "docker compose down",
+    "docker:down": "docker compose -f docker-compose.yml -f docker-compose.app.yml down",
     "prepare": "husky || node -e \"process.exit(0)\"",
-    "postinstall": "husky || node -e \"process.exit(0)\""
+    "postinstall": "husky || node -e \"process.exit(0)\"",
+    "docker:dev": "docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d postgres redis qdrant minio minio-init",
+    "docker:dev:all": "docker compose -f docker-compose.yml -f docker-compose.app.yml -f docker-compose.dev.yml up -d"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",
