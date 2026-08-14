@@ -123,7 +123,7 @@ export function FaceRegistrationDialog({
       setError('Name is too long (max 200 characters)');
       return false;
     }
-    if (!/^[a-zA-Z\s'-]+$/.test(name.trim())) {
+    if (!/^[\p{L}\p{M}\s.'-]+$/u.test(name.trim())) {
       setError('Name contains invalid characters');
       return false;
     }
@@ -535,7 +535,7 @@ export function FaceRegistrationDialog({
         aria-modal="true"
         aria-labelledby="face-reg-dialog-title"
         aria-describedby={error ? 'face-reg-dialog-error' : 'face-reg-dialog-desc'}
-        className="animate-scale-in-center relative w-full max-w-md overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-900"
+        className="animate-scale-in-center relative w-full max-w-[calc(100vw-2rem)] max-w-md overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-900"
       >
         {/* Step Progress Bar */}
         {step !== 'success' && (
