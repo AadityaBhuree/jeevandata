@@ -1,0 +1,28 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Dev-only overrides — `pnpm docker:dev`
+#
+# The base docker-compose.yml is tuned for production-like behavior (auth'd
+# Redis, WAL archiving, etc.). This overlay relaxes those for local development
+# so `pnpm dev` against the containers just works:
+#
+#   • Redis — no requirepass (the backend .env REDIS_URL has no password in dev)
+#   • Backend — verbose logging when run inside Docker (docker-compose.app.yml)
+#   • Postgres — smaller, faster buffers for a dev machine
+#
+# Usage:  pnpm docker:dev          (infra only — app runs via pnpm dev)
+#         pnpm docker:dev -- all   (app containers too)
+# ─────────────────────────────────────────────────────────────────────────────
+
+services:
+  postgres:
+    command: >
+      postgres
+      -c wal_level=replica
+      -c max_wal_senders=2
+      -c max_replication_slots=2
+      -c shared_buffers=128MB
+      -c effective_cache_size=384MB
+
+  redis:
+    # Dev Redis without a password — matches apps/backend/.env (localhost:6380)
+    command: redis-server --appendonly yes --appendfsync everysec
