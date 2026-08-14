@@ -1,7 +1,8 @@
 'use client';
+import { TitleSetter } from '@/components/ui/title-setter';
+import { AppShell } from '@/components/layout/app-shell';
 
 import { useEffect, useState, useCallback } from 'react';
-import Link from 'next/link';
 import {
   analyticsApi,
   monitoringApi,
@@ -13,15 +14,12 @@ import {
 } from '@/services/api';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { DarkModeToggle } from '@/components/ui/dark-mode-toggle';
 import { StatCard } from '@/components/admin/stat-card';
 import { VolumeChart } from '@/components/admin/volume-chart';
 import { HoursHeatmap } from '@/components/admin/hours-heatmap';
 import { FlowBoard } from '@/components/admin/flow-board';
 import { LatencyPanel } from '@/components/admin/latency-panel';
 import { AlertsPanel } from '@/components/admin/alerts-panel';
-import { useAuth } from '@/hooks/useAuth';
-import { ROLE_LABELS } from '@/lib/roles';
 import { logger } from '@/lib/logger';
 import {
   Users,
@@ -33,7 +31,6 @@ import {
   Activity,
   Download,
   RefreshCw,
-  BarChart3,
 } from 'lucide-react';
 
 interface Overview {
@@ -54,8 +51,6 @@ const RANGES = [
 ] as const;
 
 export default function AdminPage() {
-  const { user, logout } = useAuth();
-
   const [days, setDays] = useState(30);
   const [overview, setOverview] = useState<Overview | null>(null);
   const [volume, setVolume] = useState<VolumePoint[]>([]);
@@ -148,264 +143,216 @@ export default function AdminPage() {
   };
 
   return (
-    <div className="flex min-h-screen bg-slate-50 dark:bg-slate-950">
-      <div className="flex flex-1 flex-col">
-        {/* Header */}
-        <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/80 backdrop-blur-md dark:border-slate-800 dark:bg-slate-900/80">
-          <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-            <div className="flex items-center gap-3">
-              <div className="bg-jeevandata-500 flex h-9 w-9 items-center justify-center rounded-xl shadow-sm">
-                <BarChart3 className="h-4 w-4 text-white" />
-              </div>
-              <div>
-                <h1 className="text-lg font-semibold text-slate-900 dark:text-white">
-                  Admin Analytics
-                </h1>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
-                  Jeevandata — clinic KPIs & patient flow
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <DarkModeToggle />
-              {user && (
-                <span className="hidden rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 sm:inline dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">
-                  {ROLE_LABELS[user.role]}
-                </span>
-              )}
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  logout();
-                  window.location.href = '/login';
-                }}
-              >
-                Sign out
-              </Button>
-              <Link href="/clinics">
-                <Button variant="ghost" size="sm">
-                  Clinics
-                </Button>
-              </Link>
-              <Link href="/api-keys">
-                <Button variant="ghost" size="sm">
-                  API Keys
-                </Button>
-              </Link>
-              <Link href="/admin/audit">
-                <Button variant="ghost" size="sm">
-                  Audit
-                </Button>
-              </Link>
-              <Link href="/dashboard">
-                <Button variant="ghost" size="sm">
-                  Dashboard
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </header>
+    <AppShell>
+      <TitleSetter title="Admin Analytics" />
 
-        <main className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-6 p-6">
-          {/* Toolbar */}
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="flex items-center gap-1 rounded-lg border border-slate-200 bg-white p-1 dark:border-slate-700 dark:bg-slate-800">
-              {RANGES.map((r) => (
-                <button
-                  key={r.days}
-                  onClick={() => setDays(r.days)}
-                  className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
-                    days === r.days
-                      ? 'bg-jeevandata-500 text-white'
-                      : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
-                  }`}
-                  aria-pressed={days === r.days}
-                >
-                  {r.label}
-                </button>
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="text-lg font-semibold text-slate-900 dark:text-white">Admin Analytics</h1>
+          <p className="text-xs text-slate-500 dark:text-slate-400">
+            Jeevandata — clinic KPIs & patient flow
+          </p>
+        </div>
+        <div className="flex items-center gap-2"></div>
+      </div>
+      <div className="flex flex-col gap-6">
+        {/* Toolbar */}
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-1 rounded-lg border border-slate-200 bg-white p-1 dark:border-slate-700 dark:bg-slate-800">
+            {RANGES.map((r) => (
+              <button
+                key={r.days}
+                onClick={() => setDays(r.days)}
+                className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
+                  days === r.days
+                    ? 'bg-jeevandata-500 text-white'
+                    : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
+                }`}
+                aria-pressed={days === r.days}
+              >
+                {r.label}
+              </button>
+            ))}
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                load();
+                loadMonitoring();
+              }}
+              leftIcon={<RefreshCw className="h-3.5 w-3.5" />}
+              loading={loading || monitoringLoading}
+            >
+              Refresh
+            </Button>
+            <Button
+              variant="jeevandata"
+              size="sm"
+              onClick={handleExport}
+              loading={exporting}
+              leftIcon={<Download className="h-3.5 w-3.5" />}
+            >
+              Export CSV
+            </Button>
+          </div>
+        </div>
+
+        {error && (
+          <div
+            role="alert"
+            className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-900/30 dark:text-red-400"
+          >
+            {error}
+          </div>
+        )}
+
+        {/* KPI Cards */}
+        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+          <StatCard
+            label="Total Sessions"
+            value={overview?.totalSessions ?? '—'}
+            hint={`Last ${days} days`}
+            icon={<Users className="h-4 w-4" />}
+            accent="bg-jeevandata-500"
+            delay={0}
+          />
+          <StatCard
+            label="Returning Patients"
+            value={overview?.returningPatients ?? '—'}
+            hint={`${overview?.faceMatchRate ?? 0}% face match rate`}
+            icon={<UserCheck className="h-4 w-4" />}
+            accent="bg-emerald-500"
+            delay={80}
+          />
+          <StatCard
+            label="New Patients"
+            value={overview?.newPatients ?? '—'}
+            hint="Registered at kiosk"
+            icon={<UserPlus className="h-4 w-4" />}
+            accent="bg-violet-500"
+            delay={160}
+          />
+          <StatCard
+            label="Avg Intake Duration"
+            value={overview ? `${overview.avgIntakeMinutes} min` : '—'}
+            hint="Per completed intake"
+            icon={<Timer className="h-4 w-4" />}
+            accent="bg-amber-500"
+            delay={240}
+          />
+        </div>
+
+        {/* Secondary row: success rate + active */}
+        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+          <StatCard
+            label="Brief Success Rate"
+            value={overview ? `${overview.briefSuccessRate}%` : '—'}
+            hint="Briefs generated / sessions"
+            icon={<FileCheck2 className="h-4 w-4" />}
+            accent="bg-sky-500"
+            delay={0}
+          />
+          <StatCard
+            label="Active Sessions"
+            value={overview?.activeSessions ?? '—'}
+            hint="Currently in intake"
+            icon={<Activity className="h-4 w-4" />}
+            accent="bg-rose-500"
+            delay={80}
+          />
+          <StatCard
+            label="Avg Face Match"
+            value={overview ? `${overview.faceMatchRate}%` : '—'}
+            hint="Returning vs new"
+            icon={<Gauge className="h-4 w-4" />}
+            accent="bg-teal-500"
+            delay={160}
+          />
+        </div>
+
+        {/* Real-time flow board */}
+        <Card className="animate-fade-in-up p-5" style={{ animationDelay: '320ms' }}>
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="text-sm font-semibold text-slate-900 dark:text-white">
+              Patient Flow Board
+            </h2>
+            <span className="flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400">
+              <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-500" />
+              Live
+            </span>
+          </div>
+          <FlowBoard stages={flow} total={flowTotal} />
+        </Card>
+
+        {/* Volume chart */}
+        <Card className="animate-fade-in-up p-5" style={{ animationDelay: '400ms' }}>
+          <h2 className="mb-4 text-sm font-semibold text-slate-900 dark:text-white">
+            Patient Volume
+          </h2>
+          {loading ? (
+            <div className="space-y-3">
+              <div className="skeleton h-40 w-full" />
+              <div className="skeleton h-3 w-48" />
+            </div>
+          ) : (
+            <VolumeChart data={volume} />
+          )}
+        </Card>
+
+        {/* Peak hours heatmap */}
+        <Card className="animate-fade-in-up p-5" style={{ animationDelay: '480ms' }}>
+          <h2 className="mb-4 text-sm font-semibold text-slate-900 dark:text-white">
+            Peak Clinic Hours
+          </h2>
+          {loading ? (
+            <div className="grid grid-cols-6 gap-1.5 sm:grid-cols-12">
+              {Array.from({ length: 12 }).map((_, i) => (
+                <div key={i} className="skeleton h-9 rounded-md" />
               ))}
             </div>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  load();
-                  loadMonitoring();
-                }}
-                leftIcon={<RefreshCw className="h-3.5 w-3.5" />}
-                loading={loading || monitoringLoading}
-              >
-                Refresh
-              </Button>
-              <Button
-                variant="jeevandata"
-                size="sm"
-                onClick={handleExport}
-                loading={exporting}
-                leftIcon={<Download className="h-3.5 w-3.5" />}
-              >
-                Export CSV
-              </Button>
-            </div>
-          </div>
-
-          {error && (
-            <div
-              role="alert"
-              className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-900/30 dark:text-red-400"
-            >
-              {error}
-            </div>
+          ) : (
+            <HoursHeatmap data={hours} />
           )}
+        </Card>
 
-          {/* KPI Cards */}
-          <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-            <StatCard
-              label="Total Sessions"
-              value={overview?.totalSessions ?? '—'}
-              hint={`Last ${days} days`}
-              icon={<Users className="h-4 w-4" />}
-              accent="bg-jeevandata-500"
-              delay={0}
-            />
-            <StatCard
-              label="Returning Patients"
-              value={overview?.returningPatients ?? '—'}
-              hint={`${overview?.faceMatchRate ?? 0}% face match rate`}
-              icon={<UserCheck className="h-4 w-4" />}
-              accent="bg-emerald-500"
-              delay={80}
-            />
-            <StatCard
-              label="New Patients"
-              value={overview?.newPatients ?? '—'}
-              hint="Registered at kiosk"
-              icon={<UserPlus className="h-4 w-4" />}
-              accent="bg-violet-500"
-              delay={160}
-            />
-            <StatCard
-              label="Avg Intake Duration"
-              value={overview ? `${overview.avgIntakeMinutes} min` : '—'}
-              hint="Per completed intake"
-              icon={<Timer className="h-4 w-4" />}
-              accent="bg-amber-500"
-              delay={240}
-            />
-          </div>
-
-          {/* Secondary row: success rate + active */}
-          <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-            <StatCard
-              label="Brief Success Rate"
-              value={overview ? `${overview.briefSuccessRate}%` : '—'}
-              hint="Briefs generated / sessions"
-              icon={<FileCheck2 className="h-4 w-4" />}
-              accent="bg-sky-500"
-              delay={0}
-            />
-            <StatCard
-              label="Active Sessions"
-              value={overview?.activeSessions ?? '—'}
-              hint="Currently in intake"
-              icon={<Activity className="h-4 w-4" />}
-              accent="bg-rose-500"
-              delay={80}
-            />
-            <StatCard
-              label="Avg Face Match"
-              value={overview ? `${overview.faceMatchRate}%` : '—'}
-              hint="Returning vs new"
-              icon={<Gauge className="h-4 w-4" />}
-              accent="bg-teal-500"
-              delay={160}
-            />
-          </div>
-
-          {/* Real-time flow board */}
-          <Card className="animate-fade-in-up p-5" style={{ animationDelay: '320ms' }}>
-            <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-sm font-semibold text-slate-900 dark:text-white">
-                Patient Flow Board
-              </h2>
-              <span className="flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400">
-                <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-500" />
-                Live
-              </span>
-            </div>
-            <FlowBoard stages={flow} total={flowTotal} />
-          </Card>
-
-          {/* Volume chart */}
-          <Card className="animate-fade-in-up p-5" style={{ animationDelay: '400ms' }}>
+        {/* System monitoring (Phase 6.8) */}
+        <div className="grid gap-6 lg:grid-cols-2">
+          <Card className="animate-fade-in-up p-5" style={{ animationDelay: '560ms' }}>
             <h2 className="mb-4 text-sm font-semibold text-slate-900 dark:text-white">
-              Patient Volume
+              API Latency
             </h2>
-            {loading ? (
+            {monitoringLoading ? (
               <div className="space-y-3">
-                <div className="skeleton h-40 w-full" />
-                <div className="skeleton h-3 w-48" />
+                <div className="skeleton h-16 w-full" />
+                <div className="skeleton h-16 w-full" />
               </div>
-            ) : (
-              <VolumeChart data={volume} />
-            )}
+            ) : monitoringError ? (
+              <p className="text-sm text-red-600 dark:text-red-400">{monitoringError}</p>
+            ) : latency ? (
+              <LatencyPanel http={latency.http} qdrant={latency.qdrant} />
+            ) : null}
           </Card>
 
-          {/* Peak hours heatmap */}
-          <Card className="animate-fade-in-up p-5" style={{ animationDelay: '480ms' }}>
+          <Card className="animate-fade-in-up p-5" style={{ animationDelay: '640ms' }}>
             <h2 className="mb-4 text-sm font-semibold text-slate-900 dark:text-white">
-              Peak Clinic Hours
+              Active Alerts
             </h2>
-            {loading ? (
-              <div className="grid grid-cols-6 gap-1.5 sm:grid-cols-12">
-                {Array.from({ length: 12 }).map((_, i) => (
-                  <div key={i} className="skeleton h-9 rounded-md" />
-                ))}
+            {monitoringLoading ? (
+              <div className="space-y-2">
+                <div className="skeleton h-14 w-full" />
+                <div className="skeleton h-14 w-full" />
+                <div className="skeleton h-14 w-full" />
               </div>
-            ) : (
-              <HoursHeatmap data={hours} />
-            )}
+            ) : monitoringError ? (
+              <p className="text-sm text-red-600 dark:text-red-400">{monitoringError}</p>
+            ) : alerts.length > 0 ? (
+              <AlertsPanel alerts={alerts} />
+            ) : null}
           </Card>
-
-          {/* System monitoring (Phase 6.8) */}
-          <div className="grid gap-6 lg:grid-cols-2">
-            <Card className="animate-fade-in-up p-5" style={{ animationDelay: '560ms' }}>
-              <h2 className="mb-4 text-sm font-semibold text-slate-900 dark:text-white">
-                API Latency
-              </h2>
-              {monitoringLoading ? (
-                <div className="space-y-3">
-                  <div className="skeleton h-16 w-full" />
-                  <div className="skeleton h-16 w-full" />
-                </div>
-              ) : monitoringError ? (
-                <p className="text-sm text-red-600 dark:text-red-400">{monitoringError}</p>
-              ) : latency ? (
-                <LatencyPanel http={latency.http} qdrant={latency.qdrant} />
-              ) : null}
-            </Card>
-
-            <Card className="animate-fade-in-up p-5" style={{ animationDelay: '640ms' }}>
-              <h2 className="mb-4 text-sm font-semibold text-slate-900 dark:text-white">
-                Active Alerts
-              </h2>
-              {monitoringLoading ? (
-                <div className="space-y-2">
-                  <div className="skeleton h-14 w-full" />
-                  <div className="skeleton h-14 w-full" />
-                  <div className="skeleton h-14 w-full" />
-                </div>
-              ) : monitoringError ? (
-                <p className="text-sm text-red-600 dark:text-red-400">{monitoringError}</p>
-              ) : alerts.length > 0 ? (
-                <AlertsPanel alerts={alerts} />
-              ) : null}
-            </Card>
-          </div>
-        </main>
+        </div>
       </div>
-    </div>
+    </AppShell>
   );
 }
