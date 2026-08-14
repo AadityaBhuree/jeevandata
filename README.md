@@ -540,15 +540,16 @@ docker compose up -d --build        # build + start the full stack
 
 ## Roadmap
 
-All of Phases 1–6 are **complete and shipped**. The detailed, step-by-step plan lives in [PLAN.md](./PLAN.md).
+All 8 phases are **complete and shipped**. The detailed, step-by-step plan lives in [PLAN.md](./PLAN.md).
 
 - [x] **Phase 1 — Emergency Repairs**: JWT auth infra, `@Public()` routes, Zod validation on all controllers, rate limiting, BullMQ session-timeout worker
-- [x] **Phase 2 — Testing & Validation**: 284 backend unit tests, 191 backend E2E (13 suites), 599 frontend Vitest tests, guard/pipe/worker coverage, coverage reporting
+- [x] **Phase 2 — Testing & Validation**: 348 backend unit tests, 195 backend E2E (14 suites), 619 frontend Vitest tests, guard/pipe/worker coverage, coverage reporting
 - [x] **Phase 3 — Backend Production Hardening**: PMS/EMR sync adapters (HL7 FHIR + custom), audit logging across all modules, health checks + OpenTelemetry tracing, config validation (Zod env), Swagger/OpenAPI docs, structured logger
 - [x] **Phase 4 — Authentication & Multi-Tenancy**: register/login/refresh/logout endpoints, RBAC guards + decorators, API-key auth, clinic multi-tenancy, frontend login UI + role-gated routes
 - [x] **Phase 5 — UI/UX Excellence**: design-system animations, dark mode, accessibility (axe + keyboard), responsive kiosk/dashboard redesign
 - [x] **Phase 6 — Feature Expansion**: patient registration UI, mobile camera PWA, multilingual intake (EN/HI/MR/ES), advanced a11y, admin analytics dashboard, HIPAA audit module, offline mode with encrypted IndexedDB + idempotent sync, performance monitoring & alerting (Prometheus + admin panels)
-- [x] **Phase 7 — Infrastructure & Deployment** (6/6 shipped): CI/CD pipeline (GitHub Actions CI + build/push/smoke deploy), container orchestration (k8s manifests + resource limits + HPA + Ingress TLS), secrets management (`validate-secrets.sh` + rotation runbook), **DB backup & disaster recovery** (daily `pg_dump` + WAL PITR + Qdrant snapshots + Redis RDB → S3/R2, `docs/disaster-recovery.md`), **SSL/TLS & domain** (Caddy auto Let's Encrypt + HSTS/CSP/security headers, `caddy/Caddyfile`, `docker-compose.tls.yml`, `docs/tls-setup.md`), Prometheus/Grafana/Alertmanager monitoring stack. **All 7 phases complete** ✅
+- [x] **Phase 7 — Infrastructure & Deployment** (6/6 shipped): CI/CD pipeline (GitHub Actions CI + build/push/smoke deploy), container orchestration (k8s manifests + resource limits + HPA + Ingress TLS), secrets management (`validate-secrets.sh` + rotation runbook), **DB backup & disaster recovery** (daily `pg_dump` + WAL PITR + Qdrant snapshots + Redis RDB → S3/R2, `docs/disaster-recovery.md`), **SSL/TLS & domain** (Caddy auto Let's Encrypt + HSTS/CSP/security headers, `caddy/Caddyfile`, `docker-compose.tls.yml`, `docs/tls-setup.md`), Prometheus/Grafana/Alertmanager monitoring stack
+- [x] **Phase 8 — Security & Reliability Hardening** (22/22 tasks): secret hygiene (no `.env` in git, JWT rotation, `.env`/`.env.docker` split), WebSocket JWT auth + audio-buffer leak guard + CORS via ConfigService, Prisma versioned migrations + Patient soft-delete, MIT LICENSE + version 1.0.0 + CHANGELOG, landing loading states + error boundary + React Query dashboard + `@ducanh2912/next-pwa`, clinicId multi-tenancy filtering + Gemini retry/Claude fallback, `docker-compose.dev.yml` + `pnpm docker:dev`, `/admin/health` status page. **All 8 phases complete** ✅
 
 ---
 
