@@ -1,7 +1,8 @@
 'use client';
+import { TitleSetter } from '@/components/ui/title-setter';
 
 import { useEffect, useState, useRef } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useSessionStore } from '@/stores/session-store';
 import { useFaceStore } from '@/stores/face-store';
@@ -13,10 +14,14 @@ import { useIntakeConversation } from '@/hooks/useIntakeConversation';
 import { useMobileDetection } from '@/hooks/useMobileDetection';
 import { useLanguage } from '@/hooks/useLanguage';
 import { socketService } from '@/services/socket';
+import { intakeApi } from '@/services/api';
+import { toast } from '@/hooks/use-toast';
 import { cachePatient, cacheSession } from '@/services/db';
 import { cn } from '@/lib/utils';
+import { getSessionStatusInfo } from '@/lib/session-status';
 import { logger } from '@/lib/logger';
 import { DarkModeToggle } from '@/components/ui/dark-mode-toggle';
+import { Brand } from '@/components/ui/brand';
 import { LanguageSelector } from '@/components/ui/language-selector';
 import { TranscriptView } from '@/components/intake/transcript-view';
 import { VoiceInput } from '@/components/intake/VoiceInput';
@@ -24,12 +29,14 @@ import { FaceDetectionCanvas } from '@/components/face/FaceDetectionCanvas';
 import { FaceRegistrationDialog } from '@/components/face/FaceRegistrationDialog';
 import { BriefCard } from '@/components/intake/brief-card';
 import { CameraSelector } from '@/components/camera/CameraSelector';
+import { IntakeStepper } from '@/components/intake/intake-stepper';
 
 type IntakePhase = 'camera' | 'detecting' | 'intake' | 'brief' | 'complete';
 
 export default function IntakeSessionPage() {
   const params = useParams<{ sessionId: string }>();
   const sessionId = params.sessionId;
+  const router = useRouter();
   const mobileInfo = useMobileDetection();
   const { locale, setLocale } = useLanguage();
   const {
@@ -58,6 +65,36 @@ export default function IntakeSessionPage() {
   });
   const registrationAttemptedRef = useRef(false);
   const conversationStartedRef = useRef(false);
+
+  // Kiosk stepper: Camera -> Identify -> Intake -> Brief (-> Complete)
+  const STEP_INDEX: Record<IntakePhase, number> = {
+    camera: 0,
+    detecting: 1,
+    intake: 2,
+    brief: 3,
+    complete: 3,
+  };
+  const STEP_LABELS = [
+    { id: 'camera', label: 'Camera' },
+    { id: 'identify', label: 'Identify' },
+    { id: 'intake', label: 'Intake' },
+    { id: 'brief', label: 'Brief' },
+  ];
+
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+  const [identifyFailed, setIdentifyFailed] = useState(false);
+
+  function handleCancelSession() {
+    setShowCancelConfirm(false);
+    try {
+      socketService.leaveSession(sessionId);
+    } catch {
+      // Socket may already be disconnected — leaving is best-effort.
+    }
+    session.reset();
+    face.reset();
+    router.push('/');
+  }
 
   // ─── AI Intake Conversation ─────────────────────────────────────
   const conversation = useIntakeConversation(sessionId);
@@ -152,6 +189,21 @@ export default function IntakeSessionPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isActive]);
 
+  // ─── Identify-failure recovery: if no match within 25s, offer help ───
+  useEffect(() => {
+    if (phase !== 'detecting') {
+      setIdentifyFailed(false);
+      return;
+    }
+    const t = setTimeout(() => {
+      if (face.status !== 'matched' && !showRegistration) {
+        setIdentifyFailed(true);
+      }
+    }, 25000);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase, face.status, showRegistration]);
+
   // ─── Identity Search (when face is stable and liveness verified) ───
   useEffect(() => {
     if (isAlive && detectionResult && isFaceDetected && !registrationAttemptedRef.current) {
@@ -168,6 +220,7 @@ export default function IntakeSessionPage() {
             // Match found!
             face.setStatus('matched');
             face.setMatchResult(result);
+            setIdentifyFailed(false);
             session.setFaceMatched(true);
             session.setStatus('face_matched');
 
@@ -270,6 +323,7 @@ export default function IntakeSessionPage() {
 
   return (
     <div className="flex min-h-screen flex-col bg-slate-50 dark:bg-slate-950">
+      <TitleSetter title="Intake Session" />
       {/* Skip link for keyboard users */}
       <a
         href="#intake-main"
@@ -282,9 +336,7 @@ export default function IntakeSessionPage() {
       <header className="flex items-center justify-between border-b border-slate-200 bg-white px-6 py-3 dark:border-slate-800 dark:bg-slate-900">
         <div className="flex items-center gap-3">
           <Link href="/dashboard" className="flex items-center gap-3">
-            <div className="bg-jeevandata-500 flex h-8 w-8 items-center justify-center rounded-lg">
-              <span className="text-xs font-bold text-white">AC</span>
-            </div>
+            <Brand href={null} compact />
             <div>
               <h1 className="text-sm font-semibold text-slate-900 dark:text-white">
                 Intake Session
@@ -297,33 +349,45 @@ export default function IntakeSessionPage() {
         </div>
 
         <div className="flex items-center gap-1">
+          {(phase === 'camera' || phase === 'detecting') && (
+            <button
+              type="button"
+              onClick={() => setShowCancelConfirm(true)}
+              className="rounded-lg px-3 py-1.5 text-xs font-medium text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+            >
+              Cancel session
+            </button>
+          )}
           <LanguageSelector currentLocale={locale} onLocaleChange={setLocale} compact />
           <DarkModeToggle />
           <span
             role="status"
             aria-live="polite"
             className={cn(
-              'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium',
-              session.status === 'intake_in_progress' &&
-                'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
-              session.status === 'face_matched' &&
-                'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
-              session.status === 'ready' &&
-                'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
-              session.status === 'error' &&
-                'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+              'inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium',
+              getSessionStatusInfo(session.status).chipClass,
             )}
           >
-            {session.status === 'idle' && 'Waiting'}
-            {session.status === 'detecting' && 'Detecting Face'}
-            {session.status === 'face_matched' && 'Patient Identified'}
-            {session.status === 'intake_in_progress' && 'Intake in Progress'}
-            {session.status === 'transcribing' && 'Generating Brief'}
-            {session.status === 'ready' && 'Ready for Doctor'}
-            {session.status === 'error' && 'Error'}
+            <span
+              aria-hidden="true"
+              className={cn(
+                'h-1.5 w-1.5 rounded-full',
+                getSessionStatusInfo(session.status).dotClass,
+              )}
+            />
+            {getSessionStatusInfo(session.status).label}
           </span>
         </div>
       </header>
+
+      {/* Kiosk step progress */}
+      <div className="border-b border-slate-200 bg-white px-6 py-2.5 dark:border-slate-800 dark:bg-slate-900">
+        <IntakeStepper
+          steps={STEP_LABELS}
+          currentIndex={STEP_INDEX[phase]}
+          className="mx-auto max-w-3xl"
+        />
+      </div>
 
       <main
         id="intake-main"
@@ -633,17 +697,45 @@ export default function IntakeSessionPage() {
           {phase === 'brief' && (
             <div className="flex flex-1 items-center justify-center">
               {session.brief ? (
-                <BriefCard
-                  brief={{
-                    summary: (session.brief.summary as string) ?? '',
-                    chiefComplaint: (session.brief.chiefComplaint as string) ?? '',
-                    riskFlags: (session.brief.riskFlags as string[]) ?? [],
-                    vitalsToCheck: (session.brief.vitalsToCheck as string[]) ?? [],
-                    suggestedFollowups: (session.brief.suggestedFollowups as string[]) ?? [],
-                    medicationsNote: (session.brief.medicationsNote as string) ?? '',
-                    icd10Hints: (session.brief.icd10Hints as string[]) ?? [],
-                  }}
-                />
+                <>
+                  <BriefCard
+                    brief={{
+                      summary: (session.brief.summary as string) ?? '',
+                      chiefComplaint: (session.brief.chiefComplaint as string) ?? '',
+                      riskFlags: (session.brief.riskFlags as string[]) ?? [],
+                      vitalsToCheck: (session.brief.vitalsToCheck as string[]) ?? [],
+                      suggestedFollowups: (session.brief.suggestedFollowups as string[]) ?? [],
+                      medicationsNote: (session.brief.medicationsNote as string) ?? '',
+                      icd10Hints: (session.brief.icd10Hints as string[]) ?? [],
+                    }}
+                  />
+                  <div className="mt-4 flex justify-center">
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        try {
+                          const next = await intakeApi.startSession({
+                            deviceId: `web-${crypto.randomUUID().slice(0, 8)}`,
+                          });
+                          session.reset();
+                          face.reset();
+                          session.setSessionId(next.id);
+                          router.push(`/intake/${next.id}`);
+                        } catch (err) {
+                          logger.error('Failed to start a new session', err);
+                          toast({
+                            title: 'Could not start another intake',
+                            description: err instanceof Error ? err.message : 'Please try again.',
+                            variant: 'destructive',
+                          });
+                        }
+                      }}
+                      className="bg-jeevandata-500 hover:bg-jeevandata-600 focus:ring-jeevandata-500 rounded-xl px-6 py-3 text-sm font-semibold text-white shadow-sm transition-all focus:outline-none focus:ring-2"
+                    >
+                      Start another intake
+                    </button>
+                  </div>
+                </>
               ) : (
                 <div className="flex flex-col items-center gap-3 text-center">
                   <div className="border-jeevandata-200 border-t-jeevandata-500 dark:border-jeevandata-800 dark:border-t-jeevandata-400 h-12 w-12 animate-spin rounded-full border-4" />
@@ -652,6 +744,47 @@ export default function IntakeSessionPage() {
                   </p>
                 </div>
               )}
+            </div>
+          )}
+
+          {phase === 'detecting' && identifyFailed && (
+            <div className="flex flex-1 items-center justify-center">
+              <div className="max-w-md rounded-2xl border border-amber-200 bg-amber-50 p-6 text-center dark:border-amber-800 dark:bg-amber-950/30">
+                <h2 className="text-base font-semibold text-slate-900 dark:text-white">
+                  We couldn&apos;t identify you
+                </h2>
+                <p className="mt-1.5 text-sm text-slate-600 dark:text-slate-400">
+                  Make sure you&apos;re facing the camera in good light, or ask a staff member for
+                  help.
+                </p>
+                <div className="mt-4 flex flex-col gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIdentifyFailed(false);
+                      registrationAttemptedRef.current = false;
+                      if (isActive && videoRef.current) {
+                        startDetection(videoRef.current);
+                      }
+                      setTimeout(() => startChallenge(), 500);
+                    }}
+                    className="bg-jeevandata-500 hover:bg-jeevandata-600 rounded-xl px-4 py-2.5 text-sm font-semibold text-white transition-colors"
+                  >
+                    Try again
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIdentifyFailed(false);
+                      registrationAttemptedRef.current = false;
+                      setShowRegistration(true);
+                    }}
+                    className="rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 dark:border-slate-600 dark:bg-transparent dark:text-slate-300 dark:hover:bg-slate-800"
+                  >
+                    Register as new patient
+                  </button>
+                </div>
+              </div>
             </div>
           )}
 
@@ -683,6 +816,45 @@ export default function IntakeSessionPage() {
           )}
         </div>
       </main>
+
+      {/* Cancel session confirmation */}
+      {showCancelConfirm && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+          <div
+            role="alertdialog"
+            aria-modal="true"
+            aria-labelledby="cancel-session-title"
+            className="w-full max-w-sm rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl dark:border-slate-700 dark:bg-slate-900"
+          >
+            <h2
+              id="cancel-session-title"
+              className="text-base font-semibold text-slate-900 dark:text-white"
+            >
+              Cancel this session?
+            </h2>
+            <p className="mt-1.5 text-sm text-slate-500 dark:text-slate-400">
+              The patient will be returned to the welcome screen. Nothing from this session will be
+              saved.
+            </p>
+            <div className="mt-5 flex gap-3">
+              <button
+                type="button"
+                onClick={() => setShowCancelConfirm(false)}
+                className="flex-1 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:bg-transparent dark:text-slate-400 dark:hover:bg-slate-800"
+              >
+                Keep session
+              </button>
+              <button
+                type="button"
+                onClick={handleCancelSession}
+                className="flex-1 rounded-xl bg-red-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-red-700"
+              >
+                Cancel session
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Face Registration Dialog */}
       {showRegistration && (
