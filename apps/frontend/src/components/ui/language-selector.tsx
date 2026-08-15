@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback, useId } from 'react';
 import type { SupportedLocale } from '@/i18n';
 import { cn } from '@/lib/utils';
 import { Languages } from 'lucide-react';
@@ -30,7 +30,7 @@ export function LanguageSelector({
   const ref = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const itemRefs = useRef<Array<HTMLButtonElement | null>>([]);
-  const menuId = useRef(`lang-menu-${Math.random().toString(36).slice(2, 9)}`).current;
+  const menuId = useId();
 
   const currentIndex = Math.max(
     0,
