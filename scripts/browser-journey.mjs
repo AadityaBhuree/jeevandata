@@ -406,6 +406,7 @@ try {
         console.log(
           `  console errors: ${report.consoleErrors.length} (${report.realConsoleErrors.length} real)`,
         );
+        for (const e of report.realConsoleErrors) console.log(`    - ${e}`);
         console.log(`  network failures: ${report.networkFailures.length}`);
         console.log(`  exceptions: ${report.exceptions.length}`);
         console.log('=================================');
