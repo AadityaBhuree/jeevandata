@@ -1,14 +1,14 @@
 'use client';
 import { TitleSetter } from '@/components/ui/title-setter';
+import { AppShell } from '@/components/layout/app-shell';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { healthApi, type HealthSummary, type DependencyCheck } from '@/services/api';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { DarkModeToggle } from '@/components/ui/dark-mode-toggle';
 import { logger } from '@/lib/logger';
-import { Activity, RefreshCw, HeartPulse, Database, Timer } from 'lucide-react';
+import { Activity, RefreshCw, Database, Timer } from 'lucide-react';
 
 // Auto-refresh interval (ms) — the page re-polls /health every 30s.
 const REFRESH_MS = 30_000;
@@ -78,22 +78,22 @@ export default function AdminHealthPage() {
     health?.status === 'unhealthy' ? 'error' : error ? 'warning' : 'success';
 
   return (
-    <div className="min-h-screen bg-slate-50 p-6 dark:bg-slate-950">
+    <AppShell>
       <TitleSetter title="System Health" />
+
       <div className="mx-auto max-w-3xl space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <HeartPulse className="text-jeevandata-500 h-6 w-6" />
-            <h1 className="text-2xl font-semibold">System Health</h1>
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h1 className="text-lg font-semibold text-slate-900 dark:text-white">System Health</h1>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              Dependency status — database, redis, qdrant, whisper
+            </p>
           </div>
-          <div className="flex items-center gap-2">
-            <DarkModeToggle />
-            <Button variant="outline" size="sm" onClick={load} disabled={loading}>
-              <RefreshCw className={`mr-1.5 h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-              Refresh
-            </Button>
-          </div>
+          <Button variant="outline" size="sm" onClick={load} disabled={loading}>
+            <RefreshCw className={`mr-1.5 h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
         </div>
 
         {/* Overall status */}
@@ -155,6 +155,6 @@ export default function AdminHealthPage() {
           )}
         </div>
       </div>
-    </div>
+    </AppShell>
   );
 }
