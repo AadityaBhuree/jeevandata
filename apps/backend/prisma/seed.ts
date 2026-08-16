@@ -1,65 +1,126 @@
 import { PrismaClient, SessionStatus, UserRole } from '@prisma/client';
+import * as bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
+
+const BCRYPT_ROUNDS = 10;
+
+// Dev/demo credentials — override via env when seeding non-local environments.
+// The default passwords are documented in README; never use them in production.
+const SEED_PASSWORDS = {
+  doctor: process.env.SEED_DOCTOR_PASSWORD ?? 'Doctor@123',
+  receptionist: process.env.SEED_RECEPTION_PASSWORD ?? 'Reception@123',
+  admin: process.env.SEED_ADMIN_PASSWORD ?? 'Admin@123',
+};
 
 async function main() {
   console.log('🌱 Seeding Jeevandata database...');
 
-  // ─── Create Clinic Users ─────────────────────────────────────
+  // ─── Clinic (multi-tenancy root) ──────────────────────────────
+  const clinic = await prisma.clinic.upsert({
+    where: { code: 'JVD-DEMO' },
+    update: { name: 'Jeevandata Demo Clinic', isActive: true },
+    create: {
+      name: 'Jeevandata Demo Clinic',
+      code: 'JVD-DEMO',
+      address: '123 Health Street, Pune, Maharashtra',
+      phone: '+91-20-4123-4567',
+      email: 'clinic@jeevandata.com',
+    },
+  });
+  console.log(`  ✓ Clinic: ${clinic.name} (${clinic.id})`);
+
+  // ─── Clinic Users (real bcrypt hashes — login-able) ──────────
   const doctor = await prisma.clinicUser.upsert({
     where: { email: 'doctor@jeevandata.com' },
-    update: {},
-    create: {
-      email: 'doctor@jeevandata.com',
-      passwordHash: '$2b$10$placeholder_hash', // Replace with real hash
+    update: {
+      passwordHash: await bcrypt.hash(SEED_PASSWORDS.doctor, BCRYPT_ROUNDS),
       name: 'Dr. Priya Sharma',
       role: UserRole.DOCTOR,
-      clinicId: 'clinic-001',
+      clinicId: clinic.id,
+      isActive: true,
+    },
+    create: {
+      email: 'doctor@jeevandata.com',
+      passwordHash: await bcrypt.hash(SEED_PASSWORDS.doctor, BCRYPT_ROUNDS),
+      name: 'Dr. Priya Sharma',
+      role: UserRole.DOCTOR,
+      clinicId: clinic.id,
     },
   });
 
   const receptionist = await prisma.clinicUser.upsert({
     where: { email: 'reception@jeevandata.com' },
-    update: {},
-    create: {
-      email: 'reception@jeevandata.com',
-      passwordHash: '$2b$10$placeholder_hash',
+    update: {
+      passwordHash: await bcrypt.hash(SEED_PASSWORDS.receptionist, BCRYPT_ROUNDS),
       name: 'Anita Verma',
       role: UserRole.RECEPTIONIST,
-      clinicId: 'clinic-001',
+      clinicId: clinic.id,
+      isActive: true,
+    },
+    create: {
+      email: 'reception@jeevandata.com',
+      passwordHash: await bcrypt.hash(SEED_PASSWORDS.receptionist, BCRYPT_ROUNDS),
+      name: 'Anita Verma',
+      role: UserRole.RECEPTIONIST,
+      clinicId: clinic.id,
     },
   });
 
-  // ─── Create Sample Patients ──────────────────────────────────
+  const admin = await prisma.clinicUser.upsert({
+    where: { email: 'admin@jeevandata.com' },
+    update: {
+      passwordHash: await bcrypt.hash(SEED_PASSWORDS.admin, BCRYPT_ROUNDS),
+      name: 'System Administrator',
+      role: UserRole.ADMIN,
+      clinicId: clinic.id,
+      isActive: true,
+    },
+    create: {
+      email: 'admin@jeevandata.com',
+      passwordHash: await bcrypt.hash(SEED_PASSWORDS.admin, BCRYPT_ROUNDS),
+      name: 'System Administrator',
+      role: UserRole.ADMIN,
+      clinicId: clinic.id,
+    },
+  });
+
+  console.log(
+    `  ✓ Users: ${doctor.name} (DOCTOR), ${receptionist.name} (RECEPTIONIST), ${admin.name} (ADMIN)`,
+  );
+
+  // ─── Sample Patients ──────────────────────────────────────────
   const patient1 = await prisma.patient.upsert({
     where: { mobile: '+919876543210' },
-    update: {},
+    update: { clinicId: clinic.id, consentGranted: true },
     create: {
       name: 'Rajesh Kumar',
       dob: new Date('1985-06-15'),
       mobile: '+919876543210',
       consentGranted: true,
+      clinicId: clinic.id,
     },
   });
 
   const patient2 = await prisma.patient.upsert({
     where: { mobile: '+919876543211' },
-    update: {},
+    update: { clinicId: clinic.id, consentGranted: true },
     create: {
       name: 'Sunita Patel',
       dob: new Date('1992-11-23'),
       mobile: '+919876543211',
       consentGranted: true,
+      clinicId: clinic.id,
     },
   });
 
-  console.log(`  ✓ Created users: ${doctor.name}, ${receptionist.name}`);
-  console.log(`  ✓ Created patients: ${patient1.name}, ${patient2.name}`);
+  console.log(`  ✓ Patients: ${patient1.name}, ${patient2.name}`);
 
-  // ─── Create Sample Finished Session ──────────────────────────
+  // ─── Sample Finished Session ──────────────────────────────────
   const session = await prisma.intakeSession.create({
     data: {
       patientId: patient1.id,
+      clinicId: clinic.id,
       status: SessionStatus.COMPLETED,
       deviceId: 'camera-001',
       metadata: { camera: 'main-entrance' },
@@ -95,8 +156,17 @@ async function main() {
     },
   });
 
-  console.log(`  ✓ Created sample intake session for ${patient1.name}`);
+  console.log(`  ✓ Sample intake session for ${patient1.name}`);
+  console.log('');
   console.log('✅ Seeding complete!');
+  console.log('──────────────────────────────────────────────');
+  console.log('  Login credentials (dev defaults):');
+  console.log(`    Doctor       doctor@jeevandata.com    ${SEED_PASSWORDS.doctor}`);
+  console.log(`    Receptionist reception@jeevandata.com  ${SEED_PASSWORDS.receptionist}`);
+  console.log(`    Admin        admin@jeevandata.com     ${SEED_PASSWORDS.admin}`);
+  console.log('  Override via SEED_DOCTOR_PASSWORD / SEED_RECEPTION_PASSWORD /');
+  console.log('  SEED_ADMIN_PASSWORD env vars.');
+  console.log('──────────────────────────────────────────────');
 }
 
 main()
