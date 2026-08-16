@@ -49,3 +49,6 @@ docker-data/
 .cache/
 memory.md
 nul
+
+# Browser journey screenshots
+browser-journey-*.png
