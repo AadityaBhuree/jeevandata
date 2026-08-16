@@ -417,15 +417,28 @@ export default function DashboardPage() {
                     const patientName =
                       record.patient?.name ?? record.brief.chiefComplaint ?? 'Patient';
                     return (
-                      <button
+                      // NOTE: a div role=button — NOT a <button> — because the
+                      // "Mark Reviewed" action below is itself a button; nesting
+                      // would be invalid HTML and cause React hydration errors.
+                      <div
                         key={record.id}
+                        role="button"
+                        tabIndex={0}
                         onClick={() => {
                           setSelectedBrief(selectedBrief?.id === record.id ? null : record);
                           setSelectedSessionId(record.sessionId);
                           setSessionTurns([]);
                         }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            setSelectedBrief(selectedBrief?.id === record.id ? null : record);
+                            setSelectedSessionId(record.sessionId);
+                            setSessionTurns([]);
+                          }
+                        }}
                         className={cn(
-                          'flex w-full items-start justify-between px-5 py-4 text-left transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50',
+                          'flex w-full cursor-pointer items-start justify-between px-5 py-4 text-left transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50',
                           isSelected && 'bg-emerald-50/50 dark:bg-emerald-900/20',
                         )}
                       >
@@ -471,7 +484,7 @@ export default function DashboardPage() {
                             {reviewingId === record.id ? 'Marking...' : 'Mark Reviewed'}
                           </Button>
                         )}
-                      </button>
+                      </div>
                     );
                   })}
                 </div>
