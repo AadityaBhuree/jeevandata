@@ -138,11 +138,11 @@ export function AppShell({ children }: { children: ReactNode }) {
                       authApi.logout().catch(() => {});
                       logout();
                     }}
-                    className="text-slate-400 transition-colors hover:text-red-500 dark:text-slate-500 dark:hover:text-red-400"
+                    className="flex h-11 w-11 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-slate-100 hover:text-red-500 dark:text-slate-500 dark:hover:bg-slate-800 dark:hover:text-red-400"
                     aria-label="Sign out"
                     title="Sign out"
                   >
-                    <LogOut className="h-4 w-4" />
+                    <LogOut className="h-5 w-5" />
                   </button>
                 </div>
               )}
