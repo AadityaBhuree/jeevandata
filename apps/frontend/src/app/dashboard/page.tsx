@@ -259,7 +259,7 @@ export default function DashboardPage() {
           {/* Left Panel — Sessions + Briefs */}
           <div className="flex flex-1 flex-col gap-6">
             {/* Stats Overview */}
-            <div className="grid grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
               {stats.map((stat, i) => (
                 <Card
                   key={stat.label}
