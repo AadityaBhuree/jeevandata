@@ -94,7 +94,7 @@ export function BriefCard({ brief, className }: BriefCardProps) {
         )}
 
         {/* Two Column Layout */}
-        <div className="grid grid-cols-2 divide-x divide-slate-100">
+        <div className="grid grid-cols-1 divide-y sm:grid-cols-2 sm:divide-x sm:divide-y-0 sm:divide-slate-100">
           {/* Vitals to Check */}
           <div className="p-5">
             <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-500">
