@@ -322,7 +322,7 @@ export default function IntakeSessionPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-slate-50 dark:bg-slate-950">
+    <div className="flex min-h-screen flex-col overflow-hidden bg-slate-50 dark:bg-slate-950">
       <TitleSetter title="Intake Session" />
       {/* Skip link for keyboard users */}
       <a
@@ -333,7 +333,7 @@ export default function IntakeSessionPage() {
       </a>
 
       {/* Header */}
-      <header className="flex items-center justify-between border-b border-slate-200 bg-white px-6 py-3 dark:border-slate-800 dark:bg-slate-900">
+      <header className="flex items-center justify-between border-b border-slate-200 bg-white px-3 py-2 sm:px-6 sm:py-3 dark:border-slate-800 dark:bg-slate-900">
         <div className="flex items-center gap-3">
           <Link href="/dashboard" className="flex items-center gap-3">
             <Brand href={null} compact />
@@ -381,7 +381,7 @@ export default function IntakeSessionPage() {
       </header>
 
       {/* Kiosk step progress */}
-      <div className="border-b border-slate-200 bg-white px-6 py-2.5 dark:border-slate-800 dark:bg-slate-900">
+      <div className="border-b border-slate-200 bg-white px-3 py-2.5 sm:px-6 dark:border-slate-800 dark:bg-slate-900">
         <IntakeStepper
           steps={STEP_LABELS}
           currentIndex={STEP_INDEX[phase]}
@@ -391,7 +391,7 @@ export default function IntakeSessionPage() {
 
       <main
         id="intake-main"
-        className={cn('flex flex-1 gap-6 p-6', mobileInfo.isMobile && 'flex-col')}
+        className={cn('flex flex-1 gap-6 overflow-hidden p-6', mobileInfo.isMobile && 'flex-col')}
       >
         {/* Left Panel — Camera + Face Detection */}
         <div className={cn('flex flex-col gap-4', mobileInfo.isMobile ? 'w-full' : 'w-[420px]')}>
