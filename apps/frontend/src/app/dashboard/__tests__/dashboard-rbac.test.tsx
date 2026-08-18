@@ -199,4 +199,36 @@ describe('Dashboard — role badge & RBAC', () => {
       expect(useAuthStore.getState().isAuthenticated).toBe(false);
     });
   });
+
+  describe('Dashboard — regression: no nested buttons', () => {
+    it('never renders a <button> inside another <button> (hydration-safe)', async () => {
+      useAuthStore.getState().setSession({ accessToken: 'a', refreshToken: 'r' }, doctorUser);
+
+      const { container } = renderDashboard();
+
+      // Wait for all async data to settle (briefs list is the last async piece)
+      await screen.findByText(/fever with cough/i);
+
+      // Every <button> and role="button" in the rendered tree must NOT contain
+      // another <button> or Button component — nesting buttons is invalid HTML
+      // and causes React hydration warnings.
+      const buttons = Array.from(container.querySelectorAll('button'));
+      const nested = buttons.filter((btn) => {
+        const innerButtons = btn.querySelectorAll('button');
+        return innerButtons.length > 0;
+      });
+
+      if (nested.length > 0) {
+        const details = nested.map(
+          (btn) =>
+            `  outer: <${btn.tagName.toLowerCase()}>${btn.textContent?.slice(0, 60)}… contains ${btn.querySelectorAll('button').length} inner <button>(s)`,
+        );
+        throw new Error(
+          `Found ${nested.length} button(s) nested inside another button: ${details.join(' | ')}`,
+        );
+      }
+
+      expect(nested).toHaveLength(0);
+    });
+  });
 });
