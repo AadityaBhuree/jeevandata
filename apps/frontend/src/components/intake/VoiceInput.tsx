@@ -308,7 +308,7 @@ export function VoiceInput({
                 aria-label="Send message"
                 disabled={!value.trim() || disabled}
                 className={cn(
-                  'flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg transition-all',
+                  'flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-lg transition-all',
                   value.trim() && !disabled
                     ? 'bg-jeevandata-500 hover:bg-jeevandata-600 text-white shadow-sm'
                     : 'bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-500',
