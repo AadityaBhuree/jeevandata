@@ -40,10 +40,10 @@ export function DarkModeToggle() {
         <Button
           variant="ghost"
           size="sm"
-          className="relative h-9 w-9 rounded-full"
+          className="relative h-11 w-11 rounded-full"
           aria-label="Toggle theme"
         >
-          <Icon className="h-4 w-4 transition-all" />
+          <Icon className="h-5 w-5 transition-all" />
           <span className="sr-only">Toggle theme</span>
         </Button>
       </DropdownMenuTrigger>
