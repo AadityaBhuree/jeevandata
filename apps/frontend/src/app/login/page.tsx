@@ -1,5 +1,4 @@
 'use client';
-import { TitleSetter } from '@/components/ui/title-setter';
 
 import { useEffect, useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
@@ -10,7 +9,16 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { DarkModeToggle } from '@/components/ui/dark-mode-toggle';
 import { logger } from '@/lib/logger';
-import { ArrowRight, Sparkles, ShieldCheck, HeartPulse } from 'lucide-react';
+import {
+  ArrowRight,
+  Sparkles,
+  ShieldCheck,
+  HeartPulse,
+  CheckCircle2,
+  MessageSquareText,
+  ClipboardList,
+  Camera,
+} from 'lucide-react';
 
 interface FormErrors {
   email?: string;
@@ -30,7 +38,6 @@ export default function LoginPage() {
   const [errors, setErrors] = useState<FormErrors>({});
   const [submitting, setSubmitting] = useState(false);
 
-  // Already logged in → straight to the dashboard
   useEffect(() => {
     if (isAuthenticated) {
       router.replace('/dashboard');
@@ -52,18 +59,12 @@ export default function LoginPage() {
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
     if (!validate()) return;
-
     setSubmitting(true);
     setErrors({});
-
     try {
       const res = await authApi.login({ email: email.trim(), password });
       setSession(
-        {
-          accessToken: res.accessToken,
-          refreshToken: res.refreshToken,
-          expiresIn: res.expiresIn,
-        },
+        { accessToken: res.accessToken, refreshToken: res.refreshToken, expiresIn: res.expiresIn },
         res.user,
       );
       logger.info('User logged in', { email: res.user.email, role: res.user.role });
@@ -78,9 +79,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="via-jeevandata-50 dark:via-jeevandata-950 relative flex min-h-screen flex-col overflow-hidden bg-gradient-to-br from-slate-50 to-white dark:from-slate-950 dark:to-slate-900">
-      <TitleSetter title="Staff Sign In" />
-      {/* ─── Animated background ─────────────────────────────── */}
+    <div className="via-jeevandata-50 dark:via-jeevandata-950 relative flex min-h-screen overflow-hidden bg-gradient-to-br from-slate-50 to-white dark:from-slate-950 dark:to-slate-900">
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         <div className="animate-float bg-jeevandata-200/30 dark:bg-jeevandata-900/20 absolute -left-32 -top-32 h-96 w-96 rounded-full blur-3xl" />
         <div
@@ -89,8 +88,29 @@ export default function LoginPage() {
         />
       </div>
 
-      {/* Header */}
-      <header className="relative z-10 flex items-center justify-between px-6 py-4">
+      <div className="from-jeevandata-600 to-jeevandata-900 relative z-10 hidden w-1/2 flex-col items-center justify-center bg-gradient-to-br p-12 lg:flex">
+        <div className="mx-auto max-w-md text-center">
+          <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-3xl bg-white/10 backdrop-blur-sm">
+            <HeartPulse className="h-10 w-10 text-white" />
+          </div>
+          <h2 className="text-3xl font-bold text-white">Jeevandata</h2>
+          <p className="text-jeevandata-200 mt-2 text-sm">AI-powered smart clinic intake system</p>
+          <div className="mt-8 space-y-4 text-left">
+            {[
+              { icon: Camera, text: 'Face recognition check-in' },
+              { icon: MessageSquareText, text: 'AI voice symptom intake' },
+              { icon: ClipboardList, text: 'Instant clinical briefs' },
+            ].map((item) => (
+              <div key={item.text} className="flex items-center gap-3">
+                <CheckCircle2 className="text-jeevandata-300 h-4 w-4 flex-shrink-0" />
+                <span className="text-jeevandata-100 text-sm">{item.text}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <header className="absolute left-0 right-0 top-0 z-20 flex items-center justify-between px-6 py-4 md:hidden">
         <Link href="/" className="flex items-center gap-2.5">
           <div className="from-jeevandata-500 to-jeevandata-700 flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br shadow-sm">
             <HeartPulse className="h-5 w-5 text-white" />
@@ -100,9 +120,11 @@ export default function LoginPage() {
         <DarkModeToggle />
       </header>
 
-      {/* Login Card */}
-      <main className="relative z-10 flex flex-1 items-center justify-center px-4 pb-16">
+      <main className="relative z-10 flex flex-1 items-center justify-center px-4 pb-16 pt-20 md:px-8 md:pt-0">
         <div className="w-full max-w-md">
+          <div className="mb-6 hidden justify-end md:flex">
+            <DarkModeToggle />
+          </div>
           <div className="animate-fade-in-up shadow-soft rounded-2xl border border-slate-200/60 bg-white/70 p-8 backdrop-blur-xl dark:border-slate-700/50 dark:bg-slate-900/50">
             <div className="mb-6 text-center">
               <span className="border-jeevandata-200 bg-jeevandata-50 text-jeevandata-700 dark:border-jeevandata-800 dark:bg-jeevandata-900/50 dark:text-jeevandata-300 mb-4 inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium">
@@ -113,10 +135,9 @@ export default function LoginPage() {
                 Welcome back
               </h1>
               <p className="mt-1.5 text-sm text-slate-500 dark:text-slate-400">
-                Sign in to manage patient intake & clinical briefs
+                Sign in to manage patient intake &amp; clinical briefs
               </p>
             </div>
-
             {errors.form && (
               <div
                 role="alert"
@@ -125,7 +146,6 @@ export default function LoginPage() {
                 {errors.form}
               </div>
             )}
-
             <form onSubmit={handleSubmit} noValidate className="space-y-4">
               <Input
                 id="login-email"
@@ -137,7 +157,6 @@ export default function LoginPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 error={errors.email}
               />
-
               <Input
                 id="login-password"
                 type="password"
@@ -148,7 +167,11 @@ export default function LoginPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 error={errors.password}
               />
-
+              <div className="flex justify-end">
+                <span className="cursor-not-allowed text-xs text-slate-400 dark:text-slate-500">
+                  Forgot password?
+                </span>
+              </div>
               <Button
                 type="submit"
                 variant="jeevandata"
@@ -160,13 +183,11 @@ export default function LoginPage() {
                 {submitting ? 'Signing in...' : 'Sign In'}
               </Button>
             </form>
-
             <div className="mt-6 flex items-center justify-center gap-1.5 text-xs text-slate-400 dark:text-slate-500">
               <ShieldCheck className="h-3.5 w-3.5" />
               Secure session · tokens rotated automatically
             </div>
           </div>
-
           <p className="animate-fade-in mt-6 text-center text-sm text-slate-500 dark:text-slate-400">
             Not a staff member?{' '}
             <Link
