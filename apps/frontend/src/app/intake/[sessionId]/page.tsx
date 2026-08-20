@@ -14,8 +14,6 @@ import { useIntakeConversation } from '@/hooks/useIntakeConversation';
 import { useMobileDetection } from '@/hooks/useMobileDetection';
 import { useLanguage } from '@/hooks/useLanguage';
 import { socketService } from '@/services/socket';
-import { intakeApi } from '@/services/api';
-import { toast } from '@/hooks/use-toast';
 import { cachePatient, cacheSession } from '@/services/db';
 import { cn } from '@/lib/utils';
 import { getSessionStatusInfo } from '@/lib/session-status';
@@ -23,12 +21,11 @@ import { logger } from '@/lib/logger';
 import { DarkModeToggle } from '@/components/ui/dark-mode-toggle';
 import { Brand } from '@/components/ui/brand';
 import { LanguageSelector } from '@/components/ui/language-selector';
-import { TranscriptView } from '@/components/intake/transcript-view';
-import { VoiceInput } from '@/components/intake/VoiceInput';
-import { FaceDetectionCanvas } from '@/components/face/FaceDetectionCanvas';
 import { FaceRegistrationDialog } from '@/components/face/FaceRegistrationDialog';
-import { BriefCard } from '@/components/intake/brief-card';
-import { CameraSelector } from '@/components/camera/CameraSelector';
+import { CameraPanel } from '@/components/intake/camera-panel';
+import { CameraPhase } from '@/components/intake/camera-phase';
+import { ConversationPhase } from '@/components/intake/conversation-phase';
+import { BriefPhase } from '@/components/intake/brief-phase';
 import { IntakeStepper } from '@/components/intake/intake-stepper';
 
 type IntakePhase = 'camera' | 'detecting' | 'intake' | 'brief' | 'complete';
@@ -393,313 +390,75 @@ export default function IntakeSessionPage() {
         id="intake-main"
         className={cn('flex flex-1 gap-6 overflow-hidden p-6', mobileInfo.isMobile && 'flex-col')}
       >
-        {/* Left Panel — Camera + Face Detection */}
-        <div className={cn('flex flex-col gap-4', mobileInfo.isMobile ? 'w-full' : 'w-[420px]')}>
-          {/* Camera Feed */}
-          <div className="relative overflow-hidden rounded-xl bg-black shadow-lg">
-            {/* Video */}
-            <video
-              ref={videoRef as React.RefObject<HTMLVideoElement>}
-              autoPlay
-              playsInline
-              muted
-              aria-label="Live camera feed for face identification"
-              className={cn('h-[320px] w-full object-cover', !isActive && 'hidden')}
-            />
+        {/* Left Panel */}
+        <CameraPanel
+          videoRef={videoRef}
+          isActive={isActive}
+          cameraError={cameraError}
+          currentFacingMode={currentFacingMode}
+          devices={devices}
+          toggleCamera={toggleCamera}
+          startCamera={startCamera}
+          stopCamera={stopCamera}
+          isMobile={mobileInfo.isMobile}
+          detectionResult={detectionResult}
+          videoDimensions={videoDimensions}
+          isFaceDetected={isFaceDetected}
+          faceStatus={face.status}
+          faceConfidence={face.confidence}
+          isSearching={isSearchingEmbedding}
+          mpError={mpError}
+          mpLoading={mpLoading}
+          livenessStatus={livenessStatus}
+          blinkCount={blinkCount}
+          phase={phase}
+        />
 
-            {/* Camera Placeholder */}
-            {!isActive && (
-              <div className="flex h-[320px] flex-col items-center justify-center bg-slate-900 text-white">
-                <svg
-                  className="mb-3 h-12 w-12 text-slate-600"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={1}
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="m15.75 10.5 4.72-4.72a.75.75 0 0 1 1.28.53v11.38a.75.75 0 0 1-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25h-9A2.25 2.25 0 0 0 2.25 7.5v9a2.25 2.25 0 0 0 2.25 2.25Z"
-                  />
-                </svg>
-                <p className="text-sm text-slate-400">Camera not started</p>
+        {session.patient && phase !== 'camera' && (
+          <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+            <h2 className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+              Identified Patient
+            </h2>
+            <div className="flex items-center gap-3">
+              <div className="bg-jeevandata-100 text-jeevandata-600 dark:bg-jeevandata-900/50 dark:text-jeevandata-400 flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold">
+                {session.patient.name
+                  .split(' ')
+                  .map((n) => n[0])
+                  .join('')}
               </div>
-            )}
-
-            {/* MediaPipe Face Detection Canvas Overlay */}
-            {isActive && detectionResult && (
-              <FaceDetectionCanvas
-                landmarks={detectionResult.landmarks}
-                videoWidth={videoDimensions.width}
-                videoHeight={videoDimensions.height}
-                isFaceDetected={isFaceDetected}
-                matchColor={face.status === 'matched' ? '#22c55e' : '#0c8ee6'}
-                drawLandmarks
-                drawConnections
-                drawBoundingBox
-              />
-            )}
-
-            {/* Liveness Status Overlay */}
-            {phase === 'detecting' && livenessStatus === 'waiting_for_blink' && (
-              <div
-                role="status"
-                aria-live="polite"
-                className="absolute bottom-4 left-1/2 -translate-x-1/2"
-              >
-                <div className="rounded-full bg-black/60 px-4 py-2 text-xs font-medium text-white backdrop-blur-sm">
-                  <span aria-hidden="true">👁 </span>
-                  Please blink naturally ({Math.max(0, 2 - blinkCount)} blinks needed)
-                </div>
-              </div>
-            )}
-
-            {livenessStatus === 'blink_detected' && (
-              <div
-                role="status"
-                aria-live="polite"
-                className="absolute bottom-4 left-1/2 -translate-x-1/2"
-              >
-                <div className="rounded-full bg-emerald-500/80 px-4 py-2 text-xs font-medium text-white backdrop-blur-sm">
-                  <span aria-hidden="true">✓ </span>
-                  Blink detected!
-                </div>
-              </div>
-            )}
-
-            {/* Loading Overlay */}
-            {phase === 'detecting' && mpLoading && (
-              <div
-                role="status"
-                aria-live="polite"
-                className="absolute inset-0 flex items-center justify-center bg-black/40"
-              >
-                <div className="text-center">
-                  <div
-                    aria-hidden="true"
-                    className="mx-auto mb-3 h-10 w-10 animate-spin rounded-full border-4 border-white/20 border-t-white"
-                  />
-                  <p className="text-sm font-medium text-white">Loading face detection model...</p>
-                </div>
-              </div>
-            )}
-
-            {/* Status Badges */}
-            {isActive && (
-              <div className="absolute left-3 top-3 flex flex-col gap-1.5">
-                {face.status === 'matched' && (
-                  <div className="rounded-lg bg-emerald-500/90 px-3 py-1.5 text-xs font-medium text-white shadow-lg backdrop-blur-sm">
-                    ✓ Face Matched — {Math.round(face.confidence * 100)}%
-                  </div>
-                )}
-                {isSearchingEmbedding && (
-                  <div
-                    role="status"
-                    className="bg-jeevandata-500/80 rounded-lg px-3 py-1.5 text-xs font-medium text-white shadow-lg backdrop-blur-sm"
-                  >
-                    Searching identity...
-                  </div>
-                )}
-                {mpError && (
-                  <div
-                    role="alert"
-                    className="rounded-lg bg-red-500/80 px-3 py-1.5 text-xs font-medium text-white shadow-lg backdrop-blur-sm"
-                  >
-                    {mpError}
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* Camera Controls — Mobile-aware */}
-          <CameraSelector
-            currentFacingMode={currentFacingMode}
-            devices={devices}
-            isActive={isActive}
-            error={cameraError}
-            onToggleCamera={toggleCamera}
-            onStartCamera={startCamera}
-            onStopCamera={stopCamera}
-            isMobile={mobileInfo.isMobile}
-          />
-
-          {/* Patient Identity Card */}
-          {session.patient && phase !== 'camera' && (
-            <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-              <h2 className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                Identified Patient
-              </h2>
-              <div className="flex items-center gap-3">
-                <div className="bg-jeevandata-100 text-jeevandata-600 dark:bg-jeevandata-900/50 dark:text-jeevandata-400 flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold">
-                  {session.patient.name
-                    .split(' ')
-                    .map((n) => n[0])
-                    .join('')}
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-slate-900 dark:text-white">
-                    {session.patient.name}
-                  </p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">
-                    DOB: {session.patient.dob} &middot; {session.patient.mobile}
-                  </p>
-                </div>
+              <div>
+                <p className="text-sm font-semibold text-slate-900 dark:text-white">
+                  {session.patient.name}
+                </p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  DOB: {session.patient.dob}
+                </p>
               </div>
             </div>
-          )}
-        </div>
+          </div>
+        )}
 
         {/* Right Panel — Transcript / Intake / Brief */}
         <div className="flex flex-1 flex-col gap-4">
           {phase === 'intake' && (
-            <>
-              {/* AI Intake Conversation */}
-              <div className="flex flex-1 flex-col rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-                <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3 dark:border-slate-800">
-                  <div className="flex items-center gap-2">
-                    <div
-                      aria-hidden="true"
-                      className={cn(
-                        'h-2 w-2 rounded-full',
-                        conversation.isAiThinking ? 'animate-pulse bg-amber-400' : 'bg-emerald-500',
-                      )}
-                    />
-                    <h2 className="text-sm font-semibold text-slate-900 dark:text-white">
-                      AI Voice Intake
-                    </h2>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {conversation.isAiThinking && (
-                      <span className="flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400">
-                        <span className="flex gap-0.5">
-                          <span
-                            className="h-1.5 w-1.5 animate-bounce rounded-full bg-amber-400"
-                            style={{ animationDelay: '0ms' }}
-                          />
-                          <span
-                            className="h-1.5 w-1.5 animate-bounce rounded-full bg-amber-400"
-                            style={{ animationDelay: '150ms' }}
-                          />
-                          <span
-                            className="h-1.5 w-1.5 animate-bounce rounded-full bg-amber-400"
-                            style={{ animationDelay: '300ms' }}
-                          />
-                        </span>
-                        Thinking
-                      </span>
-                    )}
-                    {!conversation.isAiThinking && !conversation.isIntakeComplete && (
-                      <span className="flex items-center gap-1 text-xs text-slate-400 dark:text-slate-500">
-                        <div className="h-1.5 w-1.5 animate-pulse rounded-full bg-red-400" />
-                        In conversation
-                      </span>
-                    )}
-                    {conversation.isIntakeComplete && (
-                      <span className="inline-flex items-center rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
-                        ✓ All info gathered
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                {/* Transcript Area */}
-                <div className="flex-1 overflow-y-auto p-4" style={{ maxHeight: '400px' }}>
-                  {conversation.turns.length === 0 ? (
-                    <div className="flex h-full items-center justify-center">
-                      <div className="text-center">
-                        <svg
-                          className="text-jeevandata-300 dark:text-jeevandata-700 mx-auto mb-3 h-10 w-10"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                          strokeWidth={1}
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M8.625 12a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H8.25m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H12m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 0 1-2.555-.337A5.972 5.972 0 0 1 5.41 20.97a5.969 5.969 0 0 1-.474-.065 4.48 4.48 0 0 0 .978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25Z"
-                          />
-                        </svg>
-                        <p className="text-sm text-slate-400 dark:text-slate-500">
-                          {conversation.isAiThinking
-                            ? 'AI is preparing your intake conversation...'
-                            : 'Starting AI intake conversation...'}
-                        </p>
-                        {conversation.isAiThinking && (
-                          <div className="mt-3 flex justify-center gap-1">
-                            <span
-                              className="bg-jeevandata-400 h-2 w-2 animate-bounce rounded-full"
-                              style={{ animationDelay: '0ms' }}
-                            />
-                            <span
-                              className="bg-jeevandata-400 h-2 w-2 animate-bounce rounded-full"
-                              style={{ animationDelay: '150ms' }}
-                            />
-                            <span
-                              className="bg-jeevandata-400 h-2 w-2 animate-bounce rounded-full"
-                              style={{ animationDelay: '300ms' }}
-                            />
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  ) : (
-                    <TranscriptView
-                      entries={session.transcripts}
-                      onStartIntake={() => {
-                        // Conversation already started automatically
-                      }}
-                    />
-                  )}
-                </div>
-
-                {/* Voice Input Bar */}
-                <VoiceInput
-                  value={conversation.patientInput}
-                  onChange={conversation.setPatientInput}
-                  onSend={conversation.sendPatientMessage}
-                  disabled={conversation.isAiThinking}
-                  isComplete={conversation.isIntakeComplete}
-                  sessionId={sessionId}
-                  patientName={session.patient?.name ?? 'Patient'}
-                />
-              </div>
-
-              {/* Action Buttons */}
-              {conversation.isIntakeComplete && (
-                <div className="flex gap-3">
-                  <button
-                    onClick={handleCompleteIntake}
-                    className="bg-jeevandata-500 hover:bg-jeevandata-600 flex flex-1 items-center justify-center rounded-lg px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all active:scale-[0.98]"
-                  >
-                    <svg
-                      className="mr-2 h-4 w-4"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      strokeWidth={2}
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                      />
-                    </svg>
-                    Complete Intake & Generate Brief
-                  </button>
-                </div>
-              )}
-            </>
+            <ConversationPhase
+              sessionId={sessionId}
+              patientName={session.patient?.name ?? 'Patient'}
+              transcripts={session.transcripts}
+              patientInput={conversation.patientInput}
+              onPatientInputChange={conversation.setPatientInput}
+              onSend={conversation.sendPatientMessage}
+              isAiThinking={conversation.isAiThinking}
+              isComplete={conversation.isIntakeComplete}
+              onComplete={handleCompleteIntake}
+            />
           )}
 
           {phase === 'brief' && (
-            <div className="flex flex-1 items-center justify-center">
-              {session.brief ? (
-                <>
-                  <BriefCard
-                    brief={{
+            <BriefPhase
+              brief={
+                session.brief
+                  ? {
                       summary: (session.brief.summary as string) ?? '',
                       chiefComplaint: (session.brief.chiefComplaint as string) ?? '',
                       riskFlags: (session.brief.riskFlags as string[]) ?? [],
@@ -707,44 +466,11 @@ export default function IntakeSessionPage() {
                       suggestedFollowups: (session.brief.suggestedFollowups as string[]) ?? [],
                       medicationsNote: (session.brief.medicationsNote as string) ?? '',
                       icd10Hints: (session.brief.icd10Hints as string[]) ?? [],
-                    }}
-                  />
-                  <div className="mt-4 flex justify-center">
-                    <button
-                      type="button"
-                      onClick={async () => {
-                        try {
-                          const next = await intakeApi.startSession({
-                            deviceId: `web-${crypto.randomUUID().slice(0, 8)}`,
-                          });
-                          session.reset();
-                          face.reset();
-                          session.setSessionId(next.id);
-                          router.push(`/intake/${next.id}`);
-                        } catch (err) {
-                          logger.error('Failed to start a new session', err);
-                          toast({
-                            title: 'Could not start another intake',
-                            description: err instanceof Error ? err.message : 'Please try again.',
-                            variant: 'destructive',
-                          });
-                        }
-                      }}
-                      className="bg-jeevandata-500 hover:bg-jeevandata-600 focus:ring-jeevandata-500 rounded-xl px-6 py-3 text-sm font-semibold text-white shadow-sm transition-all focus:outline-none focus:ring-2"
-                    >
-                      Start another intake
-                    </button>
-                  </div>
-                </>
-              ) : (
-                <div className="flex flex-col items-center gap-3 text-center">
-                  <div className="border-jeevandata-200 border-t-jeevandata-500 dark:border-jeevandata-800 dark:border-t-jeevandata-400 h-12 w-12 animate-spin rounded-full border-4" />
-                  <p className="text-sm text-slate-500 dark:text-slate-400">
-                    Loading clinical brief...
-                  </p>
-                </div>
-              )}
-            </div>
+                    }
+                  : null
+              }
+              patientName={session.patient?.name}
+            />
           )}
 
           {phase === 'detecting' && identifyFailed && (
@@ -788,32 +514,7 @@ export default function IntakeSessionPage() {
             </div>
           )}
 
-          {phase === 'camera' && (
-            <div className="flex flex-1 items-center justify-center">
-              <div className="max-w-md text-center">
-                <svg
-                  className="mx-auto mb-4 h-16 w-16 text-slate-300 dark:text-slate-600"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={1}
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"
-                  />
-                </svg>
-                <h2 className="mb-2 text-lg font-semibold text-slate-900 dark:text-white">
-                  Start Patient Intake
-                </h2>
-                <p className="text-sm text-slate-500 dark:text-slate-400">
-                  Enable your camera to begin the face detection process. We'll identify the patient
-                  automatically.
-                </p>
-              </div>
-            </div>
-          )}
+          {phase === 'camera' && <CameraPhase />}
         </div>
       </main>
 
