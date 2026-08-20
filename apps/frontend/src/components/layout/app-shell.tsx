@@ -11,23 +11,50 @@ import { ROLE_LABELS, hasRole } from '@/lib/roles';
 import { Badge } from '@/components/ui/badge';
 import { UserRole } from '@jeevandata/shared-types';
 import { authApi } from '@/services/api';
-import { LogOut, Menu, X } from 'lucide-react';
+import {
+  LogOut,
+  Menu,
+  X,
+  LayoutDashboard,
+  BarChart3,
+  Shield,
+  HeartPulse,
+  Server,
+  KeyRound,
+  Plus,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface NavItem {
   label: string;
   href: string;
   roles?: UserRole[];
+  icon?: React.ComponentType<{ className?: string }>;
 }
 
-const MAIN_NAV: NavItem[] = [{ label: 'Dashboard', href: '/dashboard' }];
+const MAIN_NAV: NavItem[] = [{ label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard }];
 
 const ADMIN_NAV: NavItem[] = [
-  { label: 'Analytics', href: '/admin', roles: [UserRole.ADMIN, UserRole.SYSTEM] },
-  { label: 'Audit Log', href: '/admin/audit', roles: [UserRole.ADMIN, UserRole.SYSTEM] },
-  { label: 'Health', href: '/admin/health', roles: [UserRole.ADMIN, UserRole.SYSTEM] },
-  { label: 'Clinics', href: '/clinics', roles: [UserRole.ADMIN, UserRole.SYSTEM] },
-  { label: 'API Keys', href: '/api-keys', roles: [UserRole.ADMIN, UserRole.SYSTEM] },
+  { label: 'Analytics', href: '/admin', roles: [UserRole.ADMIN, UserRole.SYSTEM], icon: BarChart3 },
+  {
+    label: 'Audit Log',
+    href: '/admin/audit',
+    roles: [UserRole.ADMIN, UserRole.SYSTEM],
+    icon: Shield,
+  },
+  {
+    label: 'Health',
+    href: '/admin/health',
+    roles: [UserRole.ADMIN, UserRole.SYSTEM],
+    icon: HeartPulse,
+  },
+  { label: 'Clinics', href: '/clinics', roles: [UserRole.ADMIN, UserRole.SYSTEM], icon: Server },
+  {
+    label: 'API Keys',
+    href: '/api-keys',
+    roles: [UserRole.ADMIN, UserRole.SYSTEM],
+    icon: KeyRound,
+  },
 ];
 
 function isActive(pathname: string, href: string): boolean {
@@ -123,6 +150,14 @@ export function AppShell({ children }: { children: ReactNode }) {
               ))}
             </>
           )}
+          <div className="mt-auto border-t border-slate-100 p-3 dark:border-slate-800">
+            <Link
+              href="/"
+              className="bg-jeevandata-500 hover:bg-jeevandata-600 flex items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium text-white transition-colors"
+            >
+              <Plus className="h-3.5 w-3.5" /> New Intake
+            </Link>
+          </div>
         </nav>
       </aside>
 
