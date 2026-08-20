@@ -32,7 +32,10 @@ interface NavItem {
   icon?: React.ComponentType<{ className?: string }>;
 }
 
-const MAIN_NAV: NavItem[] = [{ label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard }];
+const MAIN_NAV: NavItem[] = [
+  { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+  { label: 'Queue', href: '/queue', icon: Users },
+];
 
 const ADMIN_NAV: NavItem[] = [
   { label: 'Analytics', href: '/admin', roles: [UserRole.ADMIN, UserRole.SYSTEM], icon: BarChart3 },
