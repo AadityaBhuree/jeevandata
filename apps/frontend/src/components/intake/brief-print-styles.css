@@ -1,0 +1,69 @@
+@media print {
+  /* Hide everything except the brief */
+  header, nav, aside, .stepper, button, .print\:hidden,
+  [role="navigation"], [role="banner"] {
+    display: none !important;
+  }
+
+  /* Show only the brief content */
+  main {
+    padding: 0 !important;
+    max-width: 100% !important;
+  }
+
+  /* Professional print layout */
+  body {
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 11pt;
+    line-height: 1.5;
+    color: #1a1a1a;
+    background: white;
+  }
+
+  /* Brief header with branding */
+  .brief-print-header {
+    display: flex !important;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #0891b2;
+  }
+
+  .brief-print-header h1 {
+    font-size: 18pt;
+    font-weight: bold;
+    color: #0891b2;
+    margin: 0;
+  }
+
+  .brief-print-header .clinic-name {
+    font-size: 10pt;
+    color: #666;
+  }
+
+  /* Brief sections */
+  .brief-section {
+    margin-bottom: 12px;
+  }
+
+  .brief-section h3 {
+    font-size: 10pt;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #0891b2;
+    border-bottom: 1px solid #e5e7eb;
+    padding-bottom: 4px;
+    margin-bottom: 6px;
+  }
+
+  /* Risk flags - red but readable on paper */
+  .risk-flag {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 9pt;
+    color: #991b1b;
+  }
+}
