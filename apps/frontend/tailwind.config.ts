@@ -52,17 +52,17 @@ const config: Config = {
         },
         // Jeevandata brand colors
         jeevandata: {
-          50: '#f0f7ff',
-          100: '#e0effe',
-          200: '#bae0fd',
-          300: '#7cc6fb',
-          400: '#36a9f5',
-          500: '#0c8ee6',
-          600: '#0070c4',
-          700: '#01599f',
-          800: '#064c83',
-          900: '#0b406d',
-          950: '#072849',
+          50: '#ecfeff',
+          100: '#cffafe',
+          200: '#a5f3fc',
+          300: '#67e8f9',
+          400: '#22d3ee',
+          500: '#06b6d4',
+          600: '#0891b2',
+          700: '#0e7490',
+          800: '#155e75',
+          900: '#164e63',
+          950: '#083344',
         },
         // Status semantic colors
         success: {
@@ -75,6 +75,9 @@ const config: Config = {
           light: '#fffbeb',
           dark: '#78350f',
         },
+        'surface-raised': 'hsl(var(--surface-raised))',
+        'surface-sunken': 'hsl(var(--surface-sunken))',
+        'surface-overlay': 'hsl(var(--surface-overlay))',
       },
       borderRadius: {
         lg: 'var(--radius)',
@@ -90,9 +93,12 @@ const config: Config = {
       },
       boxShadow: {
         soft: '0 2px 15px -3px rgba(0, 0, 0, 0.07), 0 10px 20px -2px rgba(0, 0, 0, 0.04)',
-        glow: '0 0 20px rgba(12, 142, 230, 0.15)',
-        'glow-lg': '0 0 40px rgba(12, 142, 230, 0.2)',
+        glow: '0 0 20px rgba(6, 182, 212, 0.15)',
+        'glow-lg': '0 0 40px rgba(6, 182, 212, 0.2)',
         'inner-soft': 'inset 0 2px 4px 0 rgba(0, 0, 0, 0.04)',
+        'card-hover': '0 8px 30px -8px rgba(6, 182, 212, 0.15)',
+        'card-elevated': '0 4px 20px -4px rgba(0, 0, 0, 0.08), 0 2px 8px -2px rgba(0, 0, 0, 0.04)',
+        glass: '0 8px 32px rgba(0, 0, 0, 0.06)',
       },
       keyframes: {
         // Existing
