@@ -7,10 +7,15 @@ import { VoiceInput } from '@/components/intake/VoiceInput';
 interface ConversationPhaseProps {
   sessionId: string;
   patientName: string;
-  transcripts: Array<{ speaker: string; text: string; timestamp?: string }>;
+  transcripts: Array<{
+    id: string;
+    speaker: 'patient' | 'ai' | 'system';
+    text: string;
+    timestamp: number;
+  }>;
   patientInput: string;
   onPatientInputChange: (v: string) => void;
-  onSend: () => void;
+  onSend: (text?: string) => void;
   isAiThinking: boolean;
   isComplete: boolean;
   onComplete: () => void;
