@@ -130,7 +130,7 @@ describe('AppShell - mobile hamburger sidebar', () => {
     expect(screen.getByRole('dialog', { name: /navigation menu/i })).toBeInTheDocument();
     const backdrop = document.querySelector('.fixed.inset-0.z-40');
     expect(backdrop).toBeInTheDocument();
-    await user.click(backdrop);
+    await user.click(backdrop!);
     expect(screen.queryByRole('dialog', { name: /navigation menu/i })).not.toBeInTheDocument();
   });
 
@@ -176,7 +176,7 @@ describe('AppShell - mobile hamburger sidebar', () => {
     );
     const desktopSidebar = container.querySelector('aside.hidden');
     expect(desktopSidebar).toBeInTheDocument();
-    expect(desktopSidebar.className).toContain('md:flex');
+    expect(desktopSidebar!.className).toContain('md:flex');
   });
 
   it('hamburger button has 44x44 touch target', () => {
