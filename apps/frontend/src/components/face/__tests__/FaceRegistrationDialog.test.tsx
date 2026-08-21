@@ -330,23 +330,15 @@ describe('FaceRegistrationDialog', () => {
     });
   });
 
-  it('should show error when embedding is null', async () => {
+  it('should show waiting state when embedding is null', () => {
     render(<FaceRegistrationDialog {...defaultProps} embedding={null} />);
-    await fillNameStep();
-    await waitFor(() => {
-      expect(screen.getByText(/patient details/i)).toBeDefined();
-    });
-    await fillDetailsStep();
-    await waitFor(() => {
-      expect(screen.getByText(/review & consent/i)).toBeDefined();
-    });
-
-    fireEvent.click(screen.getByRole('checkbox'));
-    fireEvent.click(screen.getByRole('button', { name: /confirm & register/i }));
-
-    await waitFor(() => {
-      expect(screen.getByRole('alert')).toHaveTextContent(/no face data captured/i);
-    });
+    // When embedding is null, dialog shows a 'Capturing face data...' waiting state
+    expect(screen.getByText(/capturing face data/i)).toBeDefined();
+    expect(screen.getByText(/please hold still/i)).toBeDefined();
+    // Cancel button should be available
+    expect(screen.getByRole('button', { name: /cancel/i })).toBeDefined();
+    // Should NOT show the registration form
+    expect(screen.queryByLabelText(/full name/i)).toBeNull();
   });
 
   // ─── Navigation ─────────────────────────────────────────────────

@@ -16,6 +16,7 @@ import {
   ShieldCheck,
   ArrowRight,
   ArrowLeft,
+  Camera,
 } from 'lucide-react';
 
 interface FaceRegistrationDialogProps {
@@ -106,6 +107,40 @@ export function FaceRegistrationDialog({
   }, [isOpen, resetForm]);
 
   if (!isOpen) return null;
+
+  // ─── Embedding not ready yet — show waiting state ────────
+  if (!embedding) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Waiting for face data"
+          className="animate-scale-in-center relative w-full max-w-[calc(100vw-2rem)] max-w-md overflow-hidden rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-2xl dark:border-slate-700 dark:bg-slate-900"
+        >
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-100 dark:bg-amber-900/50">
+            <Camera className="h-6 w-6 text-amber-600 dark:text-amber-400" />
+          </div>
+          <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
+            Capturing face data...
+          </h3>
+          <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+            Please hold still while we process your face scan.
+          </p>
+          <div className="mx-auto mt-4 h-2 w-32 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">
+            <div className="from-jeevandata-400 to-jeevandata-600 h-full animate-[shimmer_1.5s_linear_infinite] rounded-full bg-gradient-to-r" />
+          </div>
+          <button
+            type="button"
+            onClick={onCancel}
+            className="mt-6 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:bg-transparent dark:text-slate-400 dark:hover:bg-slate-800"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   // ─── Step Validators ────────────────────────────────────────────
 
@@ -429,6 +464,7 @@ export function FaceRegistrationDialog({
         {livenessStatus !== 'verified' && (
           <div className="rounded-xl bg-amber-50 p-3 text-xs text-amber-700 ring-1 ring-amber-200 dark:bg-amber-950/30 dark:text-amber-400 dark:ring-amber-800">
             ⚠ Liveness check required. Please look at the camera and blink naturally when prompted.
+            This must be completed before registering.
           </div>
         )}
 
