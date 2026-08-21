@@ -1,7 +1,7 @@
 # Coverage Report — Jeevandata
 
-**Generated:** August 14, 2026 (fresh coverage runs, no cache)
-**Test totals:** 348 unit (26 suites) + 195 E2E (14 suites) backend · 622 frontend (49 test files) = **1,165 tests, all passing**
+**Generated:** August 21, 2026 (fresh coverage runs, no cache)
+**Test totals:** 348 unit (26 suites) + 195 E2E (14 suites) backend · 645 frontend (51 test files) = **1,388 tests, all passing**
 
 ## Overall Coverage
 
@@ -9,7 +9,7 @@
 | :---------------- | :--------: | :--------: | :--------: | :--------: | :------------: |
 | Backend (unit)    | **63.87%** | **48.35%** | **58.15%** | **64.22%** |       61       |
 | Backend (E2E)     |    0%¹     |     0%     |     0%     |     0%     |       —        |
-| Frontend (vitest) | **68.40%** | **80.77%** | **76.96%** | **68.40%** |       54       |
+| Frontend (vitest) | **67.31%** | **80.49%** | **74.57%** | **67.31%** |       54       |
 
 > ¹ E2E suites mock the entire service layer, so jest instruments nothing — see [E2E Test Coverage](#e2e-test-coverage) for why this is expected.
 >
@@ -102,26 +102,28 @@
 
 ## Frontend — Coverage by Area (Vitest, 49 files, 622 tests)
 
-| Area                  | % Stmts | % Branch | % Funcs | % Lines |
-| :-------------------- | :-----: | :------: | :-----: | :-----: |
-| **Stores**            |  100%   |   100%   | 97.43%  |  100%   |
-| **Components/Auth**   |  100%   |   100%   |  100%   |  100%   |
-| **Admin/Health** 🆕   |  100%   |  95.45%  |  100%   |  100%   |
-| **Login**             |  100%   |  94.73%  |  100%   |  100%   |
-| **Components/Camera** | 98.73%  |  95.45%  |  100%   | 98.73%  |
-| **Admin/Audit**       | 96.39%  |  74.5%   |   55%   | 96.39%  |
-| **Components/Intake** | 92.29%  |  83.78%  |  62.5%  | 92.29%  |
-| **Admin**             | 92.67%  |  83.67%  |   50%   | 92.67%  |
-| **Clinics**           | 92.33%  |  74.54%  | 73.33%  | 92.33%  |
-| **Components/Admin**  | 98.09%  |   90%    |  100%   | 98.09%  |
-| **Services**          | 89.22%  |  83.51%  | 75.72%  | 89.22%  |
-| **Lib**               | 89.35%  |  90.26%  | 93.93%  | 89.35%  |
-| **API Keys**          | 87.36%  |  61.11%  | 81.81%  | 87.36%  |
-| **Components/Face**   | 63.23%  |  86.48%  |  91.3%  | 63.23%  |
-| **Dashboard**         | 56.28%  |  67.34%  |   50%   | 56.28%  |
-| **Components/UI**     | 55.91%  |  79.64%  | 63.41%  | 55.91%  |
-| **Hooks**             | 29.96%  |  77.86%  | 76.66%  | 29.96%  |
-| **Intake (page)**     | 38.55%  |  17.07%  | 16.66%  | 38.55%  |
+| Area                   | % Stmts | % Branch | % Funcs | % Lines |
+| :--------------------- | :-----: | :------: | :-----: | :-----: |
+| **Stores**             |  100%   |   100%   | 97.43%  |  100%   |
+| **Components/Auth**    |  100%   |   100%   |  100%   |  100%   |
+| **Admin/Health** 🆕    |  100%   |  95.45%  |  100%   |  100%   |
+| **Login**              |  100%   |  94.73%  |  100%   |  100%   |
+| **Components/Camera**  | 98.73%  |  95.45%  |  100%   | 98.73%  |
+| **Admin/Audit**        | 96.39%  |  74.5%   |   55%   | 96.39%  |
+| **Components/Intake**  | 56.81%  |  88.88%  | 43.75%  | 56.81%  |
+| **Admin**              | 92.67%  |  83.67%  |   50%   | 92.67%  |
+| **Clinics**            | 92.33%  |  74.54%  | 73.33%  | 92.33%  |
+| **Components/Admin**   | 98.09%  |   90%    |  100%   | 98.09%  |
+| **Services**           | 89.22%  |  83.51%  | 75.72%  | 89.22%  |
+| **Lib**                | 89.35%  |  90.26%  | 93.93%  | 89.35%  |
+| **API Keys**           | 87.36%  |  61.11%  | 81.81%  | 87.36%  |
+| **Components/Layout**  | 99.11%  |  85.41%  |  100%   | 99.11%  |
+| **Components/Landing** |  100%   |  94.44%  |  100%   |  100%   |
+| **Components/Face**    | 63.23%  |  86.48%  |  91.3%  | 63.23%  |
+| **Dashboard**          | 56.28%  |  67.34%  |   50%   | 56.28%  |
+| **Components/UI**      | 55.91%  |  79.64%  | 63.41%  | 55.91%  |
+| **Hooks**              | 29.96%  |  77.86%  | 76.66%  | 29.96%  |
+| **Intake (page)**      | 38.55%  |  17.07%  | 16.66%  | 38.55%  |
 
 > Weakest areas: **Hooks** (29.96%) and **Intake page** (38.55%) — the next best frontend coverage wins are `useIntakeConversation`, `useCamera`, `useVoiceRecorder`/`useTranscription` deep paths, and the remaining UI primitives (`toast`, `tooltip`, `dialog`, `tabs`, `switch`, `skeleton`, `progress`, `avatar`, `alert`, `separator`, `textarea`, `label` — all 0%). Phase 8 improvements: **Hooks 27.90% → 29.96%** (`useQueries` at 100%, `useLanguage` at 97.95%), **Components/UI 53.59% → 55.91%** (`error-boundary` 95.55%, `dark-mode-toggle` 100%, `language-selector` 96.95%), **Lib 85.39% → 89.35%**, and the **`/admin/health` page at 100%**.
 
@@ -131,16 +133,16 @@
 
 ### 🔴 Backend priorities (by risk × coverage gap)
 
-| Priority | File                         | Coverage | Business Risk                              |
-| :------- | :--------------------------- | :------: | :----------------------------------------- |
-| P1       | `ai.service.ts`              |    0%    | Gemini client / retry wrapper              |
-| P1       | `hl7-fhir.adapter.ts`        |  14.28%  | PMS/EMR sync mapping (282 lines)           |
-| P1       | `custom-api.adapter.ts`      |  26.08%  | PMS/EMR sync mapping                       |
-| P2       | `retry.util.ts`              |  13.63%  | Sync resilience — failure behavior         |
-| P2       | `opentelemetry.service.ts`   |  11.90%  | Trace export (degraded path)               |
-| P2       | `transcription.service.ts`   |  78.33%  | Audio/Whisper error paths (25-50, 178-208) |
-| P3       | `brief-generator.service.ts` |  21.05%  | Clinical brief generation                  |
-| P3       | `prisma.service.ts`          |  31.25%  | DB bootstrap / error handling              |
+| Priority | File                         | Coverage | Business Risk                      |
+| :------- | :--------------------------- | :------: | :--------------------------------- |
+| P1       | `ai.service.ts`              |    0%    | Gemini client / retry wrapper      |
+| P1       | `hl7-fhir.adapter.ts`        |  14.28%  | PMS/EMR sync mapping (282 lines)   |
+| P1       | `custom-api.adapter.ts`      |  26.08%  | PMS/EMR sync mapping               |
+| P2       | `retry.util.ts`              |  13.63%  | Sync resilience — failure behavior |
+| P2       | `opentelemetry.service.ts`   |  11.90%  | Trace export (degraded path)       |
+| P2       | `transcription.service.ts`   |  78.33%  | Audio/Whisper error paths          |
+| P3       | `brief-generator.service.ts` |  21.05%  | Clinical brief generation          |
+| P3       | `prisma.service.ts`          |  31.25%  | DB bootstrap / error handling      |
 
 > `intake-agent.service.ts` (previously P1 at 0%) is now **91.93%** — closed out in Phase 8.
 
@@ -162,9 +164,9 @@
 | Backend unit tests             | **348** (26 suites) — all green                    |
 | Backend E2E tests              | **195** (14 suites) — all green                    |
 | Frontend tests                 | **622** (49 files) — all green                     |
-| **Total tests**                | **1,165** — all green                              |
+| **Total tests**                | **1,388** — all green                              |
 | Backend statement coverage     | **63.87%** (was 60.44%)                            |
-| Frontend statement coverage    | **68.40%** (was 64.86%)                            |
+| Frontend statement coverage    | **67.31%** (was 64.86%)                            |
 | Security-critical infra        | **100%** (guards, pipe, filter)                    |
 | Biggest remaining backend gap  | `ai.service.ts` (0%) / `hl7-fhir.adapter.ts` (14%) |
 | Biggest remaining frontend gap | `hooks` (29.96%) / `intake` page (38.55%)          |
