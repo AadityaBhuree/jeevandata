@@ -447,7 +447,9 @@ export default function IntakeSessionPage() {
               transcripts={session.transcripts}
               patientInput={conversation.patientInput}
               onPatientInputChange={conversation.setPatientInput}
-              onSend={conversation.sendPatientMessage}
+              onSend={(text) => {
+                if (text) conversation.sendPatientMessage(text);
+              }}
               isAiThinking={conversation.isAiThinking}
               isComplete={conversation.isIntakeComplete}
               onComplete={handleCompleteIntake}
