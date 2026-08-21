@@ -13,6 +13,7 @@ import { UserRole } from '@jeevandata/shared-types';
 import { authApi } from '@/services/api';
 import {
   LogOut,
+  Users,
   Menu,
   X,
   LayoutDashboard,
