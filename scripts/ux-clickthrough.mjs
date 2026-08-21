@@ -260,6 +260,7 @@ async function run() {
     await cdp.open();
     await cdp.send('Page.enable');
     await cdp.send('Runtime.enable');
+    await cdp.send('Emulation.setDeviceMetricsOverride', { width: 1440, height: 900, deviceScaleFactor: 1, mobile: false });
 
     console.log('── Landing page ──────────────────────────────────');
     await navigate(cdp, `${FRONTEND_URL}/`, PROBE.bodyHas('Jeevandata'), 'landing render');

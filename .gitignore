@@ -52,3 +52,7 @@ nul
 
 # Browser journey screenshots
 browser-journey-*.png
+
+# Click-through screenshot artifacts
+.ux-shots/
+.ux-shots-mobile/
