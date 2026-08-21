@@ -26,7 +26,7 @@ export function HeroSection() {
       logger.error('Failed to start session', err);
       toast({
         title: 'Failed to start session',
-        description: 'Please try again or contact support.',
+        description: err instanceof Error ? err.message : 'Please try again or contact support.',
         variant: 'destructive',
       });
     } finally {
