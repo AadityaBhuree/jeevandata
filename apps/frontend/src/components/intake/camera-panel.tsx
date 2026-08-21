@@ -1,21 +1,23 @@
 'use client';
 
 import type { RefObject } from 'react';
+import type { CameraDevice } from '@/hooks/useCamera';
+import type { DetectionResult } from '@/hooks/useFaceDetection';
 import { cn } from '@/lib/utils';
 import { FaceDetectionCanvas } from '@/components/face/FaceDetectionCanvas';
 import { CameraSelector } from '@/components/camera/CameraSelector';
 
 interface CameraPanelProps {
-  videoRef: RefObject<HTMLVideoElement>;
+  videoRef: RefObject<HTMLVideoElement | null>;
   isActive: boolean;
   cameraError: string | null;
-  currentFacingMode: string;
-  devices: MediaDeviceInfo[];
-  toggleCamera: () => void;
-  startCamera: () => void;
+  currentFacingMode: 'user' | 'environment';
+  devices: CameraDevice[];
+  toggleCamera: () => Promise<void>;
+  startCamera: () => Promise<void>;
   stopCamera: () => void;
   isMobile: boolean;
-  detectionResult: { landmarks: unknown } | null;
+  detectionResult: DetectionResult | null;
   videoDimensions: { width: number; height: number };
   isFaceDetected: boolean;
   faceStatus: string;
@@ -54,7 +56,7 @@ export function CameraPanel({
     <div className={cn('flex flex-col gap-4', isMobile ? 'w-full' : 'w-[420px]')}>
       <div className="relative overflow-hidden rounded-xl bg-black shadow-lg">
         <video
-          ref={videoRef as RefObject<HTMLVideoElement>}
+          ref={videoRef as React.RefObject<HTMLVideoElement>}
           autoPlay
           playsInline
           muted
