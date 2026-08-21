@@ -41,7 +41,7 @@ describe('HomePage — start intake (8.4.1)', () => {
 
     render(<HomePage />);
 
-    fireEvent.click(screen.getByRole('button', { name: /start new intake/i }));
+    fireEvent.click(screen.getByRole('button', { name: /start intake session/i }));
 
     await waitFor(() => {
       expect(startSession).toHaveBeenCalledWith({
@@ -58,7 +58,7 @@ describe('HomePage — start intake (8.4.1)', () => {
 
     render(<HomePage />);
 
-    fireEvent.click(screen.getByRole('button', { name: /start new intake/i }));
+    fireEvent.click(screen.getByRole('button', { name: /start intake session/i }));
 
     await waitFor(() => {
       expect(toast).toHaveBeenCalledWith(
@@ -78,7 +78,7 @@ describe('HomePage — start intake (8.4.1)', () => {
 
     render(<HomePage />);
 
-    const button = screen.getByRole('button', { name: /start new intake/i });
+    const button = screen.getByRole('button', { name: /start intake session/i });
     fireEvent.click(button);
     fireEvent.click(button);
 
