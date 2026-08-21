@@ -491,10 +491,17 @@ export default function IntakeSessionPage() {
                     onClick={() => {
                       setIdentifyFailed(false);
                       registrationAttemptedRef.current = false;
-                      if (isActive && videoRef.current) {
-                        startDetection(videoRef.current);
-                      }
-                      setTimeout(() => startChallenge(), 500);
+                      face.reset();
+                      face.setStatus('detecting');
+                      // Stop detection first (the guard skips if already running)
+                      stopDetection();
+                      // Small delay so React commits the stopped state before restarting
+                      setTimeout(() => {
+                        if (isActive && videoRef.current) {
+                          startDetection(videoRef.current);
+                        }
+                        startChallenge();
+                      }, 150);
                     }}
                     className="bg-jeevandata-500 hover:bg-jeevandata-600 rounded-xl px-4 py-2.5 text-sm font-semibold text-white transition-colors"
                   >
