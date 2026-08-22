@@ -107,62 +107,95 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   return (
     <div className="flex min-h-screen bg-slate-50 dark:bg-slate-950">
-      {/* Sidebar */}
-      <aside className="hidden w-56 flex-shrink-0 flex-col border-r border-slate-200 bg-white md:flex dark:border-slate-800 dark:bg-slate-900">
-        <div className="border-b border-slate-100 px-4 py-4 dark:border-slate-800">
+      {/* Desktop Sidebar */}
+      <aside className="hidden w-60 flex-shrink-0 flex-col border-r border-slate-200 bg-white md:flex dark:border-slate-800 dark:bg-slate-900">
+        <div className="border-b border-slate-100 px-5 py-4 dark:border-slate-800">
           <Brand />
         </div>
-        <nav className="flex-1 space-y-0.5 overflow-y-auto p-3" aria-label="Main navigation">
-          <p className="px-2 pb-1 pt-2 text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+        <nav className="flex-1 space-y-1 overflow-y-auto p-3" aria-label="Main navigation">
+          <p className="px-3 pb-1 pt-2 text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">
             Overview
           </p>
-          {visibleMain.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              aria-current={isActive(pathname, item.href) ? 'page' : undefined}
-              className={cn(
-                'block rounded-lg px-3 py-2 text-sm font-medium transition-colors',
-                isActive(pathname, item.href)
-                  ? 'bg-jeevandata-50 text-jeevandata-700 dark:bg-jeevandata-900/30 dark:text-jeevandata-300'
-                  : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200',
-              )}
-            >
-              {item.label}
-            </Link>
-          ))}
+          {visibleMain.map((item) => {
+            const active = isActive(pathname, item.href);
+            const Icon = item.icon;
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                aria-current={active ? 'page' : undefined}
+                className={cn(
+                  'group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-150',
+                  active
+                    ? 'bg-jeevandata-50 text-jeevandata-700 dark:bg-jeevandata-900/30 dark:text-jeevandata-300 shadow-sm'
+                    : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200',
+                )}
+              >
+                {Icon && (
+                  <Icon
+                    className={cn(
+                      'h-4 w-4 flex-shrink-0 transition-colors',
+                      active
+                        ? 'text-jeevandata-600 dark:text-jeevandata-400'
+                        : 'text-slate-400 group-hover:text-slate-600 dark:text-slate-500 dark:group-hover:text-slate-300',
+                    )}
+                  />
+                )}
+                <span>{item.label}</span>
+              </Link>
+            );
+          })}
 
           {visibleAdmin.length > 0 && (
             <>
-              <p className="px-2 pb-1 pt-4 text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">
-                Admin
+              <p className="px-3 pb-1 pt-4 text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                Management
               </p>
-              {visibleAdmin.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  aria-current={isActive(pathname, item.href) ? 'page' : undefined}
-                  className={cn(
-                    'block rounded-lg px-3 py-2 text-sm font-medium transition-colors',
-                    isActive(pathname, item.href)
-                      ? 'bg-jeevandata-50 text-jeevandata-700 dark:bg-jeevandata-900/30 dark:text-jeevandata-300'
-                      : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200',
-                  )}
-                >
-                  {item.label}
-                </Link>
-              ))}
+              {visibleAdmin.map((item) => {
+                const active = isActive(pathname, item.href);
+                const Icon = item.icon;
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    aria-current={active ? 'page' : undefined}
+                    className={cn(
+                      'group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-150',
+                      active
+                        ? 'bg-jeevandata-50 text-jeevandata-700 dark:bg-jeevandata-900/30 dark:text-jeevandata-300 shadow-sm'
+                        : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200',
+                    )}
+                  >
+                    {Icon && (
+                      <Icon
+                        className={cn(
+                          'h-4 w-4 flex-shrink-0 transition-colors',
+                          active
+                            ? 'text-jeevandata-600 dark:text-jeevandata-400'
+                            : 'text-slate-400 group-hover:text-slate-600 dark:text-slate-500 dark:group-hover:text-slate-300',
+                        )}
+                      />
+                    )}
+                    <span>{item.label}</span>
+                  </Link>
+                );
+              })}
             </>
           )}
-          <div className="mt-auto border-t border-slate-100 p-3 dark:border-slate-800">
-            <Link
-              href="/"
-              className="bg-jeevandata-500 hover:bg-jeevandata-600 flex items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium text-white transition-colors"
-            >
-              <Plus className="h-3.5 w-3.5" /> New Intake
-            </Link>
-          </div>
         </nav>
+
+        {/* Pinned Bottom CTA & Version */}
+        <div className="border-t border-slate-100 p-3 dark:border-slate-800">
+          <Link
+            href="/"
+            className="bg-jeevandata-500 hover:bg-jeevandata-600 flex w-full items-center justify-center gap-2 rounded-lg px-3.5 py-2.5 text-xs font-semibold text-white shadow-sm transition-all duration-150 hover:shadow active:scale-[0.98]"
+          >
+            <Plus className="h-4 w-4" /> Start New Intake
+          </Link>
+          <p className="mt-2.5 text-center text-[10px] text-slate-400 dark:text-slate-600">
+            Jeevandata Smart Clinic · v1.0
+          </p>
+        </div>
       </aside>
 
       {/* Mobile sidebar overlay */}
@@ -174,12 +207,12 @@ export function AppShell({ children }: { children: ReactNode }) {
             aria-hidden="true"
           />
           <aside
-            className="fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-slate-200 bg-white shadow-xl md:hidden dark:border-slate-800 dark:bg-slate-900"
+            className="fixed inset-y-0 left-0 z-50 flex w-72 flex-col border-r border-slate-200 bg-white shadow-2xl md:hidden dark:border-slate-800 dark:bg-slate-900"
             role="dialog"
             aria-modal="true"
             aria-label="Navigation menu"
           >
-            <div className="flex items-center justify-between border-b border-slate-100 px-4 py-4 dark:border-slate-800">
+            <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4 dark:border-slate-800">
               <Brand compact />
               <button
                 type="button"
@@ -190,57 +223,94 @@ export function AppShell({ children }: { children: ReactNode }) {
                 <X className="h-5 w-5" />
               </button>
             </div>
-            <nav className="flex-1 space-y-0.5 overflow-y-auto p-3" aria-label="Mobile navigation">
-              <p className="px-2 pb-1 pt-2 text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+            <nav className="flex-1 space-y-1 overflow-y-auto p-3" aria-label="Mobile navigation">
+              <p className="px-3 pb-1 pt-2 text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">
                 Overview
               </p>
-              {visibleMain.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  aria-current={isActive(pathname, item.href) ? 'page' : undefined}
-                  className={cn(
-                    'block rounded-lg px-3 py-2 text-sm font-medium transition-colors',
-                    isActive(pathname, item.href)
-                      ? 'bg-jeevandata-50 text-jeevandata-700 dark:bg-jeevandata-900/30 dark:text-jeevandata-300'
-                      : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200',
-                  )}
-                >
-                  {item.label}
-                </Link>
-              ))}
+              {visibleMain.map((item) => {
+                const active = isActive(pathname, item.href);
+                const Icon = item.icon;
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    aria-current={active ? 'page' : undefined}
+                    className={cn(
+                      'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
+                      active
+                        ? 'bg-jeevandata-50 text-jeevandata-700 dark:bg-jeevandata-900/30 dark:text-jeevandata-300'
+                        : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200',
+                    )}
+                  >
+                    {Icon && (
+                      <Icon
+                        className={cn(
+                          'h-4 w-4',
+                          active
+                            ? 'text-jeevandata-600 dark:text-jeevandata-400'
+                            : 'text-slate-400 dark:text-slate-500',
+                        )}
+                      />
+                    )}
+                    <span>{item.label}</span>
+                  </Link>
+                );
+              })}
               {visibleAdmin.length > 0 && (
                 <>
-                  <p className="px-2 pb-1 pt-4 text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">
-                    Admin
+                  <p className="px-3 pb-1 pt-4 text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                    Management
                   </p>
-                  {visibleAdmin.map((item) => (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      aria-current={isActive(pathname, item.href) ? 'page' : undefined}
-                      className={cn(
-                        'block rounded-lg px-3 py-2 text-sm font-medium transition-colors',
-                        isActive(pathname, item.href)
-                          ? 'bg-jeevandata-50 text-jeevandata-700 dark:bg-jeevandata-900/30 dark:text-jeevandata-300'
-                          : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200',
-                      )}
-                    >
-                      {item.label}
-                    </Link>
-                  ))}
+                  {visibleAdmin.map((item) => {
+                    const active = isActive(pathname, item.href);
+                    const Icon = item.icon;
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        aria-current={active ? 'page' : undefined}
+                        className={cn(
+                          'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
+                          active
+                            ? 'bg-jeevandata-50 text-jeevandata-700 dark:bg-jeevandata-900/30 dark:text-jeevandata-300'
+                            : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200',
+                        )}
+                      >
+                        {Icon && (
+                          <Icon
+                            className={cn(
+                              'h-4 w-4',
+                              active
+                                ? 'text-jeevandata-600 dark:text-jeevandata-400'
+                                : 'text-slate-400 dark:text-slate-500',
+                            )}
+                          />
+                        )}
+                        <span>{item.label}</span>
+                      </Link>
+                    );
+                  })}
                 </>
               )}
             </nav>
+
+            <div className="border-t border-slate-100 p-3 dark:border-slate-800">
+              <Link
+                href="/"
+                className="bg-jeevandata-500 hover:bg-jeevandata-600 flex w-full items-center justify-center gap-2 rounded-lg px-3.5 py-2.5 text-xs font-semibold text-white shadow-sm transition-colors"
+              >
+                <Plus className="h-4 w-4" /> Start New Intake
+              </Link>
+            </div>
           </aside>
         </>
       )}
 
       {/* Main column */}
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/80 backdrop-blur-md dark:border-slate-800 dark:bg-slate-900/80">
+        <header className="sticky top-0 z-20 border-b border-slate-200/80 bg-white/80 backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-900/80">
           <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6">
-            {/* Hamburger */}
+            {/* Hamburger for mobile */}
             <button
               type="button"
               onClick={() => setMobileOpen(true)}
@@ -255,27 +325,31 @@ export function AppShell({ children }: { children: ReactNode }) {
             <div className="md:hidden">
               <Brand compact />
             </div>
-            <div className="hidden md:block">
-              <h1 className="text-sm font-semibold text-slate-900 dark:text-white">
+            <div className="hidden md:flex md:items-center md:gap-2">
+              <span className="text-xs font-medium text-slate-400 dark:text-slate-500">
+                Workspace
+              </span>
+              <span className="text-slate-300 dark:text-slate-700">/</span>
+              <h2 className="text-sm font-semibold text-slate-900 dark:text-white">
                 {isAdminArea ? 'Admin Console' : 'Doctor Dashboard'}
-              </h1>
+              </h2>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2.5">
               <DarkModeToggle />
               {user && (
-                <div className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 dark:border-slate-700 dark:bg-slate-800">
-                  <div className="bg-jeevandata-500 flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-bold text-white">
+                <div className="flex items-center gap-2 rounded-full border border-slate-200/80 bg-white/90 py-1 pl-1 pr-2.5 shadow-sm dark:border-slate-700/80 dark:bg-slate-800/90">
+                  <div className="from-jeevandata-500 to-jeevandata-700 shadow-xs flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br text-[10px] font-bold text-white">
                     {user.name
                       ?.split(' ')
                       .map((n) => n[0])
                       .slice(0, 2)
                       .join('')}
                   </div>
-                  <span className="max-w-[120px] truncate text-xs font-medium text-slate-700 dark:text-slate-300">
+                  <span className="max-w-[120px] truncate text-xs font-semibold text-slate-800 dark:text-slate-200">
                     {user.name}
                   </span>
-                  <Badge variant="info" size="sm">
+                  <Badge variant="outline-info" size="sm">
                     {ROLE_LABELS[user.role] ?? user.role}
                   </Badge>
                   <button
@@ -284,11 +358,11 @@ export function AppShell({ children }: { children: ReactNode }) {
                       authApi.logout().catch(() => {});
                       logout();
                     }}
-                    className="flex h-11 w-11 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-slate-100 hover:text-red-500 dark:text-slate-500 dark:hover:bg-slate-800 dark:hover:text-red-400"
+                    className="flex h-7 w-7 items-center justify-center rounded-full text-slate-400 transition-colors hover:bg-red-50 hover:text-red-600 dark:text-slate-500 dark:hover:bg-red-950/30 dark:hover:text-red-400"
                     aria-label="Sign out"
                     title="Sign out"
                   >
-                    <LogOut className="h-5 w-5" />
+                    <LogOut className="h-3.5 w-3.5" />
                   </button>
                 </div>
               )}
