@@ -125,16 +125,16 @@ export default function LoginPage() {
           <div className="mb-6 hidden justify-end md:flex">
             <DarkModeToggle />
           </div>
-          <div className="animate-fade-in-up shadow-soft rounded-2xl border border-slate-200/60 bg-white/70 p-8 backdrop-blur-xl dark:border-slate-700/50 dark:bg-slate-900/50">
+          <div className="animate-fade-in-up shadow-card-elevated rounded-3xl border border-slate-200/80 bg-white/80 p-8 backdrop-blur-xl sm:p-10 dark:border-slate-800/80 dark:bg-slate-900/80">
             <div className="mb-6 text-center">
-              <span className="border-jeevandata-200 bg-jeevandata-50 text-jeevandata-700 dark:border-jeevandata-800 dark:bg-jeevandata-900/50 dark:text-jeevandata-300 mb-4 inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium">
+              <span className="border-jeevandata-200 bg-jeevandata-50 text-jeevandata-700 dark:border-jeevandata-800 dark:bg-jeevandata-900/50 dark:text-jeevandata-300 shadow-2xs mb-4 inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1 text-xs font-semibold">
                 <Sparkles className="h-3 w-3" />
                 Clinic Staff Sign In
               </span>
-              <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
+              <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl dark:text-white">
                 Welcome back
               </h1>
-              <p className="mt-1.5 text-sm text-slate-500 dark:text-slate-400">
+              <p className="mt-1.5 text-xs text-slate-500 sm:text-sm dark:text-slate-400">
                 Sign in to manage patient intake &amp; clinical briefs
               </p>
             </div>

@@ -78,36 +78,44 @@ export function HeroSection() {
           walks in.
         </p>
 
-        <div className="animate-scale-in-center mt-10">
-          <div className="glass-card p-6 shadow-sm sm:p-8">
-            <p className="mb-5 text-sm text-slate-500 dark:text-slate-400">
-              Start a new patient intake session
-            </p>
+        <div className="animate-scale-in-center mt-10 w-full max-w-md">
+          <div className="glass-card relative overflow-hidden p-6 shadow-md transition-all duration-300 sm:p-8">
+            <div className="mb-5 text-center">
+              <span className="text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                Self-Service Kiosk
+              </span>
+              <p className="mt-1 text-sm font-medium text-slate-700 dark:text-slate-300">
+                Step in front of the camera to begin
+              </p>
+            </div>
             <Button
               variant="jeevandata"
               size="xl"
               onClick={handleStartIntake}
               disabled={isLoading}
-              className="shadow-glow hover:shadow-glow-lg w-full"
+              className="shadow-glow hover:shadow-glow-lg w-full transition-all active:scale-[0.98]"
               rightIcon={<ArrowRight className="h-4 w-4" />}
             >
               <Camera className="mr-1.5 h-5 w-5" />
               {isLoading ? 'Starting...' : 'Start Intake Session'}
             </Button>
+            <p className="mt-3 text-center text-[11px] text-slate-400 dark:text-slate-500">
+              Estimated duration: 2–3 minutes · Multilingual support
+            </p>
           </div>
         </div>
 
-        <div className="animate-fade-in mt-8 flex flex-wrap items-center justify-center gap-5 text-xs text-slate-400 dark:text-slate-500">
+        <div className="animate-fade-in mt-8 flex flex-wrap items-center justify-center gap-6 text-xs text-slate-400 dark:text-slate-500">
           <span className="inline-flex items-center gap-1.5">
-            <Shield className="h-3.5 w-3.5" />
+            <Shield className="h-3.5 w-3.5 text-emerald-500" />
             No raw face images stored
           </span>
           <span className="inline-flex items-center gap-1.5">
-            <Activity className="h-3.5 w-3.5" />
+            <Activity className="text-jeevandata-500 h-3.5 w-3.5" />
             HIPAA-compliant
           </span>
           <span className="inline-flex items-center gap-1.5">
-            <Sparkles className="h-3.5 w-3.5" />
+            <Sparkles className="h-3.5 w-3.5 text-violet-500" />
             Powered by Gemini AI
           </span>
         </div>
