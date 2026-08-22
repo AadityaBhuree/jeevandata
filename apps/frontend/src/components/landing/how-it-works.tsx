@@ -35,29 +35,24 @@ export function HowItWorks() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 gap-8 sm:grid-cols-3">
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
           {steps.map((step, i) => (
             <div
               key={step.num}
-              className="card-hover-glow animate-fade-in-up relative text-center"
+              className="glass-card-elevated group relative rounded-2xl p-6 text-center"
               style={{ animationDelay: `${i * 150}ms` }}
             >
-              <div className="bg-jeevandata-50 dark:bg-jeevandata-900/30 mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl">
+              <div className="from-jeevandata-50 shadow-xs ring-jeevandata-200/50 dark:from-jeevandata-950/60 dark:ring-jeevandata-800/50 mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br to-teal-50 ring-1 dark:to-teal-950/60">
                 <span className="text-jeevandata-600 dark:text-jeevandata-400 text-lg font-bold">
                   {step.num}
                 </span>
               </div>
-              <h3 className="mb-2 text-base font-semibold text-slate-900 dark:text-white">
+              <h3 className="mb-2 text-base font-bold text-slate-900 dark:text-white">
                 {step.title}
               </h3>
-              <p className="text-sm leading-relaxed text-slate-500 dark:text-slate-400">
+              <p className="text-xs leading-relaxed text-slate-500 dark:text-slate-400">
                 {step.desc}
               </p>
-              {i < steps.length - 1 && (
-                <div className="absolute right-0 top-7 hidden translate-x-[calc(50%+8px)] text-slate-300 sm:block dark:text-slate-600">
-                  →
-                </div>
-              )}
             </div>
           ))}
         </div>

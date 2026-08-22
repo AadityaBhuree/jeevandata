@@ -47,22 +47,35 @@ const features = [
 
 export function FeaturesGrid() {
   return (
-    <section className="relative py-16">
-      <div className="mx-auto max-w-5xl px-4">
+    <section className="relative py-16 sm:py-20">
+      <div className="mx-auto max-w-6xl px-4 sm:px-6">
+        <div className="mb-12 text-center">
+          <span className="text-jeevandata-600 dark:text-jeevandata-400 text-xs font-bold uppercase tracking-wider">
+            Intelligent Platform
+          </span>
+          <h2 className="mt-2 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl dark:text-white">
+            Built for Modern Clinical Workflows
+          </h2>
+          <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+            Biometrics, conversational AI, and clinical intelligence integrated into one seamless
+            intake system.
+          </p>
+        </div>
+
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {features.map((feature, i) => (
             <div
               key={feature.title}
-              className="glass-card card-hover-glow animate-fade-in-up group relative overflow-hidden p-5"
+              className="glass-card-elevated group relative overflow-hidden rounded-2xl p-6"
               style={{ animationDelay: `${i * 80}ms` }}
             >
               <div className="relative">
                 <div
-                  className={`mb-3 inline-flex h-10 w-10 items-center justify-center rounded-xl ${feature.bgColor}`}
+                  className={`mb-4 inline-flex h-11 w-11 items-center justify-center rounded-xl ${feature.bgColor} ring-1 ring-white/50 dark:ring-white/10`}
                 >
                   <feature.icon className={`h-5 w-5 ${feature.iconColor}`} />
                 </div>
-                <h3 className="mb-1.5 text-sm font-semibold text-slate-900 dark:text-white">
+                <h3 className="mb-2 text-sm font-bold text-slate-900 dark:text-white">
                   {feature.title}
                 </h3>
                 <p className="text-xs leading-relaxed text-slate-500 dark:text-slate-400">

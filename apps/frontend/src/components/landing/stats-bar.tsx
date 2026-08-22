@@ -6,18 +6,20 @@ const stats = [
 
 export function StatsBar() {
   return (
-    <section className="relative border-y border-slate-200/60 bg-slate-50/50 py-12 dark:border-slate-800/60 dark:bg-slate-900/30">
-      <div className="mx-auto flex max-w-4xl flex-col items-center justify-center gap-8 px-4 sm:flex-row sm:gap-0">
+    <section className="relative border-y border-slate-200/50 bg-white/40 py-12 backdrop-blur-sm dark:border-slate-800/50 dark:bg-slate-900/40">
+      <div className="mx-auto flex max-w-5xl flex-col items-center justify-center gap-8 px-4 sm:flex-row sm:divide-x sm:divide-slate-200/60 dark:sm:divide-slate-800/60">
         {stats.map((stat, i) => (
           <div
             key={stat.label}
-            className="animate-fade-in-up flex flex-1 flex-col items-center px-6 text-center"
+            className="flex flex-1 flex-col items-center px-6 text-center"
             style={{ animationDelay: `${i * 100}ms` }}
           >
-            <p className="text-jeevandata-600 dark:text-jeevandata-400 text-3xl font-bold tracking-tight sm:text-4xl">
+            <p className="gradient-text text-3xl font-extrabold tracking-tight sm:text-4xl">
               {stat.value}
             </p>
-            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{stat.label}</p>
+            <p className="mt-1.5 text-xs font-medium text-slate-500 dark:text-slate-400">
+              {stat.label}
+            </p>
           </div>
         ))}
       </div>
