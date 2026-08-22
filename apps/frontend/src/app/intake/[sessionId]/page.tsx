@@ -415,19 +415,19 @@ export default function IntakeSessionPage() {
         />
 
         {session.patient && phase !== 'camera' && (
-          <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-            <h2 className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-              Identified Patient
+          <div className="animate-fade-in-up rounded-2xl border border-emerald-200/80 bg-emerald-50/50 p-4 shadow-sm dark:border-emerald-900/40 dark:bg-emerald-950/20">
+            <h2 className="mb-2 text-[10px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
+              Verified Patient
             </h2>
             <div className="flex items-center gap-3">
-              <div className="bg-jeevandata-100 text-jeevandata-600 dark:bg-jeevandata-900/50 dark:text-jeevandata-400 flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold">
+              <div className="from-jeevandata-500 to-jeevandata-700 shadow-xs flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br text-sm font-bold text-white">
                 {session.patient.name
                   .split(' ')
                   .map((n) => n[0])
                   .join('')}
               </div>
               <div>
-                <p className="text-sm font-semibold text-slate-900 dark:text-white">
+                <p className="text-sm font-bold text-slate-900 dark:text-white">
                   {session.patient.name}
                 </p>
                 <p className="text-xs text-slate-500 dark:text-slate-400">

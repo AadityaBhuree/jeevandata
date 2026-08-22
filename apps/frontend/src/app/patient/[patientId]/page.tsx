@@ -9,6 +9,10 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { formatDateTime } from '@/lib/utils';
 
+import { PageHeader } from '@/components/ui/page-header';
+import { EmptyState } from '@/components/ui/empty-state';
+import { FileText } from 'lucide-react';
+
 interface VisitRecord {
   id: string;
   date: string;
@@ -32,8 +36,14 @@ export default function PatientHistoryPage() {
     <RequireAuth>
       <AppShell>
         <TitleSetter title="Patient History" />
+
+        <PageHeader
+          title="Patient Visit History"
+          description={`Comprehensive timeline of past consultations and intake summaries for patient ${params.patientId}`}
+          breadcrumbs={[{ label: 'Dashboard', href: '/dashboard' }, { label: 'Patient History' }]}
+        />
+
         <div className="space-y-4">
-          <h1 className="text-lg font-semibold text-slate-900 dark:text-white">Visit History</h1>
           {loading ? (
             <div className="space-y-3">
               {[1, 2, 3].map((i) => (
@@ -41,8 +51,12 @@ export default function PatientHistoryPage() {
               ))}
             </div>
           ) : visits.length === 0 ? (
-            <Card className="p-8 text-center">
-              <p className="text-sm text-slate-400 dark:text-slate-500">No visit history found.</p>
+            <Card className="animate-fade-in-up">
+              <EmptyState
+                icon={FileText}
+                title="No visit history yet"
+                description="Past consultation records and clinical summaries will be organized chronologically once sessions are concluded."
+              />
             </Card>
           ) : (
             <div className="relative space-y-4 border-l-2 border-slate-200 pl-6 dark:border-slate-700">
