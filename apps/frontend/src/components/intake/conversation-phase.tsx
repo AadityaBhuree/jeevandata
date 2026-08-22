@@ -34,8 +34,8 @@ export function ConversationPhase({
 }: ConversationPhaseProps) {
   return (
     <>
-      <div className="flex flex-1 flex-col rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-        <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3 dark:border-slate-800">
+      <div className="glass-card-elevated flex flex-1 flex-col overflow-hidden rounded-2xl shadow-md">
+        <div className="flex items-center justify-between border-b border-slate-100/80 px-5 py-3.5 dark:border-slate-800/80">
           <div className="flex items-center gap-2">
             <div
               aria-hidden="true"

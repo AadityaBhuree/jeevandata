@@ -138,14 +138,21 @@ export default function AdminHealthPage() {
             </Card>
           ) : health && health.checks ? (
             Object.entries(health.checks).map(([name, check]) => (
-              <Card key={name} className={`p-5 transition-all ${statusBorderClass(check)}`}>
+              <Card
+                key={name}
+                className={`glass-card-elevated p-5 transition-all ${statusBorderClass(check)}`}
+              >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <Database className="h-4 w-4 text-slate-400" />
-                    <span className="font-medium">{DEPENDENCY_LABELS[name] ?? name}</span>
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800">
+                      <Database className="h-4 w-4 text-slate-600 dark:text-slate-400" />
+                    </div>
+                    <span className="text-sm font-semibold text-slate-900 dark:text-white">
+                      {DEPENDENCY_LABELS[name] ?? name}
+                    </span>
                   </div>
                   <div className="flex items-center gap-3">
-                    <span className="flex items-center gap-1 text-xs text-slate-400">
+                    <span className="flex items-center gap-1 text-xs font-medium text-slate-400 dark:text-slate-500">
                       <Timer className="h-3.5 w-3.5" />
                       {`${check.latencyMs.toLocaleString()} ms`}
                     </span>

@@ -62,34 +62,54 @@ export function PatientQueue({ patients }: PatientQueueProps) {
   }));
 
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+    <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
       {grouped.map((col) => (
-        <div key={col.key} className={'rounded-xl border p-3 ' + col.color}>
-          <div className="mb-3 flex items-center justify-between px-1">
+        <div
+          key={col.key}
+          className={
+            'rounded-2xl border p-4 backdrop-blur-sm transition-all duration-200 ' + col.color
+          }
+        >
+          <div className="mb-4 flex items-center justify-between px-1">
             <div className="flex items-center gap-2">
-              <col.icon className="h-4 w-4 text-slate-600 dark:text-slate-400" />
-              <h3 className="text-sm font-semibold text-slate-900 dark:text-white">{col.label}</h3>
+              <div className="shadow-2xs flex h-7 w-7 items-center justify-center rounded-lg bg-white/70 dark:bg-slate-900/70">
+                <col.icon className="h-4 w-4 text-slate-700 dark:text-slate-300" />
+              </div>
+              <h3 className="text-sm font-bold text-slate-900 dark:text-white">{col.label}</h3>
             </div>
-            <span className="text-xs text-slate-500 dark:text-slate-400">
+            <span className="shadow-2xs rounded-full bg-white/80 px-2.5 py-0.5 text-xs font-bold text-slate-700 dark:bg-slate-900/80 dark:text-slate-300">
               {col.patients.length}
             </span>
           </div>
-          <div className="space-y-2">
+          <div className="space-y-2.5">
             {col.patients.length === 0 ? (
-              <p className="py-6 text-center text-xs text-slate-400 dark:text-slate-500">
-                No patients
-              </p>
+              <div className="rounded-xl border border-dashed border-slate-200/80 bg-white/30 py-8 text-center text-xs text-slate-400 dark:border-slate-800 dark:bg-slate-900/20 dark:text-slate-500">
+                No patients in this queue
+              </div>
             ) : (
               col.patients.map((p) => (
-                <Card key={p.id} className="p-3">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-slate-900 dark:text-white">
-                        {p.patientName}
-                      </p>
-                      <p className="text-[11px] text-slate-400 dark:text-slate-500">
-                        {getWaitTime(p.startedAt)} wait
-                      </p>
+                <Card
+                  key={p.id}
+                  className="glass-card-elevated group p-3.5 transition-all duration-150"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex min-w-0 items-center gap-2.5">
+                      <div className="from-jeevandata-500 to-jeevandata-700 shadow-2xs flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br text-[11px] font-bold text-white">
+                        {p.patientName
+                          .split(' ')
+                          .map((n) => n[0])
+                          .slice(0, 2)
+                          .join('')}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-bold text-slate-900 dark:text-white">
+                          {p.patientName}
+                        </p>
+                        <p className="flex items-center gap-1 text-[11px] font-medium text-slate-400 dark:text-slate-500">
+                          <Clock className="h-3 w-3" />
+                          <span>{getWaitTime(p.startedAt)} wait</span>
+                        </p>
+                      </div>
                     </div>
                     <StatusBadge status={p.status.toLowerCase()} />
                   </div>
