@@ -6,7 +6,17 @@ import { useSessionStore } from '@/stores/session-store';
 import { intakeApi } from '@/services/api';
 import { logger } from '@/lib/logger';
 import { Button } from '@/components/ui/button';
-import { Camera, Sparkles, Shield, Activity, ArrowRight } from 'lucide-react';
+import {
+  Camera,
+  Sparkles,
+  Shield,
+  Activity,
+  ArrowRight,
+  Clock,
+  Globe2,
+  Lock,
+  UserCheck,
+} from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
 export function HeroSection() {
@@ -35,7 +45,8 @@ export function HeroSection() {
   }
 
   return (
-    <section className="relative overflow-hidden pb-16 pt-20 sm:pt-28">
+    <section className="relative overflow-hidden pb-16 pt-12 sm:pt-20">
+      {/* Background ambient lighting */}
       <div className="pointer-events-none absolute inset-0">
         <div className="animate-float bg-jeevandata-200/30 dark:bg-jeevandata-900/20 absolute -left-32 -top-32 h-96 w-96 rounded-full blur-3xl" />
         <div
@@ -46,77 +57,107 @@ export function HeroSection() {
           className="animate-float bg-jeevandata-300/20 dark:bg-jeevandata-800/20 absolute left-1/2 top-1/3 h-64 w-64 rounded-full blur-3xl"
           style={{ animationDelay: '3s' }}
         />
-        <div
-          className="absolute inset-0 opacity-[0.015] dark:opacity-[0.03]"
-          style={{
-            backgroundImage:
-              'linear-gradient(rgba(6, 182, 212, 0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(6, 182, 212, 0.3) 1px, transparent 1px)',
-            backgroundSize: '60px 60px',
-          }}
-        />
       </div>
 
       <div className="relative z-10 mx-auto flex max-w-5xl flex-col items-center px-4 text-center">
-        <div className="animate-fade-in-down mb-8">
-          <span className="glass-card text-jeevandata-700 dark:text-jeevandata-300 inline-flex items-center gap-1.5 px-4 py-1.5 text-xs font-medium">
-            <Sparkles className="h-3.5 w-3.5" />
-            AI-Powered Clinic Intake
-          </span>
+        {/* HealthyMe-style Top Notification Pill */}
+        <div className="animate-fade-in-down mb-6">
+          <div className="shadow-xs inline-flex items-center gap-2 rounded-full border border-teal-200/80 bg-teal-50/80 px-4 py-1.5 text-xs font-semibold text-teal-800 backdrop-blur-md dark:border-teal-800/60 dark:bg-teal-950/40 dark:text-teal-300">
+            <span className="flex h-2 w-2 animate-pulse rounded-full bg-teal-500" />
+            <Sparkles className="h-3.5 w-3.5 text-teal-600 dark:text-teal-400" />
+            <span>Next-Gen Healthcare AI · Zero Paperwork Check-in</span>
+          </div>
         </div>
 
+        {/* Headline */}
         <div className="animate-fade-in-up">
-          <h1 className="text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl lg:text-6xl dark:text-white">
-            Smarter Patient Intake,
+          <h1 className="text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl lg:text-6xl dark:text-white">
+            Your Health Journey,
             <br />
-            <span className="text-gradient-primary">Powered by AI</span>
+            <span className="gradient-text">Simpler &amp; Smarter with AI</span>
           </h1>
         </div>
 
-        <p className="animate-fade-in-up mx-auto mt-6 max-w-2xl text-base leading-relaxed text-slate-600 sm:text-lg dark:text-slate-400">
-          Jeevandata uses face recognition to identify patients, an AI voice assistant to collect
-          symptoms through natural conversation, and generates a clinical brief before the doctor
-          walks in.
+        {/* Subtitle */}
+        <p className="animate-fade-in-up mx-auto mt-6 max-w-2xl text-base leading-relaxed text-slate-600 sm:text-lg dark:text-slate-300">
+          Seamless face recognition check-in, conversational voice symptom triage in multiple
+          languages, and instant doctor briefings — designed for effortless clinic visits.
         </p>
 
-        <div className="animate-scale-in-center mt-10 w-full max-w-md">
-          <div className="glass-card relative overflow-hidden p-6 shadow-md transition-all duration-300 sm:p-8">
-            <div className="mb-5 text-center">
-              <span className="text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">
-                Self-Service Kiosk
+        {/* Elevated HealthyMe-style Kiosk Action Card */}
+        <div className="animate-scale-in-center mt-10 w-full max-w-lg">
+          <div className="glass-panel relative overflow-hidden rounded-3xl border border-slate-200/80 p-6 shadow-xl sm:p-8 dark:border-slate-800/80">
+            <div className="mb-6 flex items-center justify-between border-b border-slate-100/80 pb-4 dark:border-slate-800/80">
+              <div className="flex items-center gap-2.5 text-left">
+                <div className="bg-jeevandata-50 text-jeevandata-600 dark:bg-jeevandata-900/50 dark:text-jeevandata-400 flex h-9 w-9 items-center justify-center rounded-xl">
+                  <Camera className="h-5 w-5" />
+                </div>
+                <div>
+                  <h2 className="text-sm font-bold text-slate-900 dark:text-white">
+                    Patient Self-Service Kiosk
+                  </h2>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    Touchless biometric check-in &amp; AI intake
+                  </p>
+                </div>
+              </div>
+              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-0.5 text-[11px] font-bold text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-400">
+                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" />
+                Ready
               </span>
-              <p className="mt-1 text-sm font-medium text-slate-700 dark:text-slate-300">
-                Step in front of the camera to begin
-              </p>
             </div>
+
             <Button
               variant="jeevandata"
               size="xl"
               onClick={handleStartIntake}
               disabled={isLoading}
-              className="shadow-glow hover:shadow-glow-lg w-full transition-all active:scale-[0.98]"
-              rightIcon={<ArrowRight className="h-4 w-4" />}
+              className="w-full text-base font-bold shadow-lg shadow-teal-500/25 transition-all duration-200 hover:shadow-teal-500/35 active:scale-[0.98]"
+              rightIcon={<ArrowRight className="h-5 w-5" />}
             >
-              <Camera className="mr-1.5 h-5 w-5" />
+              <Camera className="mr-2 h-5 w-5" />
               {isLoading ? 'Starting...' : 'Start Intake Session'}
             </Button>
-            <p className="mt-3 text-center text-[11px] text-slate-400 dark:text-slate-500">
-              Estimated duration: 2–3 minutes · Multilingual support
-            </p>
+
+            {/* Quick trust metrics within card */}
+            <div className="mt-5 grid grid-cols-3 gap-2 border-t border-slate-100/80 pt-4 text-center dark:border-slate-800/80">
+              <div className="flex flex-col items-center">
+                <span className="flex items-center gap-1 text-[11px] font-semibold text-slate-700 dark:text-slate-300">
+                  <Clock className="text-jeevandata-500 h-3.5 w-3.5" />
+                  ~2 mins
+                </span>
+                <span className="text-[10px] text-slate-400">Avg Intake</span>
+              </div>
+              <div className="flex flex-col items-center">
+                <span className="flex items-center gap-1 text-[11px] font-semibold text-slate-700 dark:text-slate-300">
+                  <Globe2 className="h-3.5 w-3.5 text-emerald-500" />4 Languages
+                </span>
+                <span className="text-[10px] text-slate-400">Multilingual</span>
+              </div>
+              <div className="flex flex-col items-center">
+                <span className="flex items-center gap-1 text-[11px] font-semibold text-slate-700 dark:text-slate-300">
+                  <Lock className="h-3.5 w-3.5 text-violet-500" />
+                  Encrypted
+                </span>
+                <span className="text-[10px] text-slate-400">HIPAA Ready</span>
+              </div>
+            </div>
           </div>
         </div>
 
-        <div className="animate-fade-in mt-8 flex flex-wrap items-center justify-center gap-6 text-xs text-slate-400 dark:text-slate-500">
-          <span className="inline-flex items-center gap-1.5">
-            <Shield className="h-3.5 w-3.5 text-emerald-500" />
-            No raw face images stored
+        {/* Feature Badges below Hero */}
+        <div className="animate-fade-in mt-10 flex flex-wrap items-center justify-center gap-6 text-xs font-medium text-slate-500 dark:text-slate-400">
+          <span className="shadow-2xs inline-flex items-center gap-2 rounded-full border border-slate-200/60 bg-white/60 px-3 py-1.5 backdrop-blur-sm dark:border-slate-800/60 dark:bg-slate-900/60">
+            <UserCheck className="h-4 w-4 text-emerald-500" />
+            478-Point Face Mesh (No Images Saved)
           </span>
-          <span className="inline-flex items-center gap-1.5">
-            <Activity className="text-jeevandata-500 h-3.5 w-3.5" />
-            HIPAA-compliant
+          <span className="shadow-2xs inline-flex items-center gap-2 rounded-full border border-slate-200/60 bg-white/60 px-3 py-1.5 backdrop-blur-sm dark:border-slate-800/60 dark:bg-slate-900/60">
+            <Activity className="text-jeevandata-500 h-4 w-4" />
+            Instant Doctor SOAP Note Generation
           </span>
-          <span className="inline-flex items-center gap-1.5">
-            <Sparkles className="h-3.5 w-3.5 text-violet-500" />
-            Powered by Gemini AI
+          <span className="shadow-2xs inline-flex items-center gap-2 rounded-full border border-slate-200/60 bg-white/60 px-3 py-1.5 backdrop-blur-sm dark:border-slate-800/60 dark:bg-slate-900/60">
+            <Shield className="h-4 w-4 text-teal-500" />
+            Full Audit Trail &amp; Offline Cache
           </span>
         </div>
       </div>
