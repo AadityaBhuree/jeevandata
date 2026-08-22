@@ -33,6 +33,8 @@ import {
   RefreshCw,
 } from 'lucide-react';
 
+import { PageHeader } from '@/components/ui/page-header';
+
 interface Overview {
   days: number;
   totalSessions: number;
@@ -146,35 +148,28 @@ export default function AdminPage() {
     <AppShell>
       <TitleSetter title="Admin Analytics" />
 
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-lg font-semibold text-slate-900 dark:text-white">Admin Analytics</h1>
-          <p className="text-xs text-slate-500 dark:text-slate-400">
-            Jeevandata — clinic KPIs & patient flow
-          </p>
-        </div>
-        <div className="flex items-center gap-2"></div>
-      </div>
-      <div className="flex flex-col gap-6">
-        {/* Toolbar */}
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-1 rounded-lg border border-slate-200 bg-white p-1 dark:border-slate-700 dark:bg-slate-800">
-            {RANGES.map((r) => (
-              <button
-                key={r.days}
-                onClick={() => setDays(r.days)}
-                className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
-                  days === r.days
-                    ? 'bg-jeevandata-500 text-white'
-                    : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
-                }`}
-                aria-pressed={days === r.days}
-              >
-                {r.label}
-              </button>
-            ))}
-          </div>
-          <div className="flex items-center gap-2">
+      <PageHeader
+        title="Admin Analytics"
+        description="Jeevandata — clinic KPIs, patient volume & intake flow"
+        breadcrumbs={[{ label: 'Admin', href: '/admin' }, { label: 'Analytics' }]}
+        actions={
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="flex items-center gap-1 rounded-lg border border-slate-200 bg-white p-1 dark:border-slate-700 dark:bg-slate-800">
+              {RANGES.map((r) => (
+                <button
+                  key={r.days}
+                  onClick={() => setDays(r.days)}
+                  className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
+                    days === r.days
+                      ? 'bg-jeevandata-500 shadow-xs text-white'
+                      : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
+                  }`}
+                  aria-pressed={days === r.days}
+                >
+                  {r.label}
+                </button>
+              ))}
+            </div>
             <Button
               variant="outline"
               size="sm"
@@ -197,8 +192,10 @@ export default function AdminPage() {
               Export CSV
             </Button>
           </div>
-        </div>
+        }
+      />
 
+      <div className="flex flex-col gap-6">
         {error && (
           <div
             role="alert"

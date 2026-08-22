@@ -10,7 +10,9 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { logger } from '@/lib/logger';
 import { toast } from '@/hooks/use-toast';
-import { Plus, Copy, Check, Trash2, RefreshCw, ShieldCheck } from 'lucide-react';
+import { Plus, Copy, Check, Trash2, RefreshCw, ShieldCheck, KeyRound } from 'lucide-react';
+import { PageHeader } from '@/components/ui/page-header';
+import { EmptyState } from '@/components/ui/empty-state';
 
 export default function ApiKeysPage() {
   const [keys, setKeys] = useState<ApiKeyRecord[]>([]);
@@ -137,14 +139,11 @@ export default function ApiKeysPage() {
     <AppShell>
       <TitleSetter title="API Keys" />
 
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-lg font-semibold text-slate-900 dark:text-white">API Keys</h1>
-          <p className="text-xs text-slate-500 dark:text-slate-400">
-            External integration keys — ADMIN/SYSTEM only
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
+      <PageHeader
+        title="API Keys"
+        description="External integration keys — PMS & telemetry authentication"
+        breadcrumbs={[{ label: 'Admin', href: '/admin' }, { label: 'API Keys' }]}
+        actions={
           <Button
             variant="jeevandata"
             size="sm"
@@ -153,8 +152,9 @@ export default function ApiKeysPage() {
           >
             Generate Key
           </Button>
-        </div>
-      </div>
+        }
+      />
+
       <div className="flex flex-col gap-6">
         {error && (
           <div
@@ -182,6 +182,7 @@ export default function ApiKeysPage() {
                   placeholder="PMS integration"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
+                  description="Descriptive identifier for this integration service"
                 />
                 <Input
                   id="key-expiry"
@@ -192,6 +193,7 @@ export default function ApiKeysPage() {
                   placeholder="90"
                   value={expiresInDays}
                   onChange={(e) => setExpiresInDays(e.target.value)}
+                  description="Leave empty for a non-expiring API token"
                 />
               </div>
 
@@ -261,16 +263,21 @@ export default function ApiKeysPage() {
               ))}
             </div>
           ) : keys.length === 0 ? (
-            <div className="px-5 py-10 text-center text-sm text-slate-400 dark:text-slate-500">
-              No API keys yet.
-              <br />
-              <button
-                onClick={openCreate}
-                className="text-jeevandata-500 dark:text-jeevandata-400 mt-1 hover:underline"
-              >
-                Generate your first key
-              </button>
-            </div>
+            <EmptyState
+              icon={KeyRound}
+              title="No API keys generated"
+              description="Create API keys for external Electronic Health Record (EHR) or PMS system integration."
+              action={
+                <Button
+                  variant="jeevandata-outline"
+                  size="sm"
+                  onClick={openCreate}
+                  leftIcon={<Plus className="h-3.5 w-3.5" />}
+                >
+                  Generate your first key
+                </Button>
+              }
+            />
           ) : (
             <div className="divide-y divide-slate-100 dark:divide-slate-800">
               {keys.map((key) => {

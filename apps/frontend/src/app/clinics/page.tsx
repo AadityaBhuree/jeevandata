@@ -9,7 +9,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { logger } from '@/lib/logger';
 import { toast } from '@/hooks/use-toast';
-import { Plus, Pencil, Power, MapPin, Phone, Mail, RefreshCw } from 'lucide-react';
+import { Plus, Pencil, Power, MapPin, Phone, Mail, RefreshCw, Building2 } from 'lucide-react';
+import { PageHeader } from '@/components/ui/page-header';
+import { EmptyState } from '@/components/ui/empty-state';
 
 const CODE_RE = /^[A-Z0-9_-]+$/;
 
@@ -155,14 +157,11 @@ export default function ClinicsPage() {
     <AppShell>
       <TitleSetter title="Clinics" />
 
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-lg font-semibold text-slate-900 dark:text-white">Clinics</h1>
-          <p className="text-xs text-slate-500 dark:text-slate-400">
-            Multi-tenancy management — ADMIN/SYSTEM only
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
+      <PageHeader
+        title="Clinics"
+        description="Multi-tenancy management — multi-clinic tenant isolation"
+        breadcrumbs={[{ label: 'Admin', href: '/admin' }, { label: 'Clinics' }]}
+        actions={
           <Button
             variant="jeevandata"
             size="sm"
@@ -171,8 +170,9 @@ export default function ClinicsPage() {
           >
             Add Clinic
           </Button>
-        </div>
-      </div>
+        }
+      />
+
       <div className="flex flex-col gap-6">
         {error && (
           <div
@@ -272,16 +272,21 @@ export default function ClinicsPage() {
               ))}
             </div>
           ) : clinics.length === 0 ? (
-            <div className="px-5 py-10 text-center text-sm text-slate-400 dark:text-slate-500">
-              No clinics yet.
-              <br />
-              <button
-                onClick={openCreate}
-                className="text-jeevandata-500 dark:text-jeevandata-400 mt-1 hover:underline"
-              >
-                Add your first clinic
-              </button>
-            </div>
+            <EmptyState
+              icon={Building2}
+              title="No clinics registered yet"
+              description="Add your first clinic branch to enable multi-tenant patient routing."
+              action={
+                <Button
+                  variant="jeevandata-outline"
+                  size="sm"
+                  onClick={openCreate}
+                  leftIcon={<Plus className="h-3.5 w-3.5" />}
+                >
+                  Add your first clinic
+                </Button>
+              }
+            />
           ) : (
             <div className="divide-y divide-slate-100 dark:divide-slate-800">
               {clinics.map((clinic) => (

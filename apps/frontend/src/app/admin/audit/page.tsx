@@ -31,6 +31,7 @@ import {
   ChevronLeft,
   ChevronRight,
 } from 'lucide-react';
+import { PageHeader } from '@/components/ui/page-header';
 
 const ROLE_OPTIONS = ['RECEPTIONIST', 'DOCTOR', 'ADMIN', 'SYSTEM'] as const;
 const PAGE_SIZE = 50;
@@ -190,34 +191,34 @@ export default function AdminAuditPage() {
     <AppShell>
       <TitleSetter title="Audit Log" />
 
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-lg font-semibold text-slate-900 dark:text-white">Audit Trail</h1>
-          <p className="text-xs text-slate-500 dark:text-slate-400">
-            HIPAA compliance — filtered viewer, anonymized export
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => load()}
-            loading={loading}
-            leftIcon={<RefreshCw className="h-3.5 w-3.5" />}
-          >
-            Refresh
-          </Button>
-          <Button
-            variant="jeevandata"
-            size="sm"
-            onClick={handleExport}
-            loading={exporting}
-            leftIcon={<Download className="h-3.5 w-3.5" />}
-          >
-            Export CSV
-          </Button>
-        </div>
-      </div>
+      <PageHeader
+        title="Audit Trail"
+        description="HIPAA compliance — filtered viewer & anonymized export"
+        breadcrumbs={[{ label: 'Admin', href: '/admin' }, { label: 'Audit Trail' }]}
+        actions={
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => load()}
+              loading={loading}
+              leftIcon={<RefreshCw className="h-3.5 w-3.5" />}
+            >
+              Refresh
+            </Button>
+            <Button
+              variant="jeevandata"
+              size="sm"
+              onClick={handleExport}
+              loading={exporting}
+              leftIcon={<Download className="h-3.5 w-3.5" />}
+            >
+              Export CSV
+            </Button>
+          </div>
+        }
+      />
+
       <div className="flex flex-col gap-6">
         {error && (
           <div

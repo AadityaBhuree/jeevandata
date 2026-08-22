@@ -10,6 +10,8 @@ import { Badge } from '@/components/ui/badge';
 import { logger } from '@/lib/logger';
 import { Activity, RefreshCw, Database, Timer } from 'lucide-react';
 
+import { PageHeader } from '@/components/ui/page-header';
+
 // Auto-refresh interval (ms) — the page re-polls /health every 30s.
 const REFRESH_MS = 30_000;
 // A check slower than this (ms) is shown as "degraded" (yellow) even if healthy.
@@ -32,6 +34,12 @@ function statusLabel(check: DependencyCheck): string {
   if (check.status === 'unhealthy') return 'Down';
   if (check.latencyMs > SLOW_THRESHOLD_MS) return 'Degraded';
   return 'Up';
+}
+
+function statusBorderClass(check: DependencyCheck): string {
+  if (check.status === 'unhealthy') return 'health-card-error';
+  if (check.latencyMs > SLOW_THRESHOLD_MS) return 'health-card-warn';
+  return 'health-card-ok';
 }
 
 export default function AdminHealthPage() {
@@ -83,25 +91,28 @@ export default function AdminHealthPage() {
 
       <div className="mx-auto max-w-3xl space-y-6">
         {/* Header */}
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <h1 className="text-lg font-semibold text-slate-900 dark:text-white">System Health</h1>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
-              Dependency status — database, redis, qdrant, whisper
-            </p>
-          </div>
-          <Button variant="outline" size="sm" onClick={load} disabled={loading}>
-            <RefreshCw className={`mr-1.5 h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-            Refresh
-          </Button>
-        </div>
+        <PageHeader
+          title="System Health"
+          description="Dependency status — database, redis, qdrant, whisper"
+          breadcrumbs={[{ label: 'Admin', href: '/admin' }, { label: 'System Health' }]}
+          actions={
+            <Button variant="outline" size="sm" onClick={load} disabled={loading}>
+              <RefreshCw className={`mr-1.5 h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+              Refresh
+            </Button>
+          }
+        />
 
         {/* Overall status */}
-        <Card className="p-5">
+        <Card
+          className={`p-5 ${health?.status === 'unhealthy' ? 'health-card-error' : error ? 'health-card-warn' : 'health-card-ok'}`}
+        >
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Activity className="h-5 w-5 text-slate-400" />
-              <span className="font-medium">Overall</span>
+              <span className="font-semibold text-slate-900 dark:text-white">
+                Overall System Status
+              </span>
             </div>
             <Badge variant={overallVariant}>
               {health?.status === 'unhealthy' ? 'Unhealthy' : error ? 'Degraded' : 'Healthy'}
@@ -127,7 +138,7 @@ export default function AdminHealthPage() {
             </Card>
           ) : health && health.checks ? (
             Object.entries(health.checks).map(([name, check]) => (
-              <Card key={name} className="p-5">
+              <Card key={name} className={`p-5 transition-all ${statusBorderClass(check)}`}>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <Database className="h-4 w-4 text-slate-400" />
