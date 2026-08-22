@@ -74,22 +74,60 @@
 
   /* ─── Glass Effect (auto-dark) ────────────────────────────── */
   .glass {
-    @apply bg-white/70 backdrop-blur-xl border border-white/20 shadow-lg
-           dark:bg-slate-900/70 dark:border-slate-700/30;
+    @apply bg-white/70 backdrop-blur-xl border border-white/40 shadow-sm
+           dark:bg-slate-900/75 dark:border-slate-800/60 dark:shadow-2xl;
+  }
+
+  .glass-panel {
+    @apply bg-white/80 backdrop-blur-2xl border border-slate-200/60 shadow-xl shadow-slate-200/40
+           dark:bg-slate-900/80 dark:border-slate-800/80 dark:shadow-2xl dark:shadow-black/50;
+  }
+
+  .glass-card-elevated {
+    @apply bg-white/90 backdrop-blur-xl border border-slate-200/70 shadow-lg shadow-teal-950/5
+           dark:bg-slate-900/90 dark:border-slate-800/80 dark:shadow-2xl dark:shadow-black/60
+           transition-all duration-200 hover:shadow-xl hover:shadow-teal-900/10 hover:-translate-y-0.5;
   }
 
   /* ─── Gradient Text ───────────────────────────────────────── */
   .gradient-text {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-jeevandata-500 to-jeevandata-700;
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-jeevandata-600 via-jeevandata-500 to-teal-400 dark:from-jeevandata-400 dark:via-teal-300 dark:to-emerald-400;
   }
 
   .gradient-text-success {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-emerald-500 to-emerald-700;
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-emerald-600 to-teal-500 dark:from-emerald-400 dark:to-teal-300;
+  }
+
+  .gradient-text-amber {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-amber-600 to-orange-500 dark:from-amber-400 dark:to-orange-300;
+  }
+
+  /* ─── Ambient Glows & Mesh Backdrops ──────────────────────── */
+  .bg-radial-mesh {
+    background-image: 
+      radial-gradient(at 0% 0%, rgba(6, 182, 212, 0.12) 0px, transparent 50%),
+      radial-gradient(at 100% 0%, rgba(16, 185, 129, 0.08) 0px, transparent 50%),
+      radial-gradient(at 50% 100%, rgba(14, 116, 144, 0.06) 0px, transparent 50%);
+  }
+
+  .dark .bg-radial-mesh {
+    background-image: 
+      radial-gradient(at 0% 0%, rgba(6, 182, 212, 0.15) 0px, transparent 60%),
+      radial-gradient(at 100% 0%, rgba(16, 185, 129, 0.10) 0px, transparent 50%),
+      radial-gradient(at 50% 100%, rgba(15, 23, 42, 0.8) 0px, transparent 50%);
+  }
+
+  .glow-teal {
+    box-shadow: 0 0 25px -5px rgba(6, 182, 212, 0.25);
+  }
+
+  .glow-emerald {
+    box-shadow: 0 0 25px -5px rgba(16, 185, 129, 0.25);
   }
 
   /* ─── Shimmer Loading Skeleton ────────────────────────────── */
   .skeleton {
-    @apply relative overflow-hidden rounded-md bg-slate-200 dark:bg-slate-700;
+    @apply relative overflow-hidden rounded-md bg-slate-200/80 dark:bg-slate-800;
   }
 
   .skeleton::after {
@@ -107,17 +145,17 @@
 
   /* ─── Focus Ring ──────────────────────────────────────────── */
   .focus-ring {
-    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background transition-all;
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jeevandata-500 focus-visible:ring-offset-2 focus-visible:ring-offset-background transition-all;
   }
 
   /* ─── Section Styles ──────────────────────────────────────── */
   .section-title {
-    @apply text-sm font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400;
+    @apply text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400;
   }
 
   .glass-card {
-    @apply bg-white/60 backdrop-blur-xl border border-white/30 shadow-lg
-           dark:bg-slate-900/60 dark:border-slate-700/40;
+    @apply bg-white/70 backdrop-blur-xl border border-slate-200/60 shadow-md shadow-slate-200/50
+           dark:bg-slate-900/70 dark:border-slate-800/60 dark:shadow-xl dark:shadow-black/40;
     border-radius: var(--radius);
   }
 
@@ -147,40 +185,40 @@
   }
 
   .card-hover-glow {
-    transition: box-shadow 0.3s ease, transform 0.3s ease;
+    transition: box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1), transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   }
   .card-hover-glow:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 30px -8px hsl(var(--primary) / 0.15);
+    box-shadow: 0 12px 30px -8px hsl(var(--primary) / 0.18);
   }
 
   /* ─── Layout & Stat Tokens ────────────────────────────────── */
   .page-container {
-    @apply mx-auto w-full max-w-7xl px-4 py-6 sm:px-6;
+    @apply mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8;
   }
 
   .section-label {
-    @apply text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400;
+    @apply text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400;
   }
 
   .stat-trend-up {
-    @apply text-emerald-600 dark:text-emerald-400;
+    @apply text-emerald-600 dark:text-emerald-400 font-semibold;
   }
 
   .stat-trend-down {
-    @apply text-rose-600 dark:text-rose-400;
+    @apply text-rose-600 dark:text-rose-400 font-semibold;
   }
 
   .health-card-ok {
-    @apply border-l-4 border-l-emerald-500;
+    @apply border-l-4 border-l-emerald-500 shadow-xs;
   }
 
   .health-card-warn {
-    @apply border-l-4 border-l-amber-500;
+    @apply border-l-4 border-l-amber-500 shadow-xs;
   }
 
   .health-card-error {
-    @apply border-l-4 border-l-rose-500;
+    @apply border-l-4 border-l-rose-500 shadow-xs;
   }
 }
 

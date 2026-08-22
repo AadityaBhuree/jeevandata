@@ -32,20 +32,27 @@ export function StatCard({
   return (
     <Card
       className={cn(
-        'animate-fade-in-up p-4 transition-all duration-200 hover:shadow-md sm:p-5',
+        'duration-250 group relative overflow-hidden border-slate-200/80 bg-white/80 p-4 backdrop-blur-sm transition-all hover:-translate-y-0.5 hover:shadow-lg sm:p-5 dark:border-slate-800/80 dark:bg-slate-900/80',
         className,
       )}
       style={{ animationDelay: `${delay}ms`, ...style }}
       {...props}
     >
       <div className="flex items-center justify-between">
-        <p className="text-xs font-medium text-slate-500 dark:text-slate-400">{label}</p>
+        <p className="text-xs font-semibold tracking-wide text-slate-500 dark:text-slate-400">
+          {label}
+        </p>
         {icon ? (
-          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+          <div className="group-hover:bg-jeevandata-50 group-hover:text-jeevandata-600 dark:group-hover:bg-jeevandata-950/60 dark:group-hover:text-jeevandata-400 flex h-8 w-8 items-center justify-center rounded-xl bg-slate-100 text-slate-600 transition-colors dark:bg-slate-800 dark:text-slate-400">
             {icon}
           </div>
         ) : (
-          <div className={cn('h-2 w-2 rounded-full', accent)} />
+          <div
+            className={cn(
+              'shadow-xs h-2.5 w-2.5 rounded-full ring-2 ring-white dark:ring-slate-900',
+              accent,
+            )}
+          />
         )}
       </div>
 

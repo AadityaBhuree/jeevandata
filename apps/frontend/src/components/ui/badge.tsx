@@ -40,10 +40,30 @@ const badgeVariants = cva(
 );
 
 export interface BadgeProps
-  extends React.HTMLAttributes<HTMLDivElement>, VariantProps<typeof badgeVariants> {}
+  extends React.HTMLAttributes<HTMLDivElement>, VariantProps<typeof badgeVariants> {
+  dot?: boolean;
+}
 
-function Badge({ className, variant, size, ...props }: BadgeProps) {
-  return <div className={cn(badgeVariants({ variant, size }), className)} {...props} />;
+function Badge({ className, variant, size, dot, children, ...props }: BadgeProps) {
+  return (
+    <div className={cn(badgeVariants({ variant, size }), className)} {...props}>
+      {dot && (
+        <span
+          className={cn(
+            'mr-1.5 h-1.5 w-1.5 rounded-full',
+            variant === 'success' || variant === 'outline-success'
+              ? 'animate-pulse bg-emerald-500'
+              : variant === 'warning' || variant === 'outline-warning'
+                ? 'animate-pulse bg-amber-500'
+                : variant === 'error'
+                  ? 'bg-red-500'
+                  : 'bg-jeevandata-500',
+          )}
+        />
+      )}
+      {children}
+    </div>
+  );
 }
 
 // ─── Clinic Status Badge (convenience) ─────────────────────────

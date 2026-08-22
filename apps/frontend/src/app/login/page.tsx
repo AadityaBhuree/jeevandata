@@ -167,10 +167,42 @@ export default function LoginPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 error={errors.password}
               />
-              <div className="flex justify-end">
-                <span className="cursor-not-allowed text-xs text-slate-400 dark:text-slate-500">
-                  Forgot password?
+              <div className="flex items-center justify-between pt-1">
+                <span className="text-[11px] text-slate-400 dark:text-slate-500">
+                  Demo auto-fill:
                 </span>
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEmail('doctor@jeevandata.com');
+                      setPassword('Password123!');
+                    }}
+                    className="rounded-md border border-slate-200 bg-slate-50 px-2 py-0.5 text-[10px] font-medium text-slate-600 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
+                  >
+                    Doctor
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEmail('admin@jeevandata.com');
+                      setPassword('Password123!');
+                    }}
+                    className="rounded-md border border-slate-200 bg-slate-50 px-2 py-0.5 text-[10px] font-medium text-slate-600 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
+                  >
+                    Admin
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEmail('reception@jeevandata.com');
+                      setPassword('Password123!');
+                    }}
+                    className="rounded-md border border-slate-200 bg-slate-50 px-2 py-0.5 text-[10px] font-medium text-slate-600 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
+                  >
+                    Reception
+                  </button>
+                </div>
               </div>
               <Button
                 type="submit"
@@ -184,7 +216,7 @@ export default function LoginPage() {
               </Button>
             </form>
             <div className="mt-6 flex items-center justify-center gap-1.5 text-xs text-slate-400 dark:text-slate-500">
-              <ShieldCheck className="h-3.5 w-3.5" />
+              <ShieldCheck className="h-3.5 w-3.5 text-emerald-500" />
               Secure session · tokens rotated automatically
             </div>
           </div>

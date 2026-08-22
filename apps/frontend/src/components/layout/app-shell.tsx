@@ -106,10 +106,10 @@ export function AppShell({ children }: { children: ReactNode }) {
   }, [mobileOpen]);
 
   return (
-    <div className="flex min-h-screen bg-slate-50 dark:bg-slate-950">
+    <div className="bg-radial-mesh flex min-h-screen bg-slate-50/70 dark:bg-slate-950">
       {/* Desktop Sidebar */}
-      <aside className="hidden w-60 flex-shrink-0 flex-col border-r border-slate-200 bg-white md:flex dark:border-slate-800 dark:bg-slate-900">
-        <div className="border-b border-slate-100 px-5 py-4 dark:border-slate-800">
+      <aside className="hidden w-64 flex-shrink-0 flex-col border-r border-slate-200/80 bg-white/90 backdrop-blur-xl md:flex dark:border-slate-800/80 dark:bg-slate-900/90">
+        <div className="border-b border-slate-100/80 px-5 py-4 dark:border-slate-800/80">
           <Brand />
         </div>
         <nav className="flex-1 space-y-1 overflow-y-auto p-3" aria-label="Main navigation">
