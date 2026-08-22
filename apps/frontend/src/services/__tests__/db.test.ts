@@ -271,7 +271,7 @@ describe('IndexedDB helpers (in-memory Dexie)', () => {
 
       const raw = tables.get('sessions')!.store.get('s1') as Record<string, unknown>;
       expect(typeof raw.localDataEnc).toBe('string');
-      expect(JSON.stringify(raw)).not.toContain('hi');
+      expect(JSON.stringify(raw)).not.toContain('"language"');
     });
   });
 

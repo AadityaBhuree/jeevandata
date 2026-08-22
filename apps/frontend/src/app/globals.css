@@ -210,15 +210,15 @@
   }
 
   .health-card-ok {
-    @apply border-l-4 border-l-emerald-500 shadow-xs;
+    @apply border-l-4 border-l-emerald-500 shadow-sm;
   }
 
   .health-card-warn {
-    @apply border-l-4 border-l-amber-500 shadow-xs;
+    @apply border-l-4 border-l-amber-500 shadow-sm;
   }
 
   .health-card-error {
-    @apply border-l-4 border-l-rose-500 shadow-xs;
+    @apply border-l-4 border-l-rose-500 shadow-sm;
   }
 }
 
