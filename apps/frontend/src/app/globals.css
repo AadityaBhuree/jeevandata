@@ -153,6 +153,35 @@
     transform: translateY(-2px);
     box-shadow: 0 8px 30px -8px hsl(var(--primary) / 0.15);
   }
+
+  /* ─── Layout & Stat Tokens ────────────────────────────────── */
+  .page-container {
+    @apply mx-auto w-full max-w-7xl px-4 py-6 sm:px-6;
+  }
+
+  .section-label {
+    @apply text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400;
+  }
+
+  .stat-trend-up {
+    @apply text-emerald-600 dark:text-emerald-400;
+  }
+
+  .stat-trend-down {
+    @apply text-rose-600 dark:text-rose-400;
+  }
+
+  .health-card-ok {
+    @apply border-l-4 border-l-emerald-500;
+  }
+
+  .health-card-warn {
+    @apply border-l-4 border-l-amber-500;
+  }
+
+  .health-card-error {
+    @apply border-l-4 border-l-rose-500;
+  }
 }
 
 /* ─── Smooth Transitions ──────────────────────────────────────── */

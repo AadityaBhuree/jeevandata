@@ -19,6 +19,12 @@ const badgeVariants = cva(
         info: 'border-transparent bg-jeevandata-100 text-jeevandata-800 dark:bg-jeevandata-900/30 dark:text-jeevandata-400',
         pending:
           'border-transparent bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400',
+        'outline-success':
+          'border-emerald-200 bg-emerald-50/60 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-300',
+        'outline-warning':
+          'border-amber-200 bg-amber-50/60 text-amber-700 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-300',
+        'outline-info':
+          'border-jeevandata-200 bg-jeevandata-50/60 text-jeevandata-700 dark:border-jeevandata-800 dark:bg-jeevandata-950/30 dark:text-jeevandata-300',
       },
       size: {
         default: 'px-2.5 py-0.5 text-xs',

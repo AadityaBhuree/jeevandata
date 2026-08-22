@@ -4,19 +4,26 @@ import { cn } from '@/lib/utils';
 export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   error?: string;
   label?: string;
+  description?: string;
 }
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ className, type, error, label, id, ...props }, ref) => {
+  ({ className, type, error, label, description, id, ...props }, ref) => {
     const generatedId = React.useId();
     const inputId = id ?? generatedId;
 
     return (
       <div className="w-full">
         {label && (
-          <label htmlFor={inputId} className="mb-1.5 block text-xs font-medium text-slate-700">
+          <label
+            htmlFor={inputId}
+            className="mb-1.5 block text-xs font-medium text-slate-700 dark:text-slate-300"
+          >
             {label}
           </label>
+        )}
+        {description && (
+          <p className="mb-1.5 text-xs text-slate-500 dark:text-slate-400">{description}</p>
         )}
         <input
           id={inputId}
