@@ -1,16 +1,19 @@
 'use client';
 
+import Link from 'next/link';
 import { Card } from '@/components/ui/card';
 import { StatusBadge } from '@/components/ui/badge';
+import { Users, Clock, CheckCircle2, Stethoscope, ChevronRight } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
-import { Users, Clock, CheckCircle2 } from 'lucide-react';
-
-interface QueuePatient {
+export interface QueuePatient {
   id: string;
   sessionId: string;
+  patientId?: string;
   patientName: string;
   status: string;
   startedAt: string;
+  priority?: 'P1' | 'P2' | 'P3';
 }
 
 interface PatientQueueProps {
@@ -20,22 +23,25 @@ interface PatientQueueProps {
 const columns = [
   {
     key: 'waiting',
-    label: 'Waiting',
+    label: 'Waiting for Intake',
     icon: Clock,
-    color: 'border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/30',
+    badgeColor: 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300',
+    headerColor: 'border-amber-500/20 bg-amber-50/40 dark:border-amber-900/30 dark:bg-amber-950/20',
   },
   {
     key: 'intake',
-    label: 'In Intake',
+    label: 'In AI Voice Intake',
     icon: Users,
-    color:
-      'border-jeevandata-200 bg-jeevandata-50 dark:border-jeevandata-800 dark:bg-jeevandata-950/30',
+    badgeColor: 'bg-teal-100 text-teal-800 dark:bg-teal-950/60 dark:text-teal-300',
+    headerColor: 'border-teal-500/20 bg-teal-50/40 dark:border-teal-900/30 dark:bg-teal-950/20',
   },
   {
     key: 'ready',
     label: 'Ready for Doctor',
     icon: CheckCircle2,
-    color: 'border-emerald-200 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-950/30',
+    badgeColor: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300',
+    headerColor:
+      'border-emerald-500/20 bg-emerald-50/40 dark:border-emerald-900/30 dark:bg-emerald-950/20',
   },
 ];
 
@@ -62,59 +68,96 @@ export function PatientQueue({ patients }: PatientQueueProps) {
   }));
 
   return (
-    <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
+    <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
       {grouped.map((col) => (
         <div
           key={col.key}
-          className={
-            'rounded-2xl border p-4 backdrop-blur-sm transition-all duration-200 ' + col.color
-          }
+          className={cn(
+            'glass-panel flex flex-col rounded-3xl border p-4 shadow-sm transition-all duration-200',
+            col.headerColor,
+          )}
         >
-          <div className="mb-4 flex items-center justify-between px-1">
-            <div className="flex items-center gap-2">
-              <div className="shadow-2xs flex h-7 w-7 items-center justify-center rounded-lg bg-white/70 dark:bg-slate-900/70">
+          {/* Column Header */}
+          <div className="mb-4 flex items-center justify-between border-b border-slate-100/80 px-1 pb-3 dark:border-slate-800/80">
+            <div className="flex items-center gap-2.5">
+              <div className="shadow-2xs flex h-8 w-8 items-center justify-center rounded-xl bg-white dark:bg-slate-900">
                 <col.icon className="h-4 w-4 text-slate-700 dark:text-slate-300" />
               </div>
               <h3 className="text-sm font-bold text-slate-900 dark:text-white">{col.label}</h3>
             </div>
-            <span className="shadow-2xs rounded-full bg-white/80 px-2.5 py-0.5 text-xs font-bold text-slate-700 dark:bg-slate-900/80 dark:text-slate-300">
+            <span
+              className={cn(
+                'shadow-2xs rounded-full px-2.5 py-0.5 text-xs font-extrabold',
+                col.badgeColor,
+              )}
+            >
               {col.patients.length}
             </span>
           </div>
-          <div className="space-y-2.5">
+
+          {/* Column Patient List */}
+          <div className="flex-1 space-y-3">
             {col.patients.length === 0 ? (
-              <div className="rounded-xl border border-dashed border-slate-200/80 bg-white/30 py-8 text-center text-xs text-slate-400 dark:border-slate-800 dark:bg-slate-900/20 dark:text-slate-500">
+              <div className="flex h-32 flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200/80 bg-white/40 p-4 text-center text-xs text-slate-400 dark:border-slate-800 dark:bg-slate-900/30 dark:text-slate-500">
                 No patients in this queue
               </div>
             ) : (
-              col.patients.map((p) => (
-                <Card
-                  key={p.id}
-                  className="glass-card-elevated group p-3.5 transition-all duration-150"
-                >
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex min-w-0 items-center gap-2.5">
-                      <div className="from-jeevandata-500 to-jeevandata-700 shadow-2xs flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br text-[11px] font-bold text-white">
-                        {p.patientName
-                          .split(' ')
-                          .map((n) => n[0])
-                          .slice(0, 2)
-                          .join('')}
+              col.patients.map((p) => {
+                return (
+                  <Card
+                    key={p.id}
+                    className="glass-card-elevated group relative rounded-2xl border-slate-200/80 p-4 transition-all duration-150 hover:-translate-y-0.5 hover:shadow-md dark:border-slate-800/80"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex min-w-0 items-center gap-3">
+                        <div className="shadow-xs flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-teal-500 to-cyan-600 text-xs font-bold text-white">
+                          {p.patientName
+                            .split(' ')
+                            .map((n) => n[0])
+                            .slice(0, 2)
+                            .join('')}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-slate-900 dark:text-white">
+                            {p.patientName}
+                          </p>
+                          <p className="flex items-center gap-1 text-[11px] font-medium text-slate-400 dark:text-slate-500">
+                            <Clock className="h-3 w-3" />
+                            <span>{getWaitTime(p.startedAt)} elapsed</span>
+                          </p>
+                        </div>
                       </div>
-                      <div className="min-w-0">
-                        <p className="truncate text-sm font-bold text-slate-900 dark:text-white">
-                          {p.patientName}
-                        </p>
-                        <p className="flex items-center gap-1 text-[11px] font-medium text-slate-400 dark:text-slate-500">
-                          <Clock className="h-3 w-3" />
-                          <span>{getWaitTime(p.startedAt)} wait</span>
-                        </p>
-                      </div>
+                      <StatusBadge status={p.status.toLowerCase()} />
                     </div>
-                    <StatusBadge status={p.status.toLowerCase()} />
-                  </div>
-                </Card>
-              ))
+
+                    {/* Bottom Actions if Doctor is ready */}
+                    <div className="mt-3 flex items-center justify-between border-t border-slate-100/80 pt-2.5 dark:border-slate-800/80">
+                      <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-slate-500 dark:text-slate-400">
+                        <Stethoscope className="h-3 w-3 text-teal-600" />
+                        Triage Room 1
+                      </span>
+
+                      {p.patientId ? (
+                        <Link
+                          href={`/patient/${p.patientId}`}
+                          className="inline-flex items-center gap-0.5 text-xs font-bold text-teal-600 hover:text-teal-700 dark:text-teal-400"
+                        >
+                          <span>Dossier</span>
+                          <ChevronRight className="h-3.5 w-3.5" />
+                        </Link>
+                      ) : (
+                        <Link
+                          href="/dashboard"
+                          className="inline-flex items-center gap-0.5 text-xs font-bold text-teal-600 hover:text-teal-700 dark:text-teal-400"
+                        >
+                          <span>Dashboard</span>
+                          <ChevronRight className="h-3.5 w-3.5" />
+                        </Link>
+                      )}
+                    </div>
+                  </Card>
+                );
+              })
             )}
           </div>
         </div>
