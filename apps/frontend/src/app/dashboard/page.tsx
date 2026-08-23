@@ -234,7 +234,7 @@ export default function DashboardPage() {
     {
       label: 'Active Sessions',
       value: activeSessions.length,
-      color: 'bg-jeevandata-500',
+      color: 'bg-sky-500',
       icon: <Users className="h-4 w-4" />,
       desc: 'Currently in kiosk queue',
     },
@@ -369,7 +369,7 @@ export default function DashboardPage() {
                         placeholder="Search patient / DOB..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full rounded-xl border border-slate-200/80 bg-white/90 py-1.5 pl-8 pr-7 text-xs text-slate-800 placeholder-slate-400 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+                        className="w-full rounded-xl border border-slate-200/80 bg-white/90 py-1.5 pl-8 pr-7 text-xs text-slate-800 placeholder-slate-400 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
                       />
                       {searchQuery && (
                         <button
@@ -442,7 +442,7 @@ export default function DashboardPage() {
                     {(sessionsErrorObj as Error | null)?.message ?? 'Failed to load sessions'}
                     <button
                       onClick={() => window.location.reload()}
-                      className="text-jeevandata-500 dark:text-jeevandata-400 ml-2 hover:underline"
+                      className="ml-2 text-sky-500 hover:underline dark:text-sky-400"
                     >
                       Retry
                     </button>
@@ -482,7 +482,7 @@ export default function DashboardPage() {
                           className={cn(
                             'group flex w-full items-center justify-between px-5 py-3.5 text-left transition-all duration-150 hover:bg-slate-50/80 dark:hover:bg-slate-800/50',
                             isSelected &&
-                              'border-l-4 border-l-teal-500 bg-teal-50/50 dark:border-l-teal-400 dark:bg-teal-950/20',
+                              'border-l-4 border-l-sky-500 bg-sky-50/50 dark:border-l-sky-400 dark:bg-sky-950/20',
                           )}
                         >
                           <button
@@ -490,7 +490,7 @@ export default function DashboardPage() {
                             onClick={() => handleSelectSession(session.id)}
                             className="flex flex-1 items-center gap-3.5 text-left"
                           >
-                            <div className="shadow-xs flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-teal-500 to-cyan-600 text-xs font-bold text-white">
+                            <div className="shadow-xs flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500 to-sky-700 text-xs font-bold text-white">
                               {session.patient?.name
                                 ?.split(' ')
                                 .map((n) => n[0])
@@ -543,7 +543,7 @@ export default function DashboardPage() {
                                 className={cn(
                                   'h-4 w-4 transition-transform',
                                   isSelected
-                                    ? 'text-teal-500'
+                                    ? 'text-sky-500'
                                     : 'text-slate-300 dark:text-slate-600',
                                 )}
                               />
@@ -568,7 +568,7 @@ export default function DashboardPage() {
                     </span>
                   </div>
                   {briefsLoading ? (
-                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-teal-200 border-t-teal-500" />
+                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-sky-200 border-t-sky-500" />
                   ) : (
                     <span className="text-xs text-slate-400 dark:text-slate-500">
                       Awaiting physician review
@@ -699,7 +699,7 @@ export default function DashboardPage() {
                   <Card className="glass-panel p-4 shadow-sm">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <div className="shadow-xs flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-teal-500 to-cyan-600 text-xs font-bold text-white">
+                        <div className="shadow-xs flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500 to-sky-700 text-xs font-bold text-white">
                           {selectedSession.patient?.name
                             ?.split(' ')
                             .map((n) => n[0])
@@ -755,7 +755,7 @@ export default function DashboardPage() {
                               {/* AI Message */}
                               {turn.speaker === 'ai' && (
                                 <div className="flex max-w-[85%] gap-2">
-                                  <div className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-teal-100 text-[10px] font-bold text-teal-800 dark:bg-teal-900/50 dark:text-teal-300">
+                                  <div className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-sky-100 text-[10px] font-bold text-sky-800 dark:bg-sky-900/50 dark:text-sky-300">
                                     AI
                                   </div>
                                   <div className="rounded-2xl rounded-tl-sm bg-slate-100 px-3.5 py-2.5 dark:bg-slate-800">
@@ -777,12 +777,12 @@ export default function DashboardPage() {
                                   <div className="mt-1 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-slate-200 text-[10px] font-bold text-slate-700 dark:bg-slate-700 dark:text-slate-300">
                                     P
                                   </div>
-                                  <div className="shadow-xs rounded-2xl rounded-tr-sm bg-teal-600 px-3.5 py-2.5">
+                                  <div className="shadow-xs rounded-2xl rounded-tr-sm bg-sky-600 px-3.5 py-2.5">
                                     <p className="text-xs leading-relaxed text-white">
                                       {turn.text}
                                     </p>
                                     {turn.timestamp && (
-                                      <p className="mt-1 text-[10px] text-teal-100">
+                                      <p className="mt-1 text-[10px] text-sky-100">
                                         {formatTime(turn.timestamp)}
                                       </p>
                                     )}
@@ -860,7 +860,7 @@ export default function DashboardPage() {
                                 {selectedBrief.brief.vitalsToCheck.map((vital) => (
                                   <span
                                     key={vital}
-                                    className="inline-flex items-center rounded-full border border-teal-200 bg-teal-50/60 px-2 py-0.5 text-[10px] font-medium text-teal-700 dark:border-teal-800 dark:bg-teal-950/30 dark:text-teal-300"
+                                    className="inline-flex items-center rounded-full border border-sky-200 bg-sky-50/60 px-2 py-0.5 text-[10px] font-medium text-sky-700 dark:border-sky-800 dark:bg-sky-950/30 dark:text-sky-300"
                                   >
                                     {vital}
                                   </span>

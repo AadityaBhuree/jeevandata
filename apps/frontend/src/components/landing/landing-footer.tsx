@@ -8,7 +8,7 @@ export function LandingFooter() {
         <div className="grid grid-cols-1 gap-8 border-b border-slate-100 pb-8 sm:grid-cols-2 lg:grid-cols-4 dark:border-slate-800/80">
           <div className="space-y-3 sm:col-span-2">
             <div className="flex items-center gap-2.5">
-              <div className="from-jeevandata-500 to-jeevandata-700 shadow-xs flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br text-white">
+              <div className="shadow-xs flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-sky-500 to-sky-700 text-white">
                 <HeartPulse className="h-4 w-4" />
               </div>
               <span className="text-base font-bold text-slate-900 dark:text-white">
@@ -25,7 +25,7 @@ export function LandingFooter() {
               </span>
               <span>·</span>
               <span className="inline-flex items-center gap-1">
-                <Lock className="h-3.5 w-3.5 text-teal-500" /> AES-256 Encrypted
+                <Lock className="h-3.5 w-3.5 text-sky-500" /> AES-256 Encrypted
               </span>
               <span>·</span>
               <span className="inline-flex items-center gap-1">
@@ -42,7 +42,7 @@ export function LandingFooter() {
               <li>
                 <Link
                   href="/"
-                  className="transition-colors hover:text-teal-600 dark:hover:text-teal-400"
+                  className="transition-colors hover:text-sky-600 dark:hover:text-sky-400"
                 >
                   Kiosk Intake
                 </Link>
@@ -50,7 +50,7 @@ export function LandingFooter() {
               <li>
                 <Link
                   href="/login"
-                  className="transition-colors hover:text-teal-600 dark:hover:text-teal-400"
+                  className="transition-colors hover:text-sky-600 dark:hover:text-sky-400"
                 >
                   Doctor Dashboard
                 </Link>
@@ -58,7 +58,7 @@ export function LandingFooter() {
               <li>
                 <Link
                   href="/queue"
-                  className="transition-colors hover:text-teal-600 dark:hover:text-teal-400"
+                  className="transition-colors hover:text-sky-600 dark:hover:text-sky-400"
                 >
                   Patient Queue
                 </Link>
@@ -66,7 +66,7 @@ export function LandingFooter() {
               <li>
                 <Link
                   href="/admin/health"
-                  className="transition-colors hover:text-teal-600 dark:hover:text-teal-400"
+                  className="transition-colors hover:text-sky-600 dark:hover:text-sky-400"
                 >
                   System Health
                 </Link>
@@ -80,22 +80,22 @@ export function LandingFooter() {
             </h4>
             <ul className="space-y-2 text-xs text-slate-500 dark:text-slate-400">
               <li>
-                <span className="cursor-pointer transition-colors hover:text-teal-600 dark:hover:text-teal-400">
+                <span className="cursor-pointer transition-colors hover:text-sky-600 dark:hover:text-sky-400">
                   Biometric Consent Policy
                 </span>
               </li>
               <li>
-                <span className="cursor-pointer transition-colors hover:text-teal-600 dark:hover:text-teal-400">
+                <span className="cursor-pointer transition-colors hover:text-sky-600 dark:hover:text-sky-400">
                   Clinical Audit Trail
                 </span>
               </li>
               <li>
-                <span className="cursor-pointer transition-colors hover:text-teal-600 dark:hover:text-teal-400">
+                <span className="cursor-pointer transition-colors hover:text-sky-600 dark:hover:text-sky-400">
                   EHR &amp; PMS Integration
                 </span>
               </li>
               <li>
-                <span className="cursor-pointer transition-colors hover:text-teal-600 dark:hover:text-teal-400">
+                <span className="cursor-pointer transition-colors hover:text-sky-600 dark:hover:text-sky-400">
                   Security Architecture
                 </span>
               </li>

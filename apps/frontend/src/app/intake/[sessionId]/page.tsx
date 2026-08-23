@@ -420,7 +420,7 @@ export default function IntakeSessionPage() {
               Verified Patient
             </h2>
             <div className="flex items-center gap-3">
-              <div className="from-jeevandata-500 to-jeevandata-700 shadow-xs flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br text-sm font-bold text-white">
+              <div className="shadow-xs flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-sky-500 to-sky-700 text-sm font-bold text-white">
                 {session.patient.name
                   .split(' ')
                   .map((n) => n[0])

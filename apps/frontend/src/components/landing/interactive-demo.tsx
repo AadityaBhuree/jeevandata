@@ -48,14 +48,14 @@ export function InteractiveDemo() {
     <section className="relative overflow-hidden py-16 sm:py-24">
       {/* Background ambient lighting */}
       <div className="pointer-events-none absolute inset-0">
-        <div className="animate-float absolute right-1/4 top-1/2 h-80 w-80 rounded-full bg-teal-200/20 blur-3xl dark:bg-teal-900/20" />
+        <div className="animate-float absolute right-1/4 top-1/2 h-80 w-80 rounded-full bg-sky-200/20 blur-3xl dark:bg-sky-900/20" />
       </div>
 
       <div className="relative mx-auto max-w-5xl px-4 sm:px-6">
         {/* Section Header */}
         <div className="mb-10 text-center">
-          <div className="mb-3 inline-flex items-center gap-1.5 rounded-full border border-teal-200/80 bg-teal-50/70 px-3.5 py-1 text-xs font-semibold text-teal-800 backdrop-blur-sm dark:border-teal-800/60 dark:bg-teal-950/40 dark:text-teal-300">
-            <Sparkles className="h-3.5 w-3.5 text-teal-600 dark:text-teal-400" />
+          <div className="mb-3 inline-flex items-center gap-1.5 rounded-full border border-sky-200/80 bg-sky-50/70 px-3.5 py-1 text-xs font-semibold text-sky-800 backdrop-blur-sm dark:border-sky-800/60 dark:bg-sky-950/40 dark:text-sky-300">
+            <Sparkles className="h-3.5 w-3.5 text-sky-600 dark:text-sky-400" />
             <span>Interactive Care Flow Simulator</span>
           </div>
           <h2 className="text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl dark:text-white">
@@ -80,14 +80,14 @@ export function InteractiveDemo() {
                 className={cn(
                   'flex items-center gap-2.5 rounded-2xl border px-4 py-2.5 text-xs font-bold transition-all duration-200 sm:text-sm',
                   isActive
-                    ? 'border-teal-500 bg-teal-500 text-white shadow-md shadow-teal-500/20 dark:border-teal-400 dark:bg-teal-500'
+                    ? 'border-sky-500 bg-sky-500 text-white shadow-md shadow-sky-500/20 dark:border-sky-400 dark:bg-sky-500'
                     : 'border-slate-200/80 bg-white/80 text-slate-700 hover:border-slate-300 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900/80 dark:text-slate-300 dark:hover:bg-slate-800',
                 )}
               >
                 <Icon
                   className={cn(
                     'h-4 w-4',
-                    isActive ? 'text-white' : 'text-teal-600 dark:text-teal-400',
+                    isActive ? 'text-white' : 'text-sky-600 dark:text-sky-400',
                   )}
                 />
                 <span>{step.label}</span>
@@ -95,7 +95,7 @@ export function InteractiveDemo() {
                   className={cn(
                     'hidden rounded-md px-1.5 py-0.5 text-[10px] font-semibold sm:inline-block',
                     isActive
-                      ? 'bg-teal-600/60 text-white'
+                      ? 'bg-sky-600/60 text-white'
                       : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400',
                   )}
                 >
@@ -131,19 +131,19 @@ export function InteractiveDemo() {
 
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                 {/* Simulated Camera View */}
-                <div className="relative flex aspect-video flex-col items-center justify-center overflow-hidden rounded-2xl border border-teal-500/30 bg-slate-950 p-4 text-center">
-                  <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-teal-900/30 via-slate-950 to-slate-950" />
+                <div className="relative flex aspect-video flex-col items-center justify-center overflow-hidden rounded-2xl border border-sky-500/30 bg-slate-950 p-4 text-center">
+                  <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-sky-900/30 via-slate-950 to-slate-950" />
 
                   {/* Face Target Reticle */}
-                  <div className="relative flex h-36 w-36 items-center justify-center rounded-2xl border-2 border-dashed border-teal-400 shadow-[0_0_30px_rgba(20,184,166,0.3)]">
-                    <div className="absolute -top-2 left-2 rounded bg-teal-500 px-1.5 py-0.5 text-[9px] font-bold text-white">
+                  <div className="relative flex h-36 w-36 items-center justify-center rounded-2xl border-2 border-dashed border-sky-400 shadow-[0_0_30px_rgba(2,132,199,0.3)]">
+                    <div className="absolute -top-2 left-2 rounded bg-sky-500 px-1.5 py-0.5 text-[9px] font-bold text-white">
                       CONFIDENCE 99.4%
                     </div>
-                    <Camera className="h-10 w-10 text-teal-400/80" />
-                    <div className="absolute inset-x-0 top-1/2 h-0.5 animate-pulse bg-teal-400/60 shadow-[0_0_8px_#14b8a6]" />
+                    <Camera className="h-10 w-10 text-sky-400/80" />
+                    <div className="absolute inset-x-0 top-1/2 h-0.5 animate-pulse bg-sky-400/60 shadow-[0_0_8px_#0284c7]" />
                   </div>
 
-                  <div className="relative mt-4 flex items-center gap-2 rounded-full bg-slate-900/90 px-3 py-1 text-[11px] font-medium text-teal-300">
+                  <div className="relative mt-4 flex items-center gap-2 rounded-full bg-slate-900/90 px-3 py-1 text-[11px] font-medium text-sky-300">
                     <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
                     <span>Matched: Priya Sharma (UHID #82914)</span>
                   </div>
@@ -170,7 +170,7 @@ export function InteractiveDemo() {
                       </div>
                       <div className="flex justify-between border-b border-slate-200/60 pb-1.5 dark:border-slate-800">
                         <span className="text-slate-500">Preferred Language:</span>
-                        <span className="font-semibold text-teal-600 dark:text-teal-400">
+                        <span className="font-semibold text-sky-600 dark:text-sky-400">
                           Hindi (हिंदी)
                         </span>
                       </div>
@@ -187,7 +187,7 @@ export function InteractiveDemo() {
                     type="button"
                     onClick={simulateNext}
                     disabled={isSimulating}
-                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-teal-600 px-4 py-2.5 text-xs font-bold text-white shadow-md shadow-teal-600/20 transition-all hover:bg-teal-700 active:scale-[0.98]"
+                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-sky-600 px-4 py-2.5 text-xs font-bold text-white shadow-md shadow-sky-600/20 transition-all hover:bg-sky-700 active:scale-[0.98]"
                   >
                     <span>Proceed to Voice Intake Demo</span>
                     <ArrowRight className="h-4 w-4" />
@@ -203,7 +203,7 @@ export function InteractiveDemo() {
               <div className="flex flex-col items-start justify-between gap-4 border-b border-slate-100 pb-5 sm:flex-row sm:items-center dark:border-slate-800">
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="flex h-2.5 w-2.5 animate-pulse rounded-full bg-teal-500" />
+                    <span className="flex h-2.5 w-2.5 animate-pulse rounded-full bg-sky-500" />
                     <h3 className="text-base font-bold text-slate-900 dark:text-white">
                       Step 2: Multilingual Speech Symptom Triage
                     </h3>
@@ -215,7 +215,7 @@ export function InteractiveDemo() {
                 </div>
                 <div className="flex items-center gap-2">
                   <Badge variant="outline-info" size="sm">
-                    <Volume2 className="mr-1 h-3.5 w-3.5 text-teal-500" /> Live Audio Active
+                    <Volume2 className="mr-1 h-3.5 w-3.5 text-sky-500" /> Live Audio Active
                   </Badge>
                 </div>
               </div>
@@ -224,7 +224,7 @@ export function InteractiveDemo() {
               <div className="space-y-3 rounded-2xl border border-slate-100 bg-slate-50/60 p-4 sm:p-5 dark:border-slate-800 dark:bg-slate-900/50">
                 {/* AI Turn */}
                 <div className="flex max-w-[85%] gap-2.5">
-                  <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-teal-100 text-xs font-bold text-teal-800 dark:bg-teal-900 dark:text-teal-200">
+                  <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-sky-100 text-xs font-bold text-sky-800 dark:bg-sky-900 dark:text-sky-200">
                     AI
                   </div>
                   <div className="shadow-xs rounded-2xl rounded-tl-sm bg-white p-3 dark:bg-slate-800">
@@ -243,12 +243,12 @@ export function InteractiveDemo() {
                   <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-slate-300 text-xs font-bold text-slate-800 dark:bg-slate-700 dark:text-slate-200">
                     P
                   </div>
-                  <div className="shadow-xs rounded-2xl rounded-tr-sm bg-teal-600 p-3 text-white">
+                  <div className="shadow-xs rounded-2xl rounded-tr-sm bg-sky-600 p-3 text-white">
                     <p className="text-xs font-medium">
                       मुझे पिछले 3 दिनों से तेज़ बुखार और सिरदर्द है। कल रात से हल्की सूखी खांसी भी
                       शुरू हो गई है।
                     </p>
-                    <p className="mt-1 text-[10px] text-teal-100">
+                    <p className="mt-1 text-[10px] text-sky-100">
                       (Translation: High fever &amp; headache for 3 days, dry cough since last
                       night.)
                     </p>
@@ -257,9 +257,9 @@ export function InteractiveDemo() {
 
                 {/* Audio Waveform visualization */}
                 <div className="mt-4 flex items-center justify-center gap-1 py-2">
-                  <div className="h-3 w-1 animate-pulse rounded-full bg-teal-500" />
+                  <div className="h-3 w-1 animate-pulse rounded-full bg-sky-500" />
                   <div
-                    className="h-6 w-1 animate-pulse rounded-full bg-teal-600"
+                    className="h-6 w-1 animate-pulse rounded-full bg-sky-600"
                     style={{ animationDelay: '0.1s' }}
                   />
                   <div
@@ -267,11 +267,11 @@ export function InteractiveDemo() {
                     style={{ animationDelay: '0.2s' }}
                   />
                   <div
-                    className="h-4 w-1 animate-pulse rounded-full bg-teal-400"
+                    className="h-4 w-1 animate-pulse rounded-full bg-sky-400"
                     style={{ animationDelay: '0.3s' }}
                   />
                   <div
-                    className="h-7 w-1 animate-pulse rounded-full bg-teal-600"
+                    className="h-7 w-1 animate-pulse rounded-full bg-sky-600"
                     style={{ animationDelay: '0.4s' }}
                   />
                   <span className="ml-3 text-[11px] font-semibold text-slate-500">
@@ -292,7 +292,7 @@ export function InteractiveDemo() {
                   type="button"
                   onClick={simulateNext}
                   disabled={isSimulating}
-                  className="flex items-center gap-2 rounded-xl bg-teal-600 px-4 py-2.5 text-xs font-bold text-white shadow-md shadow-teal-600/20 transition-all hover:bg-teal-700 active:scale-[0.98]"
+                  className="flex items-center gap-2 rounded-xl bg-sky-600 px-4 py-2.5 text-xs font-bold text-white shadow-md shadow-sky-600/20 transition-all hover:bg-sky-700 active:scale-[0.98]"
                 >
                   <span>Generate Clinical SOAP Note</span>
                   <ArrowRight className="h-4 w-4" />
@@ -363,10 +363,10 @@ export function InteractiveDemo() {
                       Recommended Vitals to Check
                     </span>
                     <div className="mt-1 flex flex-wrap gap-1.5">
-                      <span className="rounded-full border border-teal-200 bg-teal-50 px-2 py-0.5 text-[10px] font-semibold text-teal-800 dark:border-teal-800 dark:bg-teal-950 dark:text-teal-300">
+                      <span className="rounded-full border border-sky-200 bg-sky-50 px-2 py-0.5 text-[10px] font-semibold text-sky-800 dark:border-sky-800 dark:bg-sky-950 dark:text-sky-300">
                         Body Temp (°F)
                       </span>
-                      <span className="rounded-full border border-teal-200 bg-teal-50 px-2 py-0.5 text-[10px] font-semibold text-teal-800 dark:border-teal-800 dark:bg-teal-950 dark:text-teal-300">
+                      <span className="rounded-full border border-sky-200 bg-sky-50 px-2 py-0.5 text-[10px] font-semibold text-sky-800 dark:border-sky-800 dark:bg-sky-950 dark:text-sky-300">
                         SpO2 &amp; Heart Rate
                       </span>
                     </div>

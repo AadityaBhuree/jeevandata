@@ -29,7 +29,7 @@ export function HowItWorks() {
     <section className="relative border-y border-slate-200/50 bg-slate-50/50 py-16 sm:py-24 dark:border-slate-800/50 dark:bg-slate-900/30">
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <div className="mb-14 text-center">
-          <span className="text-xs font-bold uppercase tracking-wider text-teal-600 dark:text-teal-400">
+          <span className="text-xs font-bold uppercase tracking-wider text-sky-600 dark:text-sky-400">
             Patient Journey
           </span>
           <h2 className="mt-2 text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl dark:text-white">
@@ -49,17 +49,17 @@ export function HowItWorks() {
             >
               <div>
                 <div className="mb-5 flex items-center justify-between">
-                  <div className="from-jeevandata-50 text-jeevandata-600 ring-jeevandata-200/60 shadow-2xs dark:from-jeevandata-950/60 dark:text-jeevandata-400 dark:ring-jeevandata-800/60 flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br to-teal-50 ring-1 dark:to-teal-950/60">
+                  <div className="from-jeevandata-50 text-jeevandata-600 ring-jeevandata-200/60 shadow-2xs dark:from-jeevandata-950/60 dark:text-jeevandata-400 dark:ring-jeevandata-800/60 flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br to-sky-50 ring-1 dark:to-sky-950/60">
                     <step.icon className="h-6 w-6" />
                   </div>
-                  <span className="flex items-center gap-1 rounded-full bg-teal-50 px-2.5 py-1 text-[11px] font-bold text-teal-700 dark:bg-teal-950/40 dark:text-teal-300">
+                  <span className="flex items-center gap-1 rounded-full bg-sky-50 px-2.5 py-1 text-[11px] font-bold text-sky-700 dark:bg-sky-950/40 dark:text-sky-300">
                     <Clock className="h-3 w-3" />
                     {step.duration}
                   </span>
                 </div>
 
                 <div className="mb-2 flex items-baseline gap-2">
-                  <span className="font-mono text-xs font-bold text-teal-600 dark:text-teal-400">
+                  <span className="font-mono text-xs font-bold text-sky-600 dark:text-sky-400">
                     STEP {step.num}
                   </span>
                 </div>

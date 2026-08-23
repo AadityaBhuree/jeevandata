@@ -156,7 +156,7 @@ export function HeroSection() {
             Instant Doctor SOAP Note Generation
           </span>
           <span className="shadow-2xs inline-flex items-center gap-2 rounded-full border border-slate-200/60 bg-white/60 px-3 py-1.5 backdrop-blur-sm dark:border-slate-800/60 dark:bg-slate-900/60">
-            <Shield className="h-4 w-4 text-teal-500" />
+            <Shield className="h-4 w-4 text-sky-500" />
             Full Audit Trail &amp; Offline Cache
           </span>
         </div>

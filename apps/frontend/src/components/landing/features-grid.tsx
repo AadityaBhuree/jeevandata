@@ -14,8 +14,8 @@ const features = [
     category: 'Biometrics',
     title: 'Instant Face Recognition',
     desc: '478-point on-device landmark detection for returning patients in under 1 second.',
-    iconColor: 'text-jeevandata-600 dark:text-jeevandata-400',
-    bgColor: 'bg-jeevandata-50 dark:bg-jeevandata-900/30',
+    iconColor: 'text-sky-600 dark:text-sky-400',
+    bgColor: 'bg-sky-50 dark:bg-sky-900/30',
   },
   {
     icon: MessageSquareText,
@@ -64,7 +64,7 @@ export function FeaturesGrid() {
     <section className="relative py-16 sm:py-24">
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <div className="mb-12 text-center">
-          <span className="text-xs font-bold uppercase tracking-wider text-teal-600 dark:text-teal-400">
+          <span className="text-xs font-bold uppercase tracking-wider text-sky-600 dark:text-sky-400">
             Care Intelligence
           </span>
           <h2 className="mt-2 text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl dark:text-white">
@@ -102,7 +102,7 @@ export function FeaturesGrid() {
                 </p>
               </div>
 
-              <div className="mt-4 flex items-center gap-1.5 border-t border-slate-100/80 pt-3 text-[11px] font-semibold text-teal-700 dark:border-slate-800/80 dark:text-teal-400">
+              <div className="mt-4 flex items-center gap-1.5 border-t border-slate-100/80 pt-3 text-[11px] font-semibold text-sky-700 dark:border-slate-800/80 dark:text-sky-400">
                 <CheckCircle2 className="h-3.5 w-3.5" />
                 <span>Production Ready</span>
               </div>

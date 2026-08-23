@@ -5,8 +5,8 @@ const items = [
     icon: Shield,
     title: 'No Raw Face Images',
     desc: 'Only L2-normalized 512-dim vectors are stored',
-    color: 'text-jeevandata-600 dark:text-jeevandata-400',
-    bgColor: 'bg-jeevandata-50 dark:bg-jeevandata-900/30',
+    color: 'text-sky-600 dark:text-sky-400',
+    bgColor: 'bg-sky-50 dark:bg-sky-900/30',
   },
   {
     icon: Lock,

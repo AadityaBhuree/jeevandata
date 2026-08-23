@@ -32,8 +32,8 @@ const columns = [
     key: 'intake',
     label: 'In AI Voice Intake',
     icon: Users,
-    badgeColor: 'bg-teal-100 text-teal-800 dark:bg-teal-950/60 dark:text-teal-300',
-    headerColor: 'border-teal-500/20 bg-teal-50/40 dark:border-teal-900/30 dark:bg-teal-950/20',
+    badgeColor: 'bg-sky-100 text-sky-800 dark:bg-sky-950/60 dark:text-sky-300',
+    headerColor: 'border-sky-500/20 bg-sky-50/40 dark:border-sky-900/30 dark:bg-sky-950/20',
   },
   {
     key: 'ready',
@@ -110,7 +110,7 @@ export function PatientQueue({ patients }: PatientQueueProps) {
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex min-w-0 items-center gap-3">
-                        <div className="shadow-xs flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-teal-500 to-cyan-600 text-xs font-bold text-white">
+                        <div className="shadow-xs flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500 to-sky-700 text-xs font-bold text-white">
                           {p.patientName
                             .split(' ')
                             .map((n) => n[0])
@@ -133,14 +133,14 @@ export function PatientQueue({ patients }: PatientQueueProps) {
                     {/* Bottom Actions if Doctor is ready */}
                     <div className="mt-3 flex items-center justify-between border-t border-slate-100/80 pt-2.5 dark:border-slate-800/80">
                       <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-slate-500 dark:text-slate-400">
-                        <Stethoscope className="h-3 w-3 text-teal-600" />
+                        <Stethoscope className="h-3 w-3 text-sky-600" />
                         Triage Room 1
                       </span>
 
                       {p.patientId ? (
                         <Link
                           href={`/patient/${p.patientId}`}
-                          className="inline-flex items-center gap-0.5 text-xs font-bold text-teal-600 hover:text-teal-700 dark:text-teal-400"
+                          className="inline-flex items-center gap-0.5 text-xs font-bold text-sky-600 hover:text-sky-700 dark:text-sky-400"
                         >
                           <span>Dossier</span>
                           <ChevronRight className="h-3.5 w-3.5" />
@@ -148,7 +148,7 @@ export function PatientQueue({ patients }: PatientQueueProps) {
                       ) : (
                         <Link
                           href="/dashboard"
-                          className="inline-flex items-center gap-0.5 text-xs font-bold text-teal-600 hover:text-teal-700 dark:text-teal-400"
+                          className="inline-flex items-center gap-0.5 text-xs font-bold text-sky-600 hover:text-sky-700 dark:text-sky-400"
                         >
                           <span>Dashboard</span>
                           <ChevronRight className="h-3.5 w-3.5" />
