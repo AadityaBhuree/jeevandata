@@ -79,22 +79,22 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="via-jeevandata-50 dark:via-jeevandata-950 relative flex min-h-screen overflow-hidden bg-gradient-to-br from-slate-50 to-white dark:from-slate-950 dark:to-slate-900">
+    <div className="relative flex min-h-screen overflow-hidden bg-gradient-to-br from-slate-50 via-sky-50 to-white dark:from-slate-950 dark:via-sky-950 dark:to-slate-900">
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="animate-float bg-jeevandata-200/30 dark:bg-jeevandata-900/20 absolute -left-32 -top-32 h-96 w-96 rounded-full blur-3xl" />
+        <div className="animate-float absolute -left-32 -top-32 h-96 w-96 rounded-full bg-sky-200/30 blur-3xl dark:bg-sky-900/20" />
         <div
           className="animate-float absolute -bottom-32 -right-32 h-96 w-96 rounded-full bg-emerald-200/20 blur-3xl dark:bg-emerald-900/20"
           style={{ animationDelay: '1.5s' }}
         />
       </div>
 
-      <div className="from-jeevandata-600 to-jeevandata-900 relative z-10 hidden w-1/2 flex-col items-center justify-center bg-gradient-to-br p-12 lg:flex">
+      <div className="relative z-10 hidden w-1/2 flex-col items-center justify-center bg-gradient-to-br from-sky-600 to-sky-900 p-12 lg:flex">
         <div className="mx-auto max-w-md text-center">
           <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-3xl bg-white/10 backdrop-blur-sm">
             <HeartPulse className="h-10 w-10 text-white" />
           </div>
-          <h2 className="text-3xl font-bold text-white">Jeevandata</h2>
-          <p className="text-jeevandata-200 mt-2 text-sm">AI-powered smart clinic intake system</p>
+          <h2 className="font-heading text-3xl font-bold text-white">Jeevandata</h2>
+          <p className="mt-2 text-sm text-sky-200">AI-powered smart clinic intake system</p>
           <div className="mt-8 space-y-4 text-left">
             {[
               { icon: Camera, text: 'Face recognition check-in' },
@@ -102,8 +102,8 @@ export default function LoginPage() {
               { icon: ClipboardList, text: 'Instant clinical briefs' },
             ].map((item) => (
               <div key={item.text} className="flex items-center gap-3">
-                <CheckCircle2 className="text-jeevandata-300 h-4 w-4 flex-shrink-0" />
-                <span className="text-jeevandata-100 text-sm">{item.text}</span>
+                <CheckCircle2 className="h-4 w-4 flex-shrink-0 text-sky-300" />
+                <span className="text-sm text-sky-100">{item.text}</span>
               </div>
             ))}
           </div>
@@ -112,7 +112,7 @@ export default function LoginPage() {
 
       <header className="absolute left-0 right-0 top-0 z-20 flex items-center justify-between px-6 py-4 md:hidden">
         <Link href="/" className="flex items-center gap-2.5">
-          <div className="from-jeevandata-500 to-jeevandata-700 flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br shadow-sm">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-sky-500 to-sky-700 shadow-sm">
             <HeartPulse className="h-5 w-5 text-white" />
           </div>
           <span className="text-sm font-semibold text-slate-900 dark:text-white">Jeevandata</span>
@@ -127,11 +127,11 @@ export default function LoginPage() {
           </div>
           <div className="animate-fade-in-up shadow-card-elevated rounded-3xl border border-slate-200/80 bg-white/80 p-8 backdrop-blur-xl sm:p-10 dark:border-slate-800/80 dark:bg-slate-900/80">
             <div className="mb-6 text-center">
-              <span className="border-jeevandata-200 bg-jeevandata-50 text-jeevandata-700 dark:border-jeevandata-800 dark:bg-jeevandata-900/50 dark:text-jeevandata-300 shadow-2xs mb-4 inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1 text-xs font-semibold">
+              <span className="shadow-2xs mb-4 inline-flex items-center gap-1.5 rounded-full border border-sky-200 bg-sky-50 px-3.5 py-1 text-xs font-semibold text-sky-700 dark:border-sky-800 dark:bg-sky-900/50 dark:text-sky-300">
                 <Sparkles className="h-3 w-3" />
                 Clinic Staff Sign In
               </span>
-              <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl dark:text-white">
+              <h1 className="font-heading text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl dark:text-white">
                 Welcome back
               </h1>
               <p className="mt-1.5 text-xs text-slate-500 sm:text-sm dark:text-slate-400">
@@ -222,10 +222,7 @@ export default function LoginPage() {
           </div>
           <p className="animate-fade-in mt-6 text-center text-sm text-slate-500 dark:text-slate-400">
             Not a staff member?{' '}
-            <Link
-              href="/"
-              className="text-jeevandata-600 dark:text-jeevandata-400 font-medium hover:underline"
-            >
+            <Link href="/" className="font-medium text-sky-600 hover:underline dark:text-sky-400">
               Start a patient intake session
             </Link>
           </p>

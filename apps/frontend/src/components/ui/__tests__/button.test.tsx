@@ -59,19 +59,19 @@ describe('Button', () => {
   it('should apply jeevandata variant class', () => {
     render(<Button variant="jeevandata">Jeevandata</Button>);
     const btn = screen.getByRole('button');
-    expect(btn.className).toContain('bg-jeevandata-500');
+    expect(btn.className).toContain('bg-sky-600');
   });
 
   it('should apply jeevandata-outline variant class', () => {
     render(<Button variant="jeevandata-outline">Outline</Button>);
     const btn = screen.getByRole('button');
-    expect(btn.className).toContain('border-jeevandata-200');
+    expect(btn.className).toContain('border-sky-200');
   });
 
   it('should apply jeevandata-ghost variant class', () => {
     render(<Button variant="jeevandata-ghost">Ghost</Button>);
     const btn = screen.getByRole('button');
-    expect(btn.className).toContain('text-jeevandata-700');
+    expect(btn.className).toContain('text-sky-700');
   });
 
   it('should apply success variant class', () => {

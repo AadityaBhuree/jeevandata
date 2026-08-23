@@ -20,11 +20,10 @@ const buttonVariants = cva(
         link: 'text-primary underline-offset-4 hover:underline',
         // Jeevandata-specific variants
         jeevandata:
-          'bg-jeevandata-500 text-white shadow-sm hover:bg-jeevandata-600 active:bg-jeevandata-700',
+          'bg-sky-600 text-white shadow-sm shadow-sky-500/25 hover:bg-sky-700 active:bg-sky-800',
         'jeevandata-outline':
-          'border-2 border-jeevandata-200 text-jeevandata-700 bg-jeevandata-50 hover:bg-jeevandata-100 hover:border-jeevandata-300 active:bg-jeevandata-200',
-        'jeevandata-ghost':
-          'text-jeevandata-700 hover:bg-jeevandata-50 hover:text-jeevandata-800 active:bg-jeevandata-100',
+          'border-2 border-sky-200 text-sky-700 bg-sky-50 hover:bg-sky-100 hover:border-sky-300 active:bg-sky-200',
+        'jeevandata-ghost': 'text-sky-700 hover:bg-sky-50 hover:text-sky-800 active:bg-sky-100',
         success: 'bg-emerald-600 text-white shadow-sm hover:bg-emerald-700 active:bg-emerald-800',
         'success-outline':
           'border-2 border-emerald-200 text-emerald-700 bg-emerald-50 hover:bg-emerald-100 hover:border-emerald-300',

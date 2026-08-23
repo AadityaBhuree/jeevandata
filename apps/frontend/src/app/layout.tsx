@@ -1,10 +1,22 @@
 import type { Metadata, Viewport } from 'next';
-import { Inter } from 'next/font/google';
+import { Figtree, Noto_Sans } from 'next/font/google';
 import './globals.css';
 import { Providers } from './providers';
 import { ErrorBoundary } from '@/components/ui/error-boundary';
 
-const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
+const figtree = Figtree({
+  subsets: ['latin'],
+  variable: '--font-figtree',
+  weight: ['400', '500', '600', '700'],
+  display: 'swap',
+});
+
+const notoSans = Noto_Sans({
+  subsets: ['latin'],
+  variable: '--font-noto',
+  weight: ['300', '400', '500', '700'],
+  display: 'swap',
+});
 
 export const metadata: Metadata = {
   title: {
@@ -43,13 +55,13 @@ export const viewport: Viewport = {
   userScalable: false,
   themeColor: [
     { media: '(prefers-color-scheme: light)', color: '#ffffff' },
-    { media: '(prefers-color-scheme: dark)', color: '#0f172a' },
+    { media: '(prefers-color-scheme: dark)', color: '#0A0F1E' },
   ],
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={inter.variable} suppressHydrationWarning>
+    <html lang="en" className={`${figtree.variable} ${notoSans.variable}`} suppressHydrationWarning>
       <head>
         {/* ─── Flash Prevention: applies dark class before paint ──── */}
         <script

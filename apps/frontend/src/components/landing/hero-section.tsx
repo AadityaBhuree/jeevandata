@@ -48,13 +48,13 @@ export function HeroSection() {
     <section className="relative overflow-hidden pb-16 pt-12 sm:pt-20">
       {/* Background ambient lighting */}
       <div className="pointer-events-none absolute inset-0">
-        <div className="animate-float bg-jeevandata-200/30 dark:bg-jeevandata-900/20 absolute -left-32 -top-32 h-96 w-96 rounded-full blur-3xl" />
+        <div className="animate-float absolute -left-32 -top-32 h-96 w-96 rounded-full bg-sky-200/30 blur-3xl dark:bg-sky-900/20" />
         <div
           className="animate-float absolute -bottom-32 -right-32 h-96 w-96 rounded-full bg-emerald-200/20 blur-3xl dark:bg-emerald-900/20"
           style={{ animationDelay: '1.5s' }}
         />
         <div
-          className="animate-float bg-jeevandata-300/20 dark:bg-jeevandata-800/20 absolute left-1/2 top-1/3 h-64 w-64 rounded-full blur-3xl"
+          className="animate-float absolute left-1/2 top-1/3 h-64 w-64 rounded-full bg-sky-300/20 blur-3xl dark:bg-sky-800/20"
           style={{ animationDelay: '3s' }}
         />
       </div>
@@ -62,16 +62,16 @@ export function HeroSection() {
       <div className="relative z-10 mx-auto flex max-w-5xl flex-col items-center px-4 text-center">
         {/* HealthyMe-style Top Notification Pill */}
         <div className="animate-fade-in-down mb-6">
-          <div className="shadow-xs inline-flex items-center gap-2 rounded-full border border-teal-200/80 bg-teal-50/80 px-4 py-1.5 text-xs font-semibold text-teal-800 backdrop-blur-md dark:border-teal-800/60 dark:bg-teal-950/40 dark:text-teal-300">
-            <span className="flex h-2 w-2 animate-pulse rounded-full bg-teal-500" />
-            <Sparkles className="h-3.5 w-3.5 text-teal-600 dark:text-teal-400" />
+          <div className="shadow-xs inline-flex items-center gap-2 rounded-full border border-sky-200/80 bg-sky-50/80 px-4 py-1.5 text-xs font-semibold text-sky-800 backdrop-blur-md dark:border-sky-800/60 dark:bg-sky-950/40 dark:text-sky-300">
+            <span className="flex h-2 w-2 animate-pulse rounded-full bg-sky-500" />
+            <Sparkles className="h-3.5 w-3.5 text-sky-600 dark:text-sky-400" />
             <span>Next-Gen Healthcare AI · Zero Paperwork Check-in</span>
           </div>
         </div>
 
         {/* Headline */}
         <div className="animate-fade-in-up">
-          <h1 className="text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl lg:text-6xl dark:text-white">
+          <h1 className="font-heading text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl lg:text-6xl dark:text-white">
             Your Health Journey,
             <br />
             <span className="gradient-text">Simpler &amp; Smarter with AI</span>
@@ -89,7 +89,7 @@ export function HeroSection() {
           <div className="glass-panel relative overflow-hidden rounded-3xl border border-slate-200/80 p-6 shadow-xl sm:p-8 dark:border-slate-800/80">
             <div className="mb-6 flex items-center justify-between border-b border-slate-100/80 pb-4 dark:border-slate-800/80">
               <div className="flex items-center gap-2.5 text-left">
-                <div className="bg-jeevandata-50 text-jeevandata-600 dark:bg-jeevandata-900/50 dark:text-jeevandata-400 flex h-9 w-9 items-center justify-center rounded-xl">
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-sky-50 text-sky-600 dark:bg-sky-900/50 dark:text-sky-400">
                   <Camera className="h-5 w-5" />
                 </div>
                 <div>
@@ -112,7 +112,7 @@ export function HeroSection() {
               size="xl"
               onClick={handleStartIntake}
               disabled={isLoading}
-              className="w-full text-base font-bold shadow-lg shadow-teal-500/25 transition-all duration-200 hover:shadow-teal-500/35 active:scale-[0.98]"
+              className="w-full text-base font-bold shadow-lg shadow-sky-500/25 transition-all duration-200 hover:shadow-sky-500/35 active:scale-[0.98]"
               rightIcon={<ArrowRight className="h-5 w-5" />}
             >
               <Camera className="mr-2 h-5 w-5" />
@@ -123,7 +123,7 @@ export function HeroSection() {
             <div className="mt-5 grid grid-cols-3 gap-2 border-t border-slate-100/80 pt-4 text-center dark:border-slate-800/80">
               <div className="flex flex-col items-center">
                 <span className="flex items-center gap-1 text-[11px] font-semibold text-slate-700 dark:text-slate-300">
-                  <Clock className="text-jeevandata-500 h-3.5 w-3.5" />
+                  <Clock className="h-3.5 w-3.5 text-sky-500" />
                   ~2 mins
                 </span>
                 <span className="text-[10px] text-slate-400">Avg Intake</span>
@@ -152,7 +152,7 @@ export function HeroSection() {
             478-Point Face Mesh (No Images Saved)
           </span>
           <span className="shadow-2xs inline-flex items-center gap-2 rounded-full border border-slate-200/60 bg-white/60 px-3 py-1.5 backdrop-blur-sm dark:border-slate-800/60 dark:bg-slate-900/60">
-            <Activity className="text-jeevandata-500 h-4 w-4" />
+            <Activity className="h-4 w-4 text-sky-500" />
             Instant Doctor SOAP Note Generation
           </span>
           <span className="shadow-2xs inline-flex items-center gap-2 rounded-full border border-slate-200/60 bg-white/60 px-3 py-1.5 backdrop-blur-sm dark:border-slate-800/60 dark:bg-slate-900/60">

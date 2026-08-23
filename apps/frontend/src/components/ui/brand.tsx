@@ -20,7 +20,7 @@ export function Brand({ href = '/', showWordmark = true, compact = false, classN
   const mark = (
     <span
       className={cn(
-        'from-jeevandata-500 to-jeevandata-700 flex items-center justify-center rounded-xl bg-gradient-to-br shadow-sm',
+        'flex items-center justify-center rounded-xl bg-gradient-to-br from-sky-500 to-sky-700 shadow-sm shadow-sky-500/25',
         compact ? 'h-8 w-8' : 'h-9 w-9',
       )}
     >
