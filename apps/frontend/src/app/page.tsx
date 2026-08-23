@@ -2,9 +2,10 @@
 
 import { TitleSetter } from '@/components/ui/title-setter';
 import { HeroSection } from '@/components/landing/hero-section';
+import { StatsBar } from '@/components/landing/stats-bar';
+import { InteractiveDemo } from '@/components/landing/interactive-demo';
 import { HowItWorks } from '@/components/landing/how-it-works';
 import { FeaturesGrid } from '@/components/landing/features-grid';
-import { StatsBar } from '@/components/landing/stats-bar';
 import { TrustSection } from '@/components/landing/trust-section';
 import { LandingFooter } from '@/components/landing/landing-footer';
 import { LanguageSelector } from '@/components/ui/language-selector';
@@ -46,9 +47,10 @@ export default function HomePage() {
       </header>
 
       <HeroSection />
+      <StatsBar />
+      <InteractiveDemo />
       <HowItWorks />
       <FeaturesGrid />
-      <StatsBar />
       <TrustSection />
       <LandingFooter />
     </div>
