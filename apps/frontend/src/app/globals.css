@@ -49,6 +49,13 @@
     --surface-raised: 0 0% 100%;
     --surface-sunken: 204 100% 97%;
     --surface-overlay: 0 0% 100%;
+
+    /* ─── Nutrition & Health Macro Tokens (Figma Nutritionist) ── */
+    --nutrition-carb: 38 92% 50%;      /* #F59E0B — Warm Amber */
+    --nutrition-protein: 200 98% 39%;  /* #0284C7 — Sky Blue */
+    --nutrition-fat: 262 83% 58%;      /* #8B5CF6 — Violet */
+    --nutrition-calories: 142 72% 36%; /* #16A34A — Health Green */
+    --nutrition-water: 199 89% 48%;    /* #0284C7 — Water Blue */
   }
 
   .dark {
@@ -81,6 +88,13 @@
     --surface-raised: 220 26% 12%;
     --surface-sunken: 225 50% 4%;
     --surface-overlay: 220 26% 14%;
+
+    /* ─── Nutrition & Health Macro Tokens Dark (OLED) ──────────── */
+    --nutrition-carb: 43 96% 56%;      /* #FBBF24 — Amber 400 */
+    --nutrition-protein: 199 89% 60%;  /* #38BDF8 — Sky 400 */
+    --nutrition-fat: 258 90% 66%;      /* #A78BFA — Violet 400 */
+    --nutrition-calories: 142 69% 58%; /* #4ADE80 — Emerald 400 */
+    --nutrition-water: 199 89% 60%;    /* #38BDF8 — Cyan Water */
   }
 }
 
@@ -408,4 +422,46 @@
 
 .status-pulse.offline {
   @apply bg-slate-500;
+}
+
+/* ─── Bento Grid Card & Elevated Surfaces ───────────────────── */
+.bento-card {
+  @apply relative overflow-hidden rounded-2xl border border-sky-100/70 bg-white/80 p-5 backdrop-blur-xl shadow-xs transition-all duration-200
+         hover:border-sky-200 hover:bg-white hover:shadow-md hover:-translate-y-0.5
+         dark:border-slate-800/80 dark:bg-slate-900/80 dark:hover:border-slate-700 dark:hover:bg-slate-900 dark:hover:shadow-black/40;
+}
+
+.bento-card-gradient {
+  @apply relative overflow-hidden rounded-2xl border border-sky-200/50 bg-gradient-to-br from-white via-sky-50/30 to-emerald-50/20 p-5 backdrop-blur-xl shadow-sm
+         dark:border-slate-800 dark:from-slate-900 dark:via-slate-900/90 dark:to-slate-950 dark:shadow-xl;
+}
+
+/* ─── Floating Bottom Navigation ────────────────────────────── */
+.floating-bottom-bar {
+  @apply fixed bottom-4 left-1/2 -translate-x-1/2 z-40 w-[calc(100%-2rem)] max-w-md rounded-2xl border border-sky-200/60 bg-white/85 p-2 backdrop-blur-2xl shadow-xl shadow-sky-950/5
+         dark:border-slate-800/80 dark:bg-slate-950/85 dark:shadow-2xl dark:shadow-black/60;
+}
+
+/* ─── Voice Visualizer Orb Animations ───────────────────────── */
+.orb-glow {
+  box-shadow: 0 0 50px 10px rgba(2, 132, 199, 0.25), inset 0 0 30px 5px rgba(22, 163, 74, 0.2);
+}
+
+.dark .orb-glow {
+  box-shadow: 0 0 60px 15px rgba(56, 189, 248, 0.25), inset 0 0 30px 5px rgba(74, 222, 128, 0.2);
+}
+
+@keyframes orb-pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.9;
+  }
+  50% {
+    transform: scale(1.06);
+    opacity: 1;
+  }
+}
+
+.animate-orb-pulse {
+  animation: orb-pulse 3s ease-in-out infinite;
 }

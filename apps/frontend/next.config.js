@@ -2,9 +2,9 @@
 const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
-  // Standalone output so Dockerfile.frontend can copy .next/standalone
-  // (self-contained server bundle with no node_modules in the image).
-  output: 'standalone',
+  // Standalone output for Docker/Linux deployments (disabled on local Windows to avoid symlink EPERM).
+  output:
+    process.env.DOCKER_BUILD === '1' || process.platform !== 'win32' ? 'standalone' : undefined,
 
   // Security headers for direct frontend deploys (no Caddy edge). When served
   // behind Caddy (docker-compose.tls.yml) these are redundant but harmless -
