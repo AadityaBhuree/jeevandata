@@ -553,7 +553,20 @@ All 8 phases are **complete and shipped**. The detailed, step-by-step plan lives
 
 ---
 
+## Documentation & Runbooks
+
+- **[Architectural Deep Dive](docs/architecture-deep-dive.md)** — In-depth breakdown of face recognition, conversational AI, security boundaries, and multi-tenancy.
+- **[Troubleshooting Guide](docs/troubleshooting.md)** — Diagnostic cheat sheet, common failure modes, and debugging workflows.
+- **[Disaster Recovery Runbook](docs/disaster-recovery.md)** — PostgreSQL PITR, Redis RDB, and Qdrant snapshot recovery procedures.
+- **[Secrets Management Runbook](docs/secrets-management.md)** — Secret storage, rotation runbooks, and leakage response.
+- **[TLS/SSL Setup Guide](docs/tls-setup.md)** — Caddy reverse proxy, Let's Encrypt automated certs, and security headers.
+- **[Contributing Guide](CONTRIBUTING.md)** — Local development setup, coding standards, and PR workflows.
+
+---
+
 ## Contributing
+
+See our comprehensive [Contributing Guide](CONTRIBUTING.md) for local environment setup, testing requirements, and security guidelines.
 
 1. **Fork** the repo and create a branch: `git checkout -b feat/my-feature`.
 2. **Commit with conventional messages** — `feat:`, `fix:`, `docs:`, `test:`, `chore:`, `refactor:`, `perf:`, `style:`.
@@ -569,6 +582,8 @@ All 8 phases are **complete and shipped**. The detailed, step-by-step plan lives
 
 ## FAQ / Troubleshooting
 
+For a deeper dive into common failure modes, see the [Troubleshooting Guide](docs/troubleshooting.md).
+
 | Problem                                   | Fix                                                                                            |
 | :---------------------------------------- | :--------------------------------------------------------------------------------------------- |
 | Backend fails to start with Prisma errors | Run `pnpm db:generate` (the client is regenerated against the schema).                         |
@@ -582,7 +597,8 @@ All 8 phases are **complete and shipped**. The detailed, step-by-step plan lives
 
 ## License
 
-MIT — see [LICENSE](LICENSE) once added. Until then, this project is a private, active-development codebase; reach out before reusing it commercially.
+Released under the [MIT License](LICENSE).
+
 
 ---
 
