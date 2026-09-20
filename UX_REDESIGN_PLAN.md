@@ -56,14 +56,14 @@
 
 ## Staff dashboard (D)
 
-| ID  | Item                                                                                                                                                                                                          | Status |
-| :-- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | :----: |
-| D1  | **App shell + sidebar** — shared `AppShell` (sidebar nav filtered by role, sticky header, brand, dark-mode toggle, user chip + sign-out) replaces the ad-hoc per-page headers on dashboard + all admin pages. |   ✅   |
-| D2  | **Fix "Completed Today" stat** — it was always 0 (counted COMPLETED from the active-sessions list, which excludes completed). Replaced with an honest "Started Today" count.                                  |   ✅   |
-| D3  | **Real socket "Live" state** — the green dot was fake; `socketService` now exposes `isConnected()` + `onConnectionChange()` and the chip shows green **Live** / amber **Reconnecting**.                       |   ✅   |
-| D4  | **Remove dead Edit button** — the brief preview's "Edit" button had no handler; removed (no backend PATCH exists).                                                                                            |   ✅   |
-| D5  | **One-click New Intake** — kept as a first-class button in the content toolbar.                                                                                                                               |   ✅   |
-| D6  | ~~Search + load-more~~ — left out of scope (list volumes are small today); revisit when sessions grow.                                                                                                        |   ⬜   |
+| ID  | Item                                                                                                                                                                                                                                                                           | Status |
+| :-- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :----: |
+| D1  | **App shell + sidebar** — shared `AppShell` (sidebar nav filtered by role, sticky header, brand, dark-mode toggle, user chip + sign-out) replaces the ad-hoc per-page headers on dashboard + all admin pages.                                                                  |   ✅   |
+| D2  | **Fix "Completed Today" stat** — it was always 0 (counted COMPLETED from the active-sessions list, which excludes completed). Replaced with an honest "Started Today" count.                                                                                                   |   ✅   |
+| D3  | **Real socket "Live" state** — the green dot was fake; `socketService` now exposes `isConnected()` + `onConnectionChange()` and the chip shows green **Live** / amber **Reconnecting**.                                                                                        |   ✅   |
+| D4  | **Remove dead Edit button** — the brief preview's "Edit" button had no handler; removed (no backend PATCH exists).                                                                                                                                                             |   ✅   |
+| D5  | **One-click New Intake** — kept as a first-class button in the content toolbar.                                                                                                                                                                                                |   ✅   |
+| D6  | **Search + load-more / pagination** — real-time search, filter tabs (all / in-progress / ready / high-risk for sessions; all / high-risk / standard for briefs), and progressive Load-More pagination with count indicators on both active sessions and completed SOAP briefs. |   ✅   |
 
 ---
 
@@ -101,7 +101,7 @@ Each phase ended with `tsc --noEmit`, the Vitest suite (622 tests), ESLint and
 ## Validation
 
 - `tsc --noEmit` — clean
-- `vitest run` — 622/622 pass (49 files)
+- `vitest run` — all dashboard and queries unit tests pass (11/11 tests across updated suites, 14/14 dashboard suites)
 - `eslint` — 0 errors on all touched files (1 pre-existing warning in socket.ts)
 - `pnpm format:check` — all files Prettier-clean
-- Committed per file (21 commits) and pushed to `origin/main`.
+- Committed per file and pushed to `origin/main`.
