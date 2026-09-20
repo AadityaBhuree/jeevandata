@@ -52,6 +52,10 @@ interface ConversationTurn {
 }
 
 type FilterTab = 'all' | 'in_progress' | 'ready' | 'high_risk';
+type BriefFilterTab = 'all' | 'high_risk' | 'standard';
+
+const INITIAL_VISIBLE_COUNT = 8;
+const LOAD_MORE_STEP = 8;
 
 // ─── Dashboard Component ────────────────────────────────────────
 
@@ -70,9 +74,15 @@ export default function DashboardPage() {
   const { data: recentBriefs = [], isLoading: briefsLoading } = useRecentBriefs(20);
   const markReviewed = useMarkBriefReviewed();
 
-  // Search and filter state
+  // Search, filter, and pagination state for Sessions
   const [searchQuery, setSearchQuery] = useState('');
   const [filterTab, setFilterTab] = useState<FilterTab>('all');
+  const [sessionsVisibleCount, setSessionsVisibleCount] = useState(INITIAL_VISIBLE_COUNT);
+
+  // Search, filter, and pagination state for Briefs
+  const [briefSearchQuery, setBriefSearchQuery] = useState('');
+  const [briefFilterTab, setBriefFilterTab] = useState<BriefFilterTab>('all');
+  const [briefsVisibleCount, setBriefsVisibleCount] = useState(INITIAL_VISIBLE_COUNT);
 
   // Session detail state
   const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
@@ -83,19 +93,31 @@ export default function DashboardPage() {
   const turnsEndRef = useRef<HTMLDivElement>(null);
   const selectedSession = activeSessions.find((s) => s.id === selectedSessionId);
 
+  // Reset pagination when search or filters change
+  useEffect(() => {
+    setSessionsVisibleCount(INITIAL_VISIBLE_COUNT);
+  }, [searchQuery, filterTab]);
+
+  useEffect(() => {
+    setBriefsVisibleCount(INITIAL_VISIBLE_COUNT);
+  }, [briefSearchQuery, briefFilterTab]);
+
   // ─── High Risk Detection ───────────────────────────────────────
   const highRiskBriefs = useMemo(() => {
     return recentBriefs.filter((b) => (b.brief.riskFlags?.length ?? 0) > 0);
   }, [recentBriefs]);
 
-  // ─── Filtered Sessions ─────────────────────────────────────────
+  // ─── Filtered & Paginated Sessions ──────────────────────────────
   const filteredSessions = useMemo(() => {
     return activeSessions.filter((session) => {
       const name = session.patient?.name?.toLowerCase() ?? '';
       const dob = session.patient?.dob?.toLowerCase() ?? '';
+      const deviceId = session.deviceId?.toLowerCase() ?? '';
+      const sessionId = session.id.toLowerCase();
       const q = searchQuery.toLowerCase().trim();
 
-      const matchesSearch = !q || name.includes(q) || dob.includes(q);
+      const matchesSearch =
+        !q || name.includes(q) || dob.includes(q) || deviceId.includes(q) || sessionId.includes(q);
       if (!matchesSearch) return false;
 
       if (filterTab === 'in_progress') {
@@ -111,6 +133,40 @@ export default function DashboardPage() {
       return true;
     });
   }, [activeSessions, recentBriefs, searchQuery, filterTab]);
+
+  const paginatedSessions = useMemo(() => {
+    return filteredSessions.slice(0, sessionsVisibleCount);
+  }, [filteredSessions, sessionsVisibleCount]);
+
+  // ─── Filtered & Paginated Briefs ────────────────────────────────
+  const filteredBriefs = useMemo(() => {
+    return recentBriefs.filter((record) => {
+      const patientName = record.patient?.name?.toLowerCase() ?? '';
+      const complaint = record.brief.chiefComplaint?.toLowerCase() ?? '';
+      const summary = record.brief.summary?.toLowerCase() ?? '';
+      const flags = (record.brief.riskFlags ?? []).join(' ').toLowerCase();
+      const icd10 = (record.brief.icd10Hints ?? []).join(' ').toLowerCase();
+      const q = briefSearchQuery.toLowerCase().trim();
+
+      const matchesSearch =
+        !q ||
+        patientName.includes(q) ||
+        complaint.includes(q) ||
+        summary.includes(q) ||
+        flags.includes(q) ||
+        icd10.includes(q);
+      if (!matchesSearch) return false;
+
+      const hasRisk = (record.brief.riskFlags?.length ?? 0) > 0;
+      if (briefFilterTab === 'high_risk') return hasRisk;
+      if (briefFilterTab === 'standard') return !hasRisk;
+      return true;
+    });
+  }, [recentBriefs, briefSearchQuery, briefFilterTab]);
+
+  const paginatedBriefs = useMemo(() => {
+    return filteredBriefs.slice(0, briefsVisibleCount);
+  }, [filteredBriefs, briefsVisibleCount]);
 
   // ─── WebSocket Subscriptions ───────────────────────────────────
 
@@ -469,111 +525,213 @@ export default function DashboardPage() {
                     }
                   />
                 ) : (
-                  <div className="divide-y divide-slate-100 dark:divide-slate-800">
-                    {filteredSessions.map((session) => {
-                      const isSelected = selectedSessionId === session.id;
-                      const brief = recentBriefs.find((b) => b.sessionId === session.id);
-                      const hasBrief = !!brief;
-                      const hasRisk = (brief?.brief.riskFlags?.length ?? 0) > 0;
+                  <>
+                    <div className="divide-y divide-slate-100 dark:divide-slate-800">
+                      {paginatedSessions.map((session) => {
+                        const isSelected = selectedSessionId === session.id;
+                        const brief = recentBriefs.find((b) => b.sessionId === session.id);
+                        const hasBrief = !!brief;
+                        const hasRisk = (brief?.brief.riskFlags?.length ?? 0) > 0;
 
-                      return (
-                        <div
-                          key={session.id}
-                          className={cn(
-                            'group flex w-full items-center justify-between px-5 py-3.5 text-left transition-all duration-150 hover:bg-slate-50/80 dark:hover:bg-slate-800/50',
-                            isSelected &&
-                              'border-l-4 border-l-sky-500 bg-sky-50/50 dark:border-l-sky-400 dark:bg-sky-950/20',
-                          )}
-                        >
-                          <button
-                            type="button"
-                            onClick={() => handleSelectSession(session.id)}
-                            className="flex flex-1 items-center gap-3.5 text-left"
+                        return (
+                          <div
+                            key={session.id}
+                            className={cn(
+                              'group flex w-full items-center justify-between px-5 py-3.5 text-left transition-all duration-150 hover:bg-slate-50/80 dark:hover:bg-slate-800/50',
+                              isSelected &&
+                                'border-l-4 border-l-sky-500 bg-sky-50/50 dark:border-l-sky-400 dark:bg-sky-950/20',
+                            )}
                           >
-                            <div className="shadow-xs flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500 to-sky-700 text-xs font-bold text-white">
-                              {session.patient?.name
-                                ?.split(' ')
-                                .map((n) => n[0])
-                                .slice(0, 2)
-                                .join('') ?? '?'}
-                            </div>
-                            <div>
-                              <div className="flex items-center gap-2">
-                                <p className="text-sm font-bold text-slate-900 dark:text-white">
-                                  {session.patient?.name ?? 'Unknown Patient'}
-                                </p>
-                                {hasRisk && (
-                                  <span className="inline-flex items-center gap-0.5 rounded-full bg-rose-100 px-1.5 py-0.5 text-[9px] font-bold text-rose-700 dark:bg-rose-950/60 dark:text-rose-300">
-                                    <AlertTriangle className="h-2.5 w-2.5" /> High Risk
-                                  </span>
-                                )}
-                              </div>
-                              <p className="text-xs text-slate-500 dark:text-slate-400">
-                                {formatDateTime(session.startedAt)}
-                                {session.patient?.dob && ` · DOB: ${session.patient.dob}`}
-                              </p>
-                            </div>
-                          </button>
-
-                          <div className="flex items-center gap-2">
-                            {session.patient?.id && (
-                              <Link
-                                href={`/patient/${session.patient.id}`}
-                                onClick={(e) => e.stopPropagation()}
-                                className="shadow-2xs hidden items-center gap-1 rounded-lg border border-slate-200/80 bg-white px-2 py-1 text-[11px] font-semibold text-slate-600 hover:bg-slate-50 sm:inline-flex dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
-                                title="View Patient Dossier"
-                              >
-                                <History className="h-3 w-3" /> History
-                              </Link>
-                            )}
-
-                            <StatusBadge status={getSessionStatusText(session.status)} />
-                            {hasBrief && (
-                              <span
-                                title="Clinical brief ready"
-                                className="flex h-2.5 w-2.5 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-slate-900"
-                              />
-                            )}
                             <button
                               type="button"
                               onClick={() => handleSelectSession(session.id)}
-                              aria-label="Toggle details"
+                              className="flex flex-1 items-center gap-3.5 text-left"
                             >
-                              <ChevronRight
-                                className={cn(
-                                  'h-4 w-4 transition-transform',
-                                  isSelected
-                                    ? 'text-sky-500'
-                                    : 'text-slate-300 dark:text-slate-600',
-                                )}
-                              />
+                              <div className="shadow-xs flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500 to-sky-700 text-xs font-bold text-white">
+                                {session.patient?.name
+                                  ?.split(' ')
+                                  .map((n) => n[0])
+                                  .slice(0, 2)
+                                  .join('') ?? '?'}
+                              </div>
+                              <div>
+                                <div className="flex items-center gap-2">
+                                  <p className="text-sm font-bold text-slate-900 dark:text-white">
+                                    {session.patient?.name ?? 'Unknown Patient'}
+                                  </p>
+                                  {hasRisk && (
+                                    <span className="inline-flex items-center gap-0.5 rounded-full bg-rose-100 px-1.5 py-0.5 text-[9px] font-bold text-rose-700 dark:bg-rose-950/60 dark:text-rose-300">
+                                      <AlertTriangle className="h-2.5 w-2.5" /> High Risk
+                                    </span>
+                                  )}
+                                </div>
+                                <p className="text-xs text-slate-500 dark:text-slate-400">
+                                  {formatDateTime(session.startedAt)}
+                                  {session.patient?.dob && ` · DOB: ${session.patient.dob}`}
+                                </p>
+                              </div>
                             </button>
+
+                            <div className="flex items-center gap-2">
+                              {session.patient?.id && (
+                                <Link
+                                  href={`/patient/${session.patient.id}`}
+                                  onClick={(e) => e.stopPropagation()}
+                                  className="shadow-2xs hidden items-center gap-1 rounded-lg border border-slate-200/80 bg-white px-2 py-1 text-[11px] font-semibold text-slate-600 hover:bg-slate-50 sm:inline-flex dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
+                                  title="View Patient Dossier"
+                                >
+                                  <History className="h-3 w-3" /> History
+                                </Link>
+                              )}
+
+                              <StatusBadge status={getSessionStatusText(session.status)} />
+                              {hasBrief && (
+                                <span
+                                  title="Clinical brief ready"
+                                  className="flex h-2.5 w-2.5 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-slate-900"
+                                />
+                              )}
+                              <button
+                                type="button"
+                                onClick={() => handleSelectSession(session.id)}
+                                aria-label="Toggle details"
+                              >
+                                <ChevronRight
+                                  className={cn(
+                                    'h-4 w-4 transition-transform',
+                                    isSelected
+                                      ? 'text-sky-500'
+                                      : 'text-slate-300 dark:text-slate-600',
+                                  )}
+                                />
+                              </button>
+                            </div>
                           </div>
+                        );
+                      })}
+                    </div>
+
+                    {/* Pagination / Load More Bar for Sessions */}
+                    <div className="flex flex-col items-center justify-between gap-3 border-t border-slate-100 bg-slate-50/50 px-5 py-3 text-xs text-slate-500 sm:flex-row dark:border-slate-800 dark:bg-slate-900/30 dark:text-slate-400">
+                      <span data-testid="sessions-pagination-info">
+                        Showing{' '}
+                        <span className="font-semibold text-slate-800 dark:text-slate-200">
+                          {paginatedSessions.length}
+                        </span>{' '}
+                        of{' '}
+                        <span className="font-semibold text-slate-800 dark:text-slate-200">
+                          {filteredSessions.length}
+                        </span>{' '}
+                        sessions
+                        {searchQuery && ` (filtered from ${activeSessions.length})`}
+                      </span>
+                      {filteredSessions.length > sessionsVisibleCount && (
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="jeevandata-outline"
+                            size="sm"
+                            onClick={() => setSessionsVisibleCount((prev) => prev + LOAD_MORE_STEP)}
+                            className="h-7 px-3 text-xs"
+                          >
+                            Load More (+
+                            {Math.min(
+                              LOAD_MORE_STEP,
+                              filteredSessions.length - sessionsVisibleCount,
+                            )}
+                            )
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setSessionsVisibleCount(filteredSessions.length)}
+                            className="h-7 px-2 text-xs text-slate-500 hover:text-slate-900 dark:hover:text-white"
+                          >
+                            Show All
+                          </Button>
                         </div>
-                      );
-                    })}
-                  </div>
+                      )}
+                    </div>
+                  </>
                 )}
               </Card>
 
               {/* Ready Briefs Card */}
               <Card className="glass-panel animate-fade-in-up overflow-hidden rounded-2xl border-slate-200/80 p-0 shadow-md dark:border-slate-800/80">
-                <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4 dark:border-slate-800">
+                <div className="flex flex-col gap-3 border-b border-slate-100 p-4 sm:flex-row sm:items-center sm:justify-between dark:border-slate-800">
                   <div className="flex items-center gap-2">
                     <h2 className="text-sm font-semibold text-slate-900 dark:text-white">
                       Completed Clinical SOAP Briefs
                     </h2>
                     <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300">
-                      {recentBriefs.length}
+                      {filteredBriefs.length}
                     </span>
+                    {briefsLoading && (
+                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-sky-200 border-t-sky-500" />
+                    )}
                   </div>
-                  {briefsLoading ? (
-                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-sky-200 border-t-sky-500" />
-                  ) : (
-                    <span className="text-xs text-slate-400 dark:text-slate-500">
-                      Awaiting physician review
-                    </span>
-                  )}
+
+                  {/* Briefs Search & Filter Toolbar */}
+                  <div className="flex flex-wrap items-center gap-2">
+                    <div className="relative flex-1 sm:w-52">
+                      <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
+                      <input
+                        type="text"
+                        placeholder="Search brief / diagnosis..."
+                        value={briefSearchQuery}
+                        onChange={(e) => setBriefSearchQuery(e.target.value)}
+                        className="w-full rounded-xl border border-slate-200/80 bg-white/90 py-1.5 pl-8 pr-7 text-xs text-slate-800 placeholder-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+                      />
+                      {briefSearchQuery && (
+                        <button
+                          type="button"
+                          onClick={() => setBriefSearchQuery('')}
+                          className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                          aria-label="Clear brief search"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      )}
+                    </div>
+
+                    <div className="flex rounded-xl border border-slate-200/80 bg-slate-100/80 p-0.5 text-[11px] font-semibold dark:border-slate-800 dark:bg-slate-900">
+                      <button
+                        type="button"
+                        onClick={() => setBriefFilterTab('all')}
+                        className={cn(
+                          'rounded-lg px-2.5 py-1 transition-colors',
+                          briefFilterTab === 'all'
+                            ? 'shadow-2xs bg-white text-slate-900 dark:bg-slate-800 dark:text-white'
+                            : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white',
+                        )}
+                      >
+                        All
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setBriefFilterTab('high_risk')}
+                        className={cn(
+                          'rounded-lg px-2.5 py-1 transition-colors',
+                          briefFilterTab === 'high_risk'
+                            ? 'shadow-2xs bg-white text-slate-900 dark:bg-slate-800 dark:text-white'
+                            : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white',
+                        )}
+                      >
+                        High-Risk
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setBriefFilterTab('standard')}
+                        className={cn(
+                          'rounded-lg px-2.5 py-1 transition-colors',
+                          briefFilterTab === 'standard'
+                            ? 'shadow-2xs bg-white text-slate-900 dark:bg-slate-800 dark:text-white'
+                            : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white',
+                        )}
+                      >
+                        Standard
+                      </button>
+                    </div>
+                  </div>
                 </div>
 
                 {briefsLoading ? (
@@ -589,99 +747,162 @@ export default function DashboardPage() {
                       </div>
                     ))}
                   </div>
-                ) : recentBriefs.length === 0 ? (
+                ) : filteredBriefs.length === 0 ? (
                   <EmptyState
                     icon={FileCheck2}
-                    title="No completed briefs yet"
-                    description="Structured clinical briefs appear here automatically once an intake conversation is concluded."
+                    title={
+                      briefSearchQuery || briefFilterTab !== 'all'
+                        ? 'No matching briefs found'
+                        : 'No completed briefs yet'
+                    }
+                    description={
+                      briefSearchQuery
+                        ? `No clinical briefs match "${briefSearchQuery}". Try clearing your search or filter.`
+                        : recentBriefs.length === 0
+                          ? 'Structured clinical briefs appear here automatically once an intake conversation is concluded.'
+                          : 'No clinical briefs match the selected filter category.'
+                    }
+                    action={
+                      briefSearchQuery || briefFilterTab !== 'all' ? (
+                        <Button
+                          variant="jeevandata-outline"
+                          size="sm"
+                          onClick={() => {
+                            setBriefSearchQuery('');
+                            setBriefFilterTab('all');
+                          }}
+                        >
+                          Clear search &amp; filter
+                        </Button>
+                      ) : undefined
+                    }
                   />
                 ) : (
-                  <div className="divide-y divide-slate-100 dark:divide-slate-800">
-                    {recentBriefs.map((record) => {
-                      const isSelected = selectedBrief?.id === record.id;
-                      const patientName =
-                        record.patient?.name ?? record.brief.chiefComplaint ?? 'Patient';
-                      const hasRisk = (record.brief.riskFlags?.length ?? 0) > 0;
+                  <>
+                    <div className="divide-y divide-slate-100 dark:divide-slate-800">
+                      {paginatedBriefs.map((record) => {
+                        const isSelected = selectedBrief?.id === record.id;
+                        const patientName =
+                          record.patient?.name ?? record.brief.chiefComplaint ?? 'Patient';
+                        const hasRisk = (record.brief.riskFlags?.length ?? 0) > 0;
 
-                      return (
-                        <div
-                          key={record.id}
-                          role="button"
-                          tabIndex={0}
-                          onClick={() => {
-                            setSelectedBrief(selectedBrief?.id === record.id ? null : record);
-                            setSelectedSessionId(record.sessionId);
-                            setSessionTurns([]);
-                          }}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter' || e.key === ' ') {
-                              e.preventDefault();
+                        return (
+                          <div
+                            key={record.id}
+                            role="button"
+                            tabIndex={0}
+                            onClick={() => {
                               setSelectedBrief(selectedBrief?.id === record.id ? null : record);
                               setSelectedSessionId(record.sessionId);
                               setSessionTurns([]);
-                            }
-                          }}
-                          className={cn(
-                            'flex w-full cursor-pointer items-start justify-between px-5 py-4 text-left transition-all duration-150 hover:bg-slate-50 dark:hover:bg-slate-800/50',
-                            isSelected &&
-                              'border-l-4 border-l-emerald-500 bg-emerald-50/50 dark:border-l-emerald-400 dark:bg-emerald-950/20',
-                          )}
-                        >
-                          <div className="min-w-0 flex-1">
-                            <div className="flex items-center gap-2">
-                              <h3 className="truncate text-sm font-semibold text-slate-900 dark:text-white">
-                                {patientName}
-                              </h3>
-                              <Badge variant="outline-success" size="sm">
-                                Ready for Review
-                              </Badge>
-                              {hasRisk && (
-                                <Badge variant="error" size="sm">
-                                  <AlertTriangle className="mr-1 h-3 w-3" /> Risk Flag
+                            }}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' || e.key === ' ') {
+                                e.preventDefault();
+                                setSelectedBrief(selectedBrief?.id === record.id ? null : record);
+                                setSelectedSessionId(record.sessionId);
+                                setSessionTurns([]);
+                              }
+                            }}
+                            className={cn(
+                              'flex w-full cursor-pointer items-start justify-between px-5 py-4 text-left transition-all duration-150 hover:bg-slate-50 dark:hover:bg-slate-800/50',
+                              isSelected &&
+                                'border-l-4 border-l-emerald-500 bg-emerald-50/50 dark:border-l-emerald-400 dark:bg-emerald-950/20',
+                            )}
+                          >
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-center gap-2">
+                                <h3 className="truncate text-sm font-semibold text-slate-900 dark:text-white">
+                                  {patientName}
+                                </h3>
+                                <Badge variant="outline-success" size="sm">
+                                  Ready for Review
                                 </Badge>
+                                {hasRisk && (
+                                  <Badge variant="error" size="sm">
+                                    <AlertTriangle className="mr-1 h-3 w-3" /> Risk Flag
+                                  </Badge>
+                                )}
+                              </div>
+                              <p className="mt-1 line-clamp-2 text-xs text-slate-600 dark:text-slate-300">
+                                <span className="font-semibold text-slate-900 dark:text-white">
+                                  Chief complaint:
+                                </span>{' '}
+                                {record.brief.chiefComplaint}
+                              </p>
+                              <p className="mt-1 text-[11px] text-slate-400 dark:text-slate-500">
+                                Generated {formatDateTime(record.generatedAt)}
+                              </p>
+                              {record.brief.riskFlags && record.brief.riskFlags.length > 0 && (
+                                <div className="mt-2 flex flex-wrap gap-1">
+                                  {record.brief.riskFlags.map((flag) => (
+                                    <span
+                                      key={flag}
+                                      className="inline-flex items-center gap-1 rounded-full border border-red-200 bg-red-50 px-2 py-0.5 text-[10px] font-semibold text-red-700 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-300"
+                                    >
+                                      <AlertTriangle className="h-3 w-3" /> {flag}
+                                    </span>
+                                  ))}
+                                </div>
                               )}
                             </div>
-                            <p className="mt-1 line-clamp-2 text-xs text-slate-600 dark:text-slate-300">
-                              <span className="font-semibold text-slate-900 dark:text-white">
-                                Chief complaint:
-                              </span>{' '}
-                              {record.brief.chiefComplaint}
-                            </p>
-                            <p className="mt-1 text-[11px] text-slate-400 dark:text-slate-500">
-                              Generated {formatDateTime(record.generatedAt)}
-                            </p>
-                            {record.brief.riskFlags && record.brief.riskFlags.length > 0 && (
-                              <div className="mt-2 flex flex-wrap gap-1">
-                                {record.brief.riskFlags.map((flag) => (
-                                  <span
-                                    key={flag}
-                                    className="inline-flex items-center gap-1 rounded-full border border-red-200 bg-red-50 px-2 py-0.5 text-[10px] font-semibold text-red-700 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-300"
-                                  >
-                                    <AlertTriangle className="h-3 w-3" /> {flag}
-                                  </span>
-                                ))}
-                              </div>
+                            {isDoctor && (
+                              <Button
+                                variant="success"
+                                size="sm"
+                                loading={reviewingId === record.id}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleMarkReviewed(record.id);
+                                }}
+                                className="shadow-xs ml-3 flex-shrink-0"
+                                leftIcon={<CheckCircle2 className="h-3.5 w-3.5" />}
+                              >
+                                {reviewingId === record.id ? 'Marking...' : 'Mark Reviewed'}
+                              </Button>
                             )}
                           </div>
-                          {isDoctor && (
-                            <Button
-                              variant="success"
-                              size="sm"
-                              loading={reviewingId === record.id}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleMarkReviewed(record.id);
-                              }}
-                              className="shadow-xs ml-3 flex-shrink-0"
-                              leftIcon={<CheckCircle2 className="h-3.5 w-3.5" />}
-                            >
-                              {reviewingId === record.id ? 'Marking...' : 'Mark Reviewed'}
-                            </Button>
-                          )}
+                        );
+                      })}
+                    </div>
+
+                    {/* Pagination / Load More Bar for Briefs */}
+                    <div className="flex flex-col items-center justify-between gap-3 border-t border-slate-100 bg-slate-50/50 px-5 py-3 text-xs text-slate-500 sm:flex-row dark:border-slate-800 dark:bg-slate-900/30 dark:text-slate-400">
+                      <span data-testid="briefs-pagination-info">
+                        Showing{' '}
+                        <span className="font-semibold text-slate-800 dark:text-slate-200">
+                          {paginatedBriefs.length}
+                        </span>{' '}
+                        of{' '}
+                        <span className="font-semibold text-slate-800 dark:text-slate-200">
+                          {filteredBriefs.length}
+                        </span>{' '}
+                        briefs
+                        {briefSearchQuery && ` (filtered from ${recentBriefs.length})`}
+                      </span>
+                      {filteredBriefs.length > briefsVisibleCount && (
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="jeevandata-outline"
+                            size="sm"
+                            onClick={() => setBriefsVisibleCount((prev) => prev + LOAD_MORE_STEP)}
+                            className="h-7 px-3 text-xs"
+                          >
+                            Load More (+
+                            {Math.min(LOAD_MORE_STEP, filteredBriefs.length - briefsVisibleCount)})
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setBriefsVisibleCount(filteredBriefs.length)}
+                            className="h-7 px-2 text-xs text-slate-500 hover:text-slate-900 dark:hover:text-white"
+                          >
+                            Show All
+                          </Button>
                         </div>
-                      );
-                    })}
-                  </div>
+                      )}
+                    </div>
+                  </>
                 )}
               </Card>
             </div>
