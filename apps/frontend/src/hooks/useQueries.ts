@@ -31,6 +31,13 @@ export interface BriefRecord {
   patient?: { id: string; name: string; dob: string } | null;
 }
 
+export interface PaginationInfo {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
+
 // ─── Queries ────────────────────────────────────────────────────
 
 /** Active intake sessions. Refetches on window focus (React Query default). */
@@ -44,6 +51,25 @@ export function useActiveSessions(limit = 50) {
   });
 }
 
+/** Paginated active intake sessions with server pagination metadata. */
+export function usePaginatedActiveSessions(page = 1, limit = 10) {
+  return useQuery({
+    queryKey: ['active-sessions-paginated', page, limit],
+    queryFn: async () => {
+      const res = await dashboardApi.getActiveSessions(page, limit);
+      return {
+        sessions: (res.data as ActiveSession[]) ?? [],
+        pagination: (res.pagination as unknown as PaginationInfo) ?? {
+          page,
+          limit,
+          total: 0,
+          totalPages: 1,
+        },
+      };
+    },
+  });
+}
+
 /** Recent generated briefs awaiting review. */
 export function useRecentBriefs(limit = 20) {
   return useQuery({
@@ -51,6 +77,25 @@ export function useRecentBriefs(limit = 20) {
     queryFn: async () => {
       const res = await dashboardApi.getRecentBriefs(1, limit);
       return (res.data as BriefRecord[]) ?? [];
+    },
+  });
+}
+
+/** Paginated recent generated briefs with server pagination metadata. */
+export function usePaginatedRecentBriefs(page = 1, limit = 10) {
+  return useQuery({
+    queryKey: ['recent-briefs-paginated', page, limit],
+    queryFn: async () => {
+      const res = await dashboardApi.getRecentBriefs(page, limit);
+      return {
+        briefs: (res.data as BriefRecord[]) ?? [],
+        pagination: (res.pagination as unknown as PaginationInfo) ?? {
+          page,
+          limit,
+          total: 0,
+          totalPages: 1,
+        },
+      };
     },
   });
 }

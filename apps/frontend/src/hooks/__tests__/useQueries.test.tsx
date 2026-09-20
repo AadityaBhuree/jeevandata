@@ -4,7 +4,9 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { dashboardApi, analyticsApi } from '@/services/api';
 import {
   useActiveSessions,
+  usePaginatedActiveSessions,
   useRecentBriefs,
+  usePaginatedRecentBriefs,
   useAnalyticsOverview,
   useMarkBriefReviewed,
 } from '../useQueries';
@@ -27,6 +29,23 @@ const mockedAnalyticsApi = vi.mocked(analyticsApi);
 
 // ─── Helpers ────────────────────────────────────────────────────
 
+const session = {
+  id: 's1',
+  status: 'INTAKE_IN_PROGRESS',
+  startedAt: '2026-04-11T10:00:00.000Z',
+  deviceId: 'd1',
+  patient: { id: 'p1', name: 'Aarav Patel', dob: '1985-05-15' },
+};
+
+const brief = {
+  id: 'b1',
+  sessionId: 's1',
+  patientId: 'p1',
+  brief: { chiefComplaint: 'Fever' },
+  generatedAt: '2026-04-11T10:05:00.000Z',
+  session: { id: 's1', startedAt: '2026-04-11T10:00:00.000Z', status: 'BRIEF_GENERATED' },
+};
+
 function createWrapper() {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false } },
@@ -36,32 +55,15 @@ function createWrapper() {
   );
 }
 
-const session = {
-  id: 's1',
-  patient: { id: 'p1', name: 'Priya', dob: '1990-01-15' },
-  status: 'INTAKE_IN_PROGRESS',
-  startedAt: '2026-08-14T10:00:00Z',
-  deviceId: 'kiosk-1',
-};
-
-const brief = {
-  id: 'b1',
-  sessionId: 's1',
-  patientId: 'p1',
-  brief: { summary: 'Fever for 3 days' },
-  generatedAt: '2026-08-14T10:30:00Z',
-  session: { id: 's1', startedAt: '2026-08-14T10:00:00Z', status: 'COMPLETED' },
-};
-
 beforeEach(() => {
   vi.clearAllMocks();
   mockedDashboardApi.getActiveSessions.mockResolvedValue({
     data: [session],
-    pagination: { page: 1, limit: 50, total: 1, totalPages: 1 },
+    pagination: { page: 1, limit: 10, total: 1, totalPages: 1 },
   });
   mockedDashboardApi.getRecentBriefs.mockResolvedValue({
     data: [brief],
-    pagination: { page: 1, limit: 20, total: 1, totalPages: 1 },
+    pagination: { page: 1, limit: 10, total: 1, totalPages: 1 },
   });
   mockedAnalyticsApi.getOverview.mockResolvedValue({
     days: 30,
@@ -87,12 +89,34 @@ describe('useQueries', () => {
     expect(result.current.data).toEqual([session]);
   });
 
+  it('usePaginatedActiveSessions returns sessions and pagination metadata', async () => {
+    const { result } = renderHook(() => usePaginatedActiveSessions(2, 5), {
+      wrapper: createWrapper(),
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(mockedDashboardApi.getActiveSessions).toHaveBeenCalledWith(2, 5);
+    expect(result.current.data?.sessions).toEqual([session]);
+    expect(result.current.data?.pagination.page).toBe(1);
+  });
+
   it('useRecentBriefs fetches briefs and exposes the list', async () => {
     const { result } = renderHook(() => useRecentBriefs(20), { wrapper: createWrapper() });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(mockedDashboardApi.getRecentBriefs).toHaveBeenCalledWith(1, 20);
     expect(result.current.data?.[0]?.id).toBe('b1');
+  });
+
+  it('usePaginatedRecentBriefs returns briefs and pagination metadata', async () => {
+    const { result } = renderHook(() => usePaginatedRecentBriefs(3, 10), {
+      wrapper: createWrapper(),
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(mockedDashboardApi.getRecentBriefs).toHaveBeenCalledWith(3, 10);
+    expect(result.current.data?.briefs?.[0]?.id).toBe('b1');
+    expect(result.current.data?.pagination.totalPages).toBe(1);
   });
 
   it('useAnalyticsOverview fetches KPIs with the requested range', async () => {
